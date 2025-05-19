@@ -16,11 +16,42 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Helper function to register user with backend
+  const registerUserWithBackend = async (firebaseUser) => {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: firebaseUser.email,
+          firebaseUid: firebaseUser.uid,
+          displayName: firebaseUser.displayName,
+          photoURL: firebaseUser.photoURL,
+        }),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        console.error("Backend registration failed:", data);
+        throw new Error(data.message);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Backend registration error:", error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
-      if (firebaseUser) {
-        try {
-          const response = await fetch(`${API_URL}/api/auth/login`, {
+      try {
+        if (firebaseUser) {
+          // Try to login with backend
+          const loginResponse = await fetch(`${API_URL}/api/auth/login`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -29,18 +60,24 @@ export const AuthProvider = ({ children }) => {
             credentials: "include",
           });
 
-          if (response.ok) {
-            const data = await response.json();
+          if (loginResponse.ok) {
+            const data = await loginResponse.json();
             setUser({ ...firebaseUser, ...data.user });
+          } else if (loginResponse.status === 404) {
+            // User exists in Firebase but not in backend
+            const backendResponse = await registerUserWithBackend(firebaseUser);
+            setUser({ ...firebaseUser, ...backendResponse.user });
           }
-        } catch (error) {
-          console.error("Backend sync failed:", error);
-          setUser(firebaseUser); // Still set the Firebase user even if backend fails
+        } else {
+          setUser(null);
         }
-      } else {
-        setUser(null);
+      } catch (error) {
+        console.error("Auth state sync failed:", error);
+        // In case of backend errors, still set the Firebase user
+        setUser(firebaseUser);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -53,20 +90,25 @@ export const AuthProvider = ({ children }) => {
         email,
         password
       );
-      await fetch(`${API_URL}/api/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          firebaseUid: userCredential.user.uid,
-        }),
-        credentials: "include",
+
+      // Immediately register with backend after Firebase auth
+      const backendResponse = await registerUserWithBackend(
+        userCredential.user
+      );
+
+      // Set the user state right away with combined data
+      setUser({
+        ...userCredential.user,
+        ...backendResponse.user,
       });
+
       return userCredential;
     } catch (error) {
       console.error("Signup failed:", error);
+      // If backend registration fails, clean up Firebase user
+      if (error.message === "Backend registration failed") {
+        await auth.currentUser?.delete();
+      }
       throw error;
     }
   };
@@ -76,8 +118,40 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    return signInWithPopup(auth, provider);
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+
+      try {
+        // Try login first
+        const loginResponse = await fetch(`${API_URL}/api/auth/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ firebaseUid: result.user.uid }),
+          credentials: "include",
+        });
+
+        if (loginResponse.ok) {
+          const data = await loginResponse.json();
+          setUser({ ...result.user, ...data.user });
+        } else {
+          // If login fails, register the user
+          const backendResponse = await registerUserWithBackend(result.user);
+          setUser({ ...result.user, ...backendResponse.user });
+        }
+      } catch (error) {
+        console.error("Backend sync failed:", error);
+        // Still set the Firebase user if backend fails
+        setUser(result.user);
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Google login failed:", error);
+      throw error;
+    }
   };
 
   const logout = async () => {

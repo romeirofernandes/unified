@@ -6,10 +6,6 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  password: {
-    type: String,
-    required: true,
-  },
   firebaseUid: {
     type: String,
     required: true,
@@ -18,6 +14,14 @@ const userSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  displayName: {
+    type: String,
+    default: null,
+  },
+  photoURL: {
+    type: String,
+    default: null,
   },
 });
 
