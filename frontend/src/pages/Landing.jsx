@@ -1,21 +1,28 @@
 import React from "react";
-import Navbar from "../components/Navbar";
-import Hero from "../components/Hero";
-import Features from "../components/Features";
-import Testimonials from "../components/Testimonials";
-import CTA from "../components/CTA";
-import Footer from "../components/Footer";
+import { useNavigate } from "react-router-dom";
+import Navbar from "../components/landing/Navbar";
+import Hero from "../components/landing/Hero";
+import Features from "../components/landing/Features";
+import Testimonials from "../components/landing/Testimonials";
+import CTA from "../components/landing/CTA";
+import Footer from "../components/landing/Footer";
 
 const Landing = () => {
+  const navigate = useNavigate();
+
+  const handleNavigation = (path) => {
+    navigate(path);
+  };
+
   return (
     <div className="min-h-screen bg-[#171717] text-[#e5e5e5]">
-      <Navbar />
+      <Navbar onGetStarted={() => handleNavigation("/signup")} />
 
       <main className="container mx-auto max-w-4xl px-6">
-        <Hero />
+        <Hero onGetStarted={() => handleNavigation("/signup")} />
         <Features />
         <Testimonials />
-        <CTA />
+        <CTA onGetStarted={() => handleNavigation("/signup")} />
       </main>
 
       <Footer />

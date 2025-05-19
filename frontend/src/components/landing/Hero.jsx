@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-const Hero = () => {
+const Hero = ({ onGetStarted }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -21,6 +21,7 @@ const Hero = () => {
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
+        onClick={onGetStarted}
         className="rounded-lg bg-[#f59e0b] px-8 py-3 text-black text-lg font-medium hover:bg-[#92400e] hover:text-[#fde68a]"
       >
         Get Started Free

@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { RiMenu4Line } from "react-icons/ri";
 
-const Navbar = () => {
+const Navbar = ({ onGetStarted }) => {
   const ref = useRef(null);
   const { scrollY } = useScroll({
     target: ref,
@@ -86,6 +86,7 @@ const Navbar = () => {
               stiffness: 400,
               damping: 17,
             }}
+            onClick={onGetStarted}
             className="rounded-full bg-[#f59e0b] px-4 py-2 text-black hover:bg-[#92400e] hover:text-[#fde68a]"
           >
             Get Started
