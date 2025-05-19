@@ -1,14 +1,97 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import DashboardLayout from "../components/dashboard/DashboardLayout";
+import ProjectModal from "../components/dashboard/ProjectModal";
+import ProjectPreview from "../components/dashboard/ProjectPreview";
 import { motion } from "framer-motion";
-import { RiAddLine } from "react-icons/ri";
+import { RiAddLine, RiDeleteBin6Line } from "react-icons/ri";
+import { useAuth } from "../context/AuthContext";
 
 const Dashboard = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const { user } = useAuth();
+
+  const handleCreateProject = async (projectData) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/projects`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "firebase-uid": user.uid,
+          },
+          body: JSON.stringify(projectData),
+        }
+      );
+
+      if (response.ok) {
+        const newProject = await response.json();
+        setProjects([...projects, newProject]);
+      }
+    } catch (error) {
+      console.error("Failed to create project:", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/api/projects`,
+          {
+            headers: {
+              "firebase-uid": user.uid,
+            },
+          }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setProjects(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch projects:", error);
+      }
+    };
+
+    fetchProjects();
+  }, [user]);
+
+  const handleProjectClick = (project) => {
+    setSelectedProject(project);
+    setIsPreviewOpen(true);
+  };
+
+  // Add this function to handle project deletion
+  const handleDeleteProject = async (projectId, e) => {
+    e.stopPropagation(); // Prevent triggering the card click
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/projects/${projectId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "firebase-uid": user.uid,
+          },
+        }
+      );
+
+      if (response.ok) {
+        setProjects(projects.filter((p) => p._id !== projectId));
+      }
+    } catch (error) {
+      console.error("Failed to delete project:", error);
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Add Project Card */}
         <motion.button
+          onClick={() => setIsModalOpen(true)}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className="h-48 rounded-xl border-2 border-dashed border-[#404040] flex items-center justify-center text-[#e5e5e5]/60 hover:border-[#f59e0b] hover:text-[#f59e0b] transition-colors group"
@@ -19,8 +102,56 @@ const Dashboard = () => {
           </div>
         </motion.button>
 
-        {/* Project cards will be mapped here */}
+        {/* Project Cards */}
+        {projects.map((project) => (
+          <motion.div
+            key={project._id}
+            whileHover={{ scale: 1.02 }}
+            onClick={() => handleProjectClick(project)}
+            className="h-48 rounded-xl bg-[#262626] border border-[#404040] p-6 flex flex-col justify-between cursor-pointer group relative"
+          >
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              onClick={(e) => handleDeleteProject(project._id, e)}
+              className="absolute top-2 right-2 p-2 bg-[#171717] rounded-lg text-red-500 hover:bg-red-500 hover:text-white transition-colors"
+            >
+              <RiDeleteBin6Line size={16} />
+            </motion.button>
+            <div>
+              <h3 className="text-xl font-bold mb-2">{project.name}</h3>
+              <p className="text-[#e5e5e5]/60 text-sm line-clamp-2">
+                {project.description}
+              </p>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-[#e5e5e5]/40">
+                {project.fields.length} fields
+              </span>
+              <span
+                className={`px-2 py-1 rounded-full text-xs ${
+                  project.theme === "dark"
+                    ? "bg-[#404040] text-[#e5e5e5]"
+                    : "bg-[#f59e0b] text-black"
+                }`}
+              >
+                {project.theme}
+              </span>
+            </div>
+          </motion.div>
+        ))}
       </div>
+
+      <ProjectModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreateProject}
+      />
+
+      <ProjectPreview
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        project={selectedProject}
+      />
     </DashboardLayout>
   );
 };

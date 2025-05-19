@@ -3,6 +3,8 @@ const cors = require("cors");
 require("dotenv").config();
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/auth");
+const projectRoutes = require("./routes/projects");
+const authMiddleware = require("./middleware/auth");
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -20,6 +22,8 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/projects", authMiddleware, projectRoutes);
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
