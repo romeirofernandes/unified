@@ -8,7 +8,7 @@ const CTA = ({ onGetStarted }) => {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       viewport={{ once: true }}
-      className="relative mt-32 text-center"
+      className="mx-5 relative mt-32 text-center"
     >
       <div className="p-12 rounded-lg bg-[#191919] border border-[#383838]">
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-[#fafafa]">

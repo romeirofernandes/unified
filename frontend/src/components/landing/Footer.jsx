@@ -9,7 +9,7 @@ const Footer = () => {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         viewport={{ once: true }}
-        className="container mx-auto px-6 max-w-5xl"
+        className="container mx-auto px-14 max-w-5xl"
       >
         <div className="flex justify-between items-center text-[#a1a1a1] text-sm">
           <p>© {new Date().getFullYear()} Unified. All rights reserved.</p>

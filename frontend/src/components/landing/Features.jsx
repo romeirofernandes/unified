@@ -26,7 +26,7 @@ const Features = () => {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
       viewport={{ once: true }}
-      className="relative mt-32"
+      className="mx-5 relative mt-32"
       id="features"
     >
       <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-12 text-[#fafafa]">
