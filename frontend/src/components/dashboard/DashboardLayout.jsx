@@ -5,6 +5,7 @@ import {
   RiDashboardLine,
   RiSettingsLine,
   RiLogoutBoxLine,
+  RiBookletLine,
 } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
 
@@ -40,6 +41,13 @@ const DashboardLayout = ({ children }) => {
             <span>Projects</span>
           </a>
           <a
+            href="/dashboard/docs"
+            className="flex items-center space-x-2 p-3 rounded-lg hover:bg-[#404040] transition-colors"
+          >
+            <RiBookletLine />
+            <span>Documentation</span>
+          </a>
+          <a
             href="/dashboard/settings"
             className="flex items-center space-x-2 p-3 rounded-lg hover:bg-[#404040] transition-colors"
           >
@@ -57,16 +65,7 @@ const DashboardLayout = ({ children }) => {
       </motion.div>
 
       {/* Main Content */}
-      <div className="ml-64 p-8">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">Welcome back</h2>
-            <p className="text-[#e5e5e5]/60">{user?.email}</p>
-          </div>
-        </div>
-
-        {children}
-      </div>
+      <div className="ml-64 p-8">{children}</div>
     </div>
   );
 };

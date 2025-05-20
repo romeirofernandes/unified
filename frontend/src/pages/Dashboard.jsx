@@ -120,6 +120,11 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold mb-2">
+          yo, {user?.email?.split("@")[0] || "there"} 👋
+        </h1>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Add Project Card */}
         <motion.button
