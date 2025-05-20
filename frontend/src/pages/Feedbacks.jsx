@@ -10,7 +10,6 @@ const Feedbacks = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Move LOCAL_STORAGE_KEY before any state declarations
   const LOCAL_STORAGE_KEY = `feedback-summary-${projectId}`;
 
   const [project, setProject] = useState(null);
@@ -118,7 +117,6 @@ ${JSON.stringify(formattedData.responses, null, 2)}`;
 
       const data = await response.json();
 
-      // Parse the response
       const parsedSummary = {
         timestamp: new Date().toISOString(),
         tldr: data.candidates[0].content.parts[0].text
@@ -132,7 +130,6 @@ ${JSON.stringify(formattedData.responses, null, 2)}`;
           .map((feature) => feature.trim()),
       };
 
-      // Save to localStorage and state
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(parsedSummary));
       setSummary(parsedSummary);
     } catch (error) {
@@ -142,12 +139,8 @@ ${JSON.stringify(formattedData.responses, null, 2)}`;
     }
   };
 
-  // Add cleanup when component unmounts
   useEffect(() => {
-    return () => {
-      // Optional: Clear summary when navigating away
-      // localStorage.removeItem(LOCAL_STORAGE_KEY);
-    };
+    return () => {};
   }, []);
 
   if (loading) return null;
@@ -161,13 +154,15 @@ ${JSON.stringify(formattedData.responses, null, 2)}`;
             <motion.button
               whileHover={{ scale: 1.05 }}
               onClick={() => navigate("/dashboard")}
-              className="p-2 rounded-lg hover:bg-[#404040] transition-colors"
+              className="p-2 rounded-lg hover:bg-[#262626] transition-colors text-[#a1a1a1]"
             >
               <RiArrowLeftLine size={20} />
             </motion.button>
             <div>
-              <h1 className="text-2xl font-bold">{project?.name}</h1>
-              <p className="text-[#e5e5e5]/60">{feedbacks.length} responses</p>
+              <h1 className="text-2xl font-bold text-[#fafafa]">
+                {project?.name}
+              </h1>
+              <p className="text-[#a1a1a1]">{feedbacks.length} responses</p>
             </div>
           </div>
           <motion.button
@@ -178,8 +173,8 @@ ${JSON.stringify(formattedData.responses, null, 2)}`;
               flex items-center space-x-2 px-4 py-2 rounded-lg
               ${
                 feedbacks.length === 0
-                  ? "bg-[#404040] cursor-not-allowed opacity-50"
-                  : "bg-[#f59e0b] hover:bg-[#92400e] hover:text-[#fde68a]"
+                  ? "bg-[#262626] cursor-not-allowed opacity-50"
+                  : "bg-[#737373] hover:bg-[#525252] text-[#fafafa]"
               }
               transition-colors
             `}
@@ -194,25 +189,25 @@ ${JSON.stringify(formattedData.responses, null, 2)}`;
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-6 rounded-xl bg-gradient-to-b from-[#1c1c1c] to-[#262626] border border-[#404040] shadow-xl space-y-6"
+            className="p-6 rounded-lg bg-[#191919] border border-[#383838] space-y-6"
           >
             {/* Header */}
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium flex items-center gap-2">
-                <span className="text-[#f59e0b]">AI</span> Analysis
+              <h3 className="text-lg font-medium flex items-center gap-2 text-[#fafafa]">
+                <span className="text-[#737373]">AI</span> Analysis
               </h3>
-              <span className="text-xs text-[#e5e5e5]/40">
+              <span className="text-xs text-[#a1a1a1]">
                 Generated {new Date(summary.timestamp).toLocaleString()}
               </span>
             </div>
 
             {/* TLDR Section */}
             <div className="space-y-2">
-              <h4 className="text-sm font-medium text-[#f59e0b] uppercase tracking-wider">
+              <h4 className="text-sm font-medium text-[#737373] uppercase tracking-wider">
                 TLDR
               </h4>
-              <div className="p-4 rounded-lg bg-black/20 border border-[#404040]">
-                <p className="text-sm text-[#e5e5e5]/80 leading-relaxed">
+              <div className="p-4 rounded-lg bg-[#262626] border border-[#383838]">
+                <p className="text-sm text-[#a1a1a1] leading-relaxed">
                   {summary.tldr}
                 </p>
               </div>
@@ -220,7 +215,7 @@ ${JSON.stringify(formattedData.responses, null, 2)}`;
 
             {/* Features Section */}
             <div className="space-y-3">
-              <h4 className="text-sm font-medium text-[#f59e0b] uppercase tracking-wider">
+              <h4 className="text-sm font-medium text-[#737373] uppercase tracking-wider">
                 Key Features to Improve/Add
               </h4>
               <div className="grid gap-3">
@@ -230,10 +225,10 @@ ${JSON.stringify(formattedData.responses, null, 2)}`;
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="flex items-start gap-3 p-3 rounded-lg bg-black/20 border border-[#404040] hover:border-[#f59e0b]/20 transition-colors group"
+                    className="flex items-start gap-3 p-3 rounded-lg bg-[#262626] border border-[#383838] hover:border-[#525252] transition-colors group"
                   >
-                    <div className="flex-shrink-0 w-1.5 h-1.5 mt-2 rounded-full bg-[#f59e0b]" />
-                    <p className="text-sm text-[#e5e5e5]/80 leading-relaxed group-hover:text-[#e5e5e5]">
+                    <div className="flex-shrink-0 w-1.5 h-1.5 mt-2 rounded-full bg-[#737373]" />
+                    <p className="text-sm text-[#a1a1a1] leading-relaxed group-hover:text-[#fafafa]">
                       {feature.replace("• ", "")}
                     </p>
                   </motion.div>
@@ -250,10 +245,10 @@ ${JSON.stringify(formattedData.responses, null, 2)}`;
               key={feedback._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-6 rounded-xl bg-[#262626] border border-[#404040] space-y-4"
+              className="p-6 rounded-lg bg-[#191919] border border-[#383838] space-y-4"
             >
               <div className="flex justify-between items-center">
-                <span className="text-sm text-[#e5e5e5]/40">
+                <span className="text-sm text-[#a1a1a1]">
                   {new Date(feedback.timestamp).toLocaleString()}
                 </span>
               </div>
@@ -262,10 +257,10 @@ ${JSON.stringify(formattedData.responses, null, 2)}`;
                   const field = project.fields.find((f) => f._id === key);
                   return (
                     <div key={key} className="space-y-1">
-                      <label className="text-sm text-[#e5e5e5]/40">
+                      <label className="text-sm text-[#a1a1a1]">
                         {field?.label}
                       </label>
-                      <p className="text-[#e5e5e5]">{value}</p>
+                      <p className="text-[#fafafa]">{value}</p>
                     </div>
                   );
                 })}
@@ -276,7 +271,7 @@ ${JSON.stringify(formattedData.responses, null, 2)}`;
 
         {feedbacks.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-[#e5e5e5]/40">No feedback received yet</p>
+            <p className="text-[#a1a1a1]">No feedback received yet</p>
           </div>
         )}
       </div>

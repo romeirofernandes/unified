@@ -18,7 +18,9 @@ function App() {
       firebaseUid="${user?.uid}"
     />
   );
-}`;
+}
+  
+export default App;`;
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(codeSnippet);

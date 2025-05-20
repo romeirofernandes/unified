@@ -65,9 +65,9 @@ const Hero = ({ onGetStarted }) => {
         >
           <div className="w-full overflow-hidden rounded-xl border border-[#383838]">
             <img
-              src="/dashboard-preview.webp"
+              src="/dashboard.png"
               alt="Unified Dashboard Preview"
-              className="aspect-[16/9] h-auto w-full object-cover"
+              className="aspect-[16/9] h-auto w-auto object-cover"
               height={1000}
               width={1000}
             />
