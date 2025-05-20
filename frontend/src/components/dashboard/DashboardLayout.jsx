@@ -1,15 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import {
   RiDashboardLine,
   RiSettingsLine,
   RiLogoutBoxLine,
-  RiBookletLine,
+  RiMenuFoldLine,
+  RiMenuUnfoldLine,
 } from "react-icons/ri";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 
 const DashboardLayout = ({ children }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,7 +25,6 @@ const DashboardLayout = ({ children }) => {
 
   const navItems = [
     { path: "/dashboard", label: "Projects", icon: RiDashboardLine },
-    { path: "/dashboard/docs", label: "Documentation", icon: RiBookletLine },
     { path: "/dashboard/settings", label: "Settings", icon: RiSettingsLine },
   ];
 
@@ -40,15 +41,25 @@ const DashboardLayout = ({ children }) => {
     <div className="min-h-screen bg-[#171717] text-[#e5e5e5]">
       {/* Sidebar */}
       <motion.div
-        initial={{ x: -100 }}
-        animate={{ x: 0 }}
-        className="fixed left-0 top-0 h-full w-64 bg-[#262626] border-r border-[#404040] p-6"
+        initial={{ width: "256px" }}
+        animate={{ width: isCollapsed ? "80px" : "256px" }}
+        className="fixed left-0 top-0 h-full bg-[#191919] border-r border-[#383838] flex flex-col"
       >
-        <Link to="/" className="flex items-center">
-          <h1 className="text-2xl font-bold text-[#f59e0b] mb-8">Unified</h1>
-        </Link>
+        {/* Header */}
+        <div className="p-4 flex items-center justify-between border-b border-[#383838]">
+          {!isCollapsed && (
+            <h1 className="text-2xl font-bold text-[#737373]">Unified</h1>
+          )}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="p-2 hover:bg-[#262626] rounded-lg transition-colors"
+          >
+            {isCollapsed ? <RiMenuUnfoldLine /> : <RiMenuFoldLine />}
+          </button>
+        </div>
 
-        <nav className="space-y-2">
+        {/* Navigation */}
+        <nav className="flex-1 p-4 space-y-2">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -59,28 +70,39 @@ const DashboardLayout = ({ children }) => {
                   flex items-center space-x-2 p-3 rounded-lg transition-colors
                   ${
                     isActivePath(item.path)
-                      ? "bg-[#404040] text-[#f59e0b]"
-                      : "hover:bg-[#404040] text-[#e5e5e5]"
+                      ? "bg-[#262626] text-[#737373]"
+                      : "hover:bg-[#262626] text-[#e5e5e5]"
                   }
                 `}
               >
-                <Icon />
-                <span>{item.label}</span>
+                <Icon size={20} />
+                {!isCollapsed && <span>{item.label}</span>}
               </Link>
             );
           })}
+        </nav>
+
+        {/* Logout Button */}
+        <div className="p-4 border-t border-[#383838]">
           <button
             onClick={handleLogout}
-            className="flex items-center space-x-2 p-3 rounded-lg hover:bg-[#404040] transition-colors text-red-500 w-full text-left"
+            className="flex items-center space-x-2 p-3 rounded-lg hover:bg-[#262626] transition-colors text-red-500 w-full"
           >
-            <RiLogoutBoxLine />
-            <span>Logout</span>
+            <RiLogoutBoxLine size={20} />
+            {!isCollapsed && <span>Logout</span>}
           </button>
-        </nav>
+        </div>
       </motion.div>
 
       {/* Main Content */}
-      <div className="ml-64 p-8">{children}</div>
+      <motion.div
+        animate={{
+          marginLeft: isCollapsed ? "80px" : "256px",
+        }}
+        className="p-8"
+      >
+        {children}
+      </motion.div>
     </div>
   );
 };

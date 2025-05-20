@@ -96,7 +96,7 @@ const ProjectModal = ({ isOpen, onClose, onSubmit }) => {
               <button
                 type="button"
                 onClick={() => handleAddOption(index)}
-                className="text-sm text-[#f59e0b]"
+                className="text-sm text-[#e5e5e5]"
               >
                 Add Option
               </button>
@@ -199,24 +199,24 @@ const ProjectModal = ({ isOpen, onClose, onSubmit }) => {
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
         >
-          <motion.div className="w-full max-w-2xl bg-[#262626] rounded-2xl p-6 shadow-xl">
+          <motion.div className="w-full max-w-2xl bg-[#191919] rounded-lg p-6 shadow-xl border border-[#383838]">
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center">
                 {step === 2 && (
                   <button
                     onClick={() => setStep(1)}
-                    className="mr-4 p-2 hover:bg-[#404040] rounded-lg transition-colors"
+                    className="mr-4 p-2 hover:bg-[#262626] rounded-lg transition-colors"
                   >
-                    <RiArrowLeftLine size={20} />
+                    <RiArrowLeftLine size={20} className="text-[#a1a1a1]" />
                   </button>
                 )}
-                <h2 className="text-2xl font-bold">
+                <h2 className="text-2xl font-bold text-[#fafafa]">
                   {step === 1 ? "Create New Project" : "Configure Fields"}
                 </h2>
               </div>
               <button
-                onClick={handleClose} // Use handleClose instead of onClose
-                className="p-2 hover:bg-[#404040] rounded-lg transition-colors"
+                onClick={handleClose}
+                className="p-2 hover:bg-[#262626] rounded-lg transition-colors text-[#a1a1a1]"
               >
                 <RiCloseLine size={24} />
               </button>
@@ -224,34 +224,37 @@ const ProjectModal = ({ isOpen, onClose, onSubmit }) => {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {step === 1 ? (
-                // Step 1: Project Details
                 <div className="space-y-6">
                   <div>
-                    <label className="block mb-2">Project Name</label>
+                    <label className="block mb-2 text-[#a1a1a1]">
+                      Project Name
+                    </label>
                     <input
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full p-3 rounded-lg bg-[#404040] border border-[#404040] focus:border-[#f59e0b] outline-none"
+                      className="w-full p-3 rounded-lg bg-[#262626] border border-[#383838] focus:border-[#737373] outline-none text-[#fafafa]"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block mb-2">Description</label>
+                    <label className="block mb-2 text-[#a1a1a1]">
+                      Description
+                    </label>
                     <textarea
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      className="w-full p-3 rounded-lg bg-[#404040] border border-[#404040] focus:border-[#f59e0b] outline-none h-24 resize-none"
+                      className="w-full p-3 rounded-lg bg-[#262626] border border-[#383838] focus:border-[#737373] outline-none h-24 resize-none text-[#fafafa]"
                     />
                   </div>
 
                   <div>
-                    <label className="block mb-2">Theme</label>
+                    <label className="block mb-2 text-[#a1a1a1]">Theme</label>
                     <select
                       value={theme}
                       onChange={(e) => setTheme(e.target.value)}
-                      className="w-full p-3 rounded-lg bg-[#404040] border border-[#404040] focus:border-[#f59e0b] outline-none"
+                      className="w-full p-3 rounded-lg bg-[#262626] border border-[#383838] focus:border-[#737373] outline-none text-[#fafafa]"
                     >
                       <option value="light">Light</option>
                       <option value="dark">Dark</option>
@@ -259,14 +262,15 @@ const ProjectModal = ({ isOpen, onClose, onSubmit }) => {
                   </div>
                 </div>
               ) : (
-                // Step 2: Form Fields
                 <div className="space-y-6">
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-medium">Form Fields</span>
+                    <span className="text-lg font-medium text-[#fafafa]">
+                      Form Fields
+                    </span>
                     <button
                       type="button"
                       onClick={handleAddField}
-                      className="flex items-center space-x-2 text-[#f59e0b] hover:text-[#92400e]"
+                      className="flex items-center space-x-2 text-[#737373] hover:text-[#525252]"
                     >
                       <RiAddLine />
                       <span>Add Field</span>
@@ -277,7 +281,7 @@ const ProjectModal = ({ isOpen, onClose, onSubmit }) => {
                     {fields.map((field, index) => (
                       <div
                         key={index}
-                        className="bg-[#1c1c1c] p-4 rounded-lg space-y-2"
+                        className="bg-[#262626] p-4 rounded-lg space-y-2 border border-[#383838]"
                       >
                         <div className="flex items-center gap-4">
                           <select
@@ -285,7 +289,7 @@ const ProjectModal = ({ isOpen, onClose, onSubmit }) => {
                             onChange={(e) =>
                               handleFieldChange(index, "type", e.target.value)
                             }
-                            className="p-2 rounded-lg bg-[#404040] border border-[#404040]"
+                            className="p-2 rounded-lg bg-[#191919] border border-[#383838] text-[#fafafa]"
                             disabled={index === 0}
                           >
                             <option value="text">Text</option>
@@ -301,9 +305,9 @@ const ProjectModal = ({ isOpen, onClose, onSubmit }) => {
                               handleFieldChange(index, "label", e.target.value)
                             }
                             placeholder="Field Label"
-                            className="flex-1 p-2 rounded-lg bg-[#404040] border border-[#404040]"
+                            className="flex-1 p-2 rounded-lg bg-[#191919] border border-[#383838] text-[#fafafa]"
                           />
-                          <label className="flex items-center space-x-2">
+                          <label className="flex items-center space-x-2 text-[#a1a1a1]">
                             <input
                               type="checkbox"
                               checked={field.required}
@@ -314,7 +318,7 @@ const ProjectModal = ({ isOpen, onClose, onSubmit }) => {
                                   e.target.checked
                                 )
                               }
-                              className="rounded border-[#404040] bg-[#404040] text-[#f59e0b]"
+                              className="rounded border-[#383838] bg-[#191919] text-[#737373]"
                             />
                             <span>Required</span>
                           </label>
@@ -322,7 +326,7 @@ const ProjectModal = ({ isOpen, onClose, onSubmit }) => {
                             <button
                               type="button"
                               onClick={() => handleRemoveField(index)}
-                              className="p-2 text-red-500 hover:bg-[#404040] rounded-lg"
+                              className="p-2 text-red-500 hover:bg-[#191919] rounded-lg"
                             >
                               <RiDeleteBin6Line />
                             </button>
@@ -335,19 +339,19 @@ const ProjectModal = ({ isOpen, onClose, onSubmit }) => {
                 </div>
               )}
 
-              <div className="flex justify-end space-x-4 pt-6 border-t border-[#404040]">
+              <div className="flex justify-end space-x-4 pt-6 border-t border-[#383838]">
                 <button
                   type="button"
-                  onClick={handleClose} // Use handleClose instead of onClose
-                  className="px-4 py-2 rounded-lg hover:bg-[#404040] transition-colors"
+                  onClick={handleClose}
+                  className="px-4 py-2 rounded-lg hover:bg-[#262626] transition-colors text-[#a1a1a1]"
                 >
                   Cancel
                 </button>
                 {step === 1 ? (
                   <button
-                    type="button" // Changed from submit to button
+                    type="button"
                     onClick={handleNext}
-                    className="px-4 py-2 rounded-lg bg-[#f59e0b] text-black hover:bg-[#92400e] hover:text-[#fde68a] transition-colors"
+                    className="px-4 py-2 rounded-lg bg-[#737373] text-[#fafafa] hover:bg-[#525252] transition-colors"
                     disabled={!name}
                   >
                     Next
@@ -355,7 +359,7 @@ const ProjectModal = ({ isOpen, onClose, onSubmit }) => {
                 ) : (
                   <button
                     type="submit"
-                    className="px-4 py-2 rounded-lg bg-[#f59e0b] text-black hover:bg-[#92400e] hover:text-[#fde68a] transition-colors"
+                    className="px-4 py-2 rounded-lg bg-[#737373] text-[#fafafa] hover:bg-[#525252] transition-colors"
                   >
                     Create Project
                   </button>

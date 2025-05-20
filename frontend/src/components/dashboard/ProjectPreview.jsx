@@ -29,8 +29,8 @@ function App() {
   const renderField = (field, theme) => {
     const baseInputClass = `w-full p-3 rounded-lg ${
       theme === "dark"
-        ? "bg-[#404040] border border-[#404040] placeholder-[#e5e5e5]/50"
-        : "bg-white border border-gray-200 placeholder-[#171717]/60"
+        ? "bg-[#262626] border border-[#383838] text-[#fafafa] placeholder-[#a1a1a1]"
+        : "bg-[#fafafa] border border-[#e5e5e5] text-[#262626] placeholder-[#737373]"
     }`;
 
     switch (field.type) {
@@ -59,7 +59,7 @@ function App() {
                   type="radio"
                   name={`field-${field.label}`}
                   value={option.value}
-                  className="text-[#f59e0b]"
+                  className="text-[#e5e5e5]"
                 />
                 <span>{option.label}</span>
               </label>
@@ -94,38 +94,40 @@ function App() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
         >
           <motion.div
             initial={{ scale: 0.95 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0.95 }}
-            className="w-full max-w-4xl bg-[#262626] rounded-2xl overflow-hidden"
+            className="relative w-full max-w-7xl h-[90vh] bg-[#191919] rounded-lg border border-[#383838]"
           >
-            {/* Header */}
-            <div className="flex justify-between items-center p-6 border-b border-[#404040]">
+            {/* Header - Fixed */}
+            <div className="absolute top-0 left-0 right-0 flex justify-between items-center p-6 border-b border-[#383838] bg-[#191919] rounded-t-lg">
               <div>
-                <h2 className="text-2xl font-bold">{project?.name}</h2>
-                <p className="text-[#e5e5e5]/60 text-sm">
-                  Preview & Integration
-                </p>
+                <h2 className="text-2xl font-bold text-[#fafafa]">
+                  {project?.name}
+                </h2>
+                <p className="text-[#a1a1a1] text-sm">Preview & Integration</p>
               </div>
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-[#404040] rounded-lg transition-colors"
+                className="p-2 hover:bg-[#262626] rounded-lg transition-colors text-[#a1a1a1]"
               >
                 <RiCloseLine size={24} />
               </button>
             </div>
 
-            {/* Content */}
-            <div className="grid grid-cols-2 gap-6 p-6">
-              {/* Preview Section */}
-              <div className="space-y-6">
-                <h3 className="font-medium">Preview</h3>
+            {/* Content Grid with Scrollable Columns */}
+            <div className="grid grid-cols-2 h-[calc(90vh-5rem)] mt-20">
+              {/* Preview Section - Scrollable */}
+              <div className="border-r border-[#383838] p-6 pt-8 overflow-y-auto">
+                <h3 className="font-medium text-[#fafafa] mb-6">Preview</h3>
                 <div
-                  className={`p-6 rounded-xl ${
-                    project?.theme === "dark" ? "bg-[#171717]" : "bg-white"
+                  className={`p-6 rounded-lg border ${
+                    project?.theme === "dark"
+                      ? "bg-[#262626] border-[#383838]"
+                      : "bg-[#f8fafc] border-[#e5e5e5] shadow-sm"
                   }`}
                 >
                   {project?.fields.map((field, index) => (
@@ -133,8 +135,8 @@ function App() {
                       <label
                         className={`block mb-2 ${
                           project?.theme === "dark"
-                            ? "text-[#e5e5e5]"
-                            : "text-[#171717]"
+                            ? "text-[#fafafa]"
+                            : "text-[#334155]"
                         }`}
                       >
                         {field.label}
@@ -148,33 +150,42 @@ function App() {
                 </div>
               </div>
 
-              {/* Code Section */}
-              <div className="space-y-6">
-                <h3 className="font-medium">Integration</h3>
+              {/* Integration Section - Scrollable */}
+              <div className="p-6 pt-8 overflow-y-auto">
+                <h3 className="font-medium text-[#fafafa] mb-6">Integration</h3>
                 <div className="space-y-4">
-                  <div className="p-4 rounded-lg bg-[#171717] relative group">
-                    <pre className="text-sm font-mono text-[#e5e5e5]/70 overflow-x-auto">
+                  {/* Code Snippet */}
+                  <div className="p-4 rounded-lg bg-[#262626] border border-[#383838] relative group">
+                    <pre className="text-sm font-mono text-[#a1a1a1] overflow-x-auto">
                       <code>{codeSnippet}</code>
                     </pre>
                     <button
                       onClick={handleCopyCode}
-                      className="absolute top-2 right-2 p-2 rounded-lg bg-[#404040] hover:bg-[#f59e0b] hover:text-black transition-colors"
+                      className="absolute top-2 right-2 p-2 rounded-lg bg-[#191919] hover:bg-[#737373] text-[#fafafa] transition-colors"
                     >
                       {copied ? <RiCheckLine /> : <RiCodeLine />}
                     </button>
                   </div>
+
+                  {/* Project Details */}
                   <div className="space-y-2">
-                    <p className="text-sm text-[#e5e5e5]/60">
-                      Project Details:
-                    </p>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div className="p-3 rounded-lg bg-[#171717]">
-                        <span className="text-[#e5e5e5]/40">Project ID:</span>
-                        <p className="font-mono">{project?._id}</p>
+                    <p className="text-sm text-[#a1a1a1]">Project Details:</p>
+                    <div className="grid gap-2 text-sm">
+                      <div className="p-3 rounded-lg bg-[#262626] border border-[#383838]">
+                        <span className="text-[#a1a1a1]">Project ID:</span>
+                        <p className="font-mono text-[#fafafa]">
+                          {project?._id}
+                        </p>
                       </div>
-                      <div className="p-3 rounded-lg bg-[#171717]">
-                        <span className="text-[#e5e5e5]/40">Theme:</span>
-                        <p className="font-mono">{project?.theme}</p>
+                      <div className="p-3 rounded-lg bg-[#262626] border border-[#383838]">
+                        <span className="text-[#a1a1a1]">Theme:</span>
+                        <p className="font-mono text-[#fafafa]">
+                          {project?.theme}
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-[#262626] border border-[#383838]">
+                        <span className="text-[#a1a1a1]">Firebase UID:</span>
+                        <p className="font-mono text-[#fafafa]">{user?.uid}</p>
                       </div>
                     </div>
                   </div>

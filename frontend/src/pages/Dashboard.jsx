@@ -121,17 +121,17 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-2">
+        <h1 className="text-3xl font-bold mb-2 text-[#fafafa]">
           yo, {user?.email?.split("@")[0] || "there"} 👋
         </h1>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
         {/* Add Project Card */}
         <motion.button
           onClick={() => setIsModalOpen(true)}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="h-48 rounded-xl border-2 border-dashed border-[#404040] flex items-center justify-center text-[#e5e5e5]/60 hover:border-[#f59e0b] hover:text-[#f59e0b] transition-colors group"
+          className="h-48 rounded-lg border-2 border-dashed border-[#383838] flex items-center justify-center text-[#a1a1a1] hover:border-[#737373] hover:text-[#737373] transition-colors group"
         >
           <div className="text-center">
             <RiAddLine className="text-3xl mx-auto mb-2 group-hover:scale-110 transition-transform" />
@@ -145,29 +145,31 @@ const Dashboard = () => {
             key={project._id}
             whileHover={{ scale: 1.02 }}
             onClick={() => handleCardClick(project._id)}
-            className="relative h-48 rounded-xl bg-[#262626] border border-[#404040] p-6 flex flex-col justify-between cursor-pointer"
+            className="relative h-48 rounded-lg bg-[#191919] border border-[#383838] p-6 flex flex-col justify-between cursor-pointer"
           >
             <motion.button
               whileHover={{ scale: 1.1 }}
               onClick={(e) => handleDeleteProject(project._id, e)}
-              className="absolute top-2 right-2 p-2 bg-[#171717] rounded-lg text-red-500 hover:bg-red-500 hover:text-white transition-colors"
+              className="absolute top-2 right-2 p-2 bg-[#262626] rounded-lg text-red-500 hover:bg-red-500/10 hover:text-red-500 transition-colors"
             >
               <RiDeleteBin6Line size={16} />
             </motion.button>
 
             <div>
-              <h3 className="text-xl font-bold mb-2">{project.name}</h3>
-              <p className="text-[#e5e5e5]/60 text-sm line-clamp-2">
+              <h3 className="text-xl font-bold mb-2 text-[#fafafa]">
+                {project.name}
+              </h3>
+              <p className="text-[#a1a1a1] text-sm line-clamp-2">
                 {project.description}
               </p>
             </div>
 
             <div className="flex justify-between items-center">
               <div className="flex items-center space-x-4">
-                <span className="text-sm text-[#e5e5e5]/40">
+                <span className="text-sm text-[#a1a1a1]">
                   {project.fields.length} fields
                 </span>
-                <span className="text-sm text-[#e5e5e5]/40">
+                <span className="text-sm text-[#a1a1a1]">
                   {projectFeedbacks[project._id]?.length || 0} responses
                 </span>
               </div>
@@ -176,7 +178,7 @@ const Dashboard = () => {
                   e.stopPropagation();
                   handleProjectClick(project);
                 }}
-                className="px-3 py-1 rounded-full text-xs bg-[#f59e0b] text-black hover:bg-[#92400e] hover:text-[#fde68a] transition-colors"
+                className="px-3 py-1 rounded-lg text-xs bg-[#737373] text-[#fafafa] hover:bg-[#525252] transition-colors"
               >
                 Preview
               </button>
