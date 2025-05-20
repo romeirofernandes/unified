@@ -41,6 +41,7 @@ router.get("/", async (req, res) => {
 // Get single project
 router.get("/:id", async (req, res) => {
   try {
+    res.header("Content-Type", "application/json");
     const project = await Project.findById(req.params.id);
     if (!project) {
       return res.status(404).json({ message: "Project not found" });

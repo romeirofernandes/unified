@@ -1,2 +1,5 @@
+import React from "react";
 import "./index.css";
-export { default as UnifiedFeedback } from "./components/UnifiedFeedback";
+import UnifiedFeedback from "./components/UnifiedFeedback";
+
+export { UnifiedFeedback };
