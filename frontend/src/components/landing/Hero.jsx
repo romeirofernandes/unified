@@ -1,7 +1,9 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const Hero = ({ onGetStarted }) => {
+  const navigate = useNavigate();
   return (
     <div className="relative mx-auto my-12 flex max-w-7xl flex-col items-center justify-center">
       <div className="px-4 py-10 md:py-20">
@@ -47,7 +49,10 @@ const Hero = ({ onGetStarted }) => {
           >
             Get Started Free
           </button>
-          <button className="w-60 transform rounded-lg border border-[#383838] bg-[#191919] px-6 py-2 font-medium text-[#fafafa] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#262626]">
+          <button
+            onClick={() => navigate("/docs")}
+            className="w-60 transform rounded-lg border border-[#383838] bg-[#191919] px-6 py-2 font-medium text-[#fafafa] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#262626]"
+          >
             View Documentation
           </button>
         </motion.div>

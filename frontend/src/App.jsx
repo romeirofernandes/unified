@@ -50,6 +50,7 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route path="/docs" element={<Docs />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

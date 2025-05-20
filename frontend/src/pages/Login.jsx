@@ -35,9 +35,11 @@ const Login = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full p-6 rounded-2xl bg-[#262626] border border-[#404040]"
+        className="max-w-md w-full p-6 rounded-lg bg-[#191919] border border-[#383838]"
       >
-        <h2 className="text-3xl font-bold mb-6 text-center">Welcome Back</h2>
+        <h2 className="text-3xl font-bold mb-6 text-center text-[#fafafa]">
+          Welcome Back
+        </h2>
 
         {error && (
           <div className="bg-red-500/10 border border-red-500 text-red-500 rounded-lg p-3 mb-4">
@@ -47,61 +49,77 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block mb-2">Email</label>
+            <label className="block mb-2 text-[#a1a1a1]">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 rounded-lg bg-[#404040] border border-[#404040] focus:border-[#f59e0b] outline-none"
+              className="w-full p-3 rounded-lg bg-[#262626] border border-[#383838] focus:border-[#737373] outline-none text-[#fafafa]"
               required
             />
           </div>
 
           <div>
-            <label className="block mb-2">Password</label>
+            <label className="block mb-2 text-[#a1a1a1]">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 rounded-lg bg-[#404040] border border-[#404040] focus:border-[#f59e0b] outline-none"
+              className="w-full p-3 rounded-lg bg-[#262626] border border-[#383838] focus:border-[#737373] outline-none text-[#fafafa]"
               required
             />
           </div>
 
-          <button
+          <motion.button
             type="submit"
-            className="w-full rounded-lg bg-[#f59e0b] px-4 py-3 text-black hover:bg-[#92400e] hover:text-[#fde68a]"
+            whileHover={{ scale: 1.05 }}
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 17,
+            }}
+            className="w-full transform rounded-lg bg-[#737373] px-6 py-3 font-medium text-[#fafafa] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#525252]"
           >
             Login
-          </button>
+          </motion.button>
         </form>
 
         <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#404040]"></div>
+              <div className="w-full border-t border-[#383838]"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-[#262626] text-[#e5e5e5]/50">
+              <span className="px-2 bg-[#191919] text-[#a1a1a1]">
                 Or continue with
               </span>
             </div>
           </div>
 
-          <button
+          <motion.button
             onClick={handleGoogleLogin}
-            className="mt-4 w-full flex items-center justify-center gap-3 rounded-lg border border-[#404040] px-4 py-3 hover:bg-[#404040]"
+            whileHover={{ scale: 1.05 }}
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 17,
+            }}
+            className="mt-4 w-full flex items-center justify-center gap-3 rounded-lg border border-[#383838] bg-[#262626] px-4 py-3 text-[#fafafa] hover:bg-[#191919]"
           >
             <FcGoogle size={20} />
             <span>Google</span>
-          </button>
+          </motion.button>
         </div>
 
-        <p className="mt-4 text-center text-[#e5e5e5]/50">
+        <p className="mt-4 text-center text-[#a1a1a1]">
           Don't have an account?{" "}
-          <a href="/signup" className="text-[#f59e0b] hover:underline">
+          <motion.a
+            href="/signup"
+            whileHover={{ scale: 1.05 }}
+            className="text-[#737373] hover:text-[#525252]"
+          >
             Sign up
-          </a>
+          </motion.a>
         </p>
       </motion.div>
     </div>
