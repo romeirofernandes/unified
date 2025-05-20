@@ -1,19 +1,22 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RiCloseLine, RiCodeLine, RiCheckLine } from "react-icons/ri";
+import { useAuth } from "../../context/AuthContext";
 
 const ProjectPreview = ({ isOpen, onClose, project }) => {
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [showCode, setShowCode] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const codeSnippet = `import Unified from 'unified-sdk';
+  const codeSnippet = `import { UnifiedFeedback } from 'unified-sdk';
 
 function App() {
   return (
-    <Unified 
-      projectId="${project?._id}" 
-      theme="${project?.theme}" 
+    <UnifiedFeedback 
+      projectId="${project?._id}"
+      theme="${project?.theme}"
+      firebaseUid="${user?.uid}"
     />
   );
 }`;
