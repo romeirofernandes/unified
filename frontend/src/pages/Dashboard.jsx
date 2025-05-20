@@ -140,7 +140,7 @@ const Dashboard = () => {
             key={project._id}
             whileHover={{ scale: 1.02 }}
             onClick={() => handleCardClick(project._id)}
-            className="h-48 rounded-xl bg-[#262626] border border-[#404040] p-6 flex flex-col justify-between cursor-pointer"
+            className="relative h-48 rounded-xl bg-[#262626] border border-[#404040] p-6 flex flex-col justify-between cursor-pointer"
           >
             <motion.button
               whileHover={{ scale: 1.1 }}
