@@ -5,13 +5,16 @@ import ProjectPreview from "../components/dashboard/ProjectPreview";
 import { motion } from "framer-motion";
 import { RiAddLine, RiDeleteBin6Line } from "react-icons/ri";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [projectFeedbacks, setProjectFeedbacks] = useState({});
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleCreateProject = async (projectData) => {
     try {
@@ -36,6 +39,29 @@ const Dashboard = () => {
     }
   };
 
+  // Add this function to fetch feedbacks for each project
+  const fetchProjectFeedbacks = async (projectId) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/feedback/project/${projectId}`,
+        {
+          headers: {
+            "firebase-uid": user.uid,
+          },
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setProjectFeedbacks((prev) => ({
+          ...prev,
+          [projectId]: data,
+        }));
+      }
+    } catch (error) {
+      console.error("Failed to fetch feedbacks:", error);
+    }
+  };
+
   useEffect(() => {
     const fetchProjects = async () => {
       try {
@@ -50,6 +76,8 @@ const Dashboard = () => {
         if (response.ok) {
           const data = await response.json();
           setProjects(data);
+          // Fetch feedbacks for each project
+          data.forEach((project) => fetchProjectFeedbacks(project._id));
         }
       } catch (error) {
         console.error("Failed to fetch projects:", error);
@@ -86,6 +114,10 @@ const Dashboard = () => {
     }
   };
 
+  const handleCardClick = (projectId) => {
+    navigate(`/project/${projectId}/feedbacks`);
+  };
+
   return (
     <DashboardLayout>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -107,8 +139,8 @@ const Dashboard = () => {
           <motion.div
             key={project._id}
             whileHover={{ scale: 1.02 }}
-            onClick={() => handleProjectClick(project)}
-            className="h-48 rounded-xl bg-[#262626] border border-[#404040] p-6 flex flex-col justify-between cursor-pointer group relative"
+            onClick={() => handleCardClick(project._id)}
+            className="h-48 rounded-xl bg-[#262626] border border-[#404040] p-6 flex flex-col justify-between cursor-pointer"
           >
             <motion.button
               whileHover={{ scale: 1.1 }}
@@ -117,25 +149,32 @@ const Dashboard = () => {
             >
               <RiDeleteBin6Line size={16} />
             </motion.button>
+
             <div>
               <h3 className="text-xl font-bold mb-2">{project.name}</h3>
               <p className="text-[#e5e5e5]/60 text-sm line-clamp-2">
                 {project.description}
               </p>
             </div>
+
             <div className="flex justify-between items-center">
-              <span className="text-sm text-[#e5e5e5]/40">
-                {project.fields.length} fields
-              </span>
-              <span
-                className={`px-2 py-1 rounded-full text-xs ${
-                  project.theme === "dark"
-                    ? "bg-[#404040] text-[#e5e5e5]"
-                    : "bg-[#f59e0b] text-black"
-                }`}
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-[#e5e5e5]/40">
+                  {project.fields.length} fields
+                </span>
+                <span className="text-sm text-[#e5e5e5]/40">
+                  {projectFeedbacks[project._id]?.length || 0} responses
+                </span>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleProjectClick(project);
+                }}
+                className="px-3 py-1 rounded-full text-xs bg-[#f59e0b] text-black hover:bg-[#92400e] hover:text-[#fde68a] transition-colors"
               >
-                {project.theme}
-              </span>
+                Preview
+              </button>
             </div>
           </motion.div>
         ))}

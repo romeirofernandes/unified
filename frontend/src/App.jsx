@@ -6,11 +6,12 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
+import Feedbacks from "./pages/Feedbacks";
 
 const App = () => {
   return (
-    <AuthProvider>
       <BrowserRouter>
+          <AuthProvider>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
@@ -23,9 +24,17 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/project/:projectId/feedbacks"
+            element={
+              <ProtectedRoute>
+                <Feedbacks />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
+        </AuthProvider>
       </BrowserRouter>
-    </AuthProvider>
   );
 };
 

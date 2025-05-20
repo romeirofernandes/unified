@@ -5,7 +5,6 @@ import { useAuth } from "../../context/AuthContext";
 
 const ProjectPreview = ({ isOpen, onClose, project }) => {
   const { user } = useAuth();
-  const [currentStep, setCurrentStep] = useState(0);
   const [showCode, setShowCode] = useState(false);
   const [copied, setCopied] = useState(false);
 
