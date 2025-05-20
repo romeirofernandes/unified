@@ -7,11 +7,12 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Feedbacks from "./pages/Feedbacks";
+import Settings from "./pages/Settings";
 
 const App = () => {
   return (
-      <BrowserRouter>
-          <AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
@@ -32,9 +33,17 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/dashboard/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
-        </AuthProvider>
-      </BrowserRouter>
+      </AuthProvider>
+    </BrowserRouter>
   );
 };
 

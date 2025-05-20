@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
+const Project = require("../models/Project");
+const Feedback = require("../models/Feedback");
 
 // Register endpoint
 router.post("/register", async (req, res) => {
@@ -66,6 +68,34 @@ router.post("/login", async (req, res) => {
     });
   } catch (error) {
     console.error("Login error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+// Delete user endpoint
+router.delete("/user", async (req, res) => {
+  try {
+    const firebaseUid = req.headers["firebase-uid"];
+
+    // Find and delete user's projects
+    const user = await User.findOne({ firebaseUid });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Delete all user's projects and associated feedback
+    const projects = await Project.find({ userId: user._id });
+    for (const project of projects) {
+      await Feedback.deleteMany({ projectId: project._id });
+      await Project.findByIdAndDelete(project._id);
+    }
+
+    // Delete the user
+    await User.findByIdAndDelete(user._id);
+
+    res.json({ message: "Account deleted successfully" });
+  } catch (error) {
+    console.error("Delete account error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 });
