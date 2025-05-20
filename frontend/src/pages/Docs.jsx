@@ -1,127 +1,132 @@
 import React from "react";
 import { motion } from "framer-motion";
-import DashboardLayout from "../components/dashboard/DashboardLayout";
-import { RiCodeLine, RiPaletteLine, RiQuestionLine } from "react-icons/ri";
+import { RiArrowRightLine } from "react-icons/ri";
 
-const Docs = () => {
-  return (
-    <DashboardLayout>
-      <div className="max-w-3xl space-y-12">
-        <div>
-          <h2 className="text-2xl font-bold mb-2">Documentation</h2>
-          <p className="text-[#e5e5e5]/60">
-            Learn how to integrate and customize Unified in your application.
-          </p>
-        </div>
-
-        {/* Quick Start */}
-        <section className="space-y-6">
-          <h3 className="text-xl font-bold flex items-center gap-2">
-            <RiCodeLine className="text-[#f59e0b]" />
-            Quick Start
-          </h3>
-          <div className="space-y-4">
-            <div className="p-6 rounded-xl bg-[#262626] border border-[#404040] space-y-4">
-              <h4 className="font-medium">1. Installation</h4>
-              <pre className="bg-[#171717] p-4 rounded-lg overflow-x-auto">
-                <code>npm install unified-sdk</code>
-              </pre>
-            </div>
-
-            <div className="p-6 rounded-xl bg-[#262626] border border-[#404040] space-y-4">
-              <h4 className="font-medium">2. Basic Usage</h4>
-              <pre className="bg-[#171717] p-4 rounded-lg overflow-x-auto">
-                <code>{`import { UnifiedFeedback } from 'unified-sdk';
+const steps = [
+  {
+    title: "Create a Project",
+    description: "Start by creating a new project in your dashboard.",
+    steps: [
+      "Login to your dashboard",
+      "Click 'Create New Project' button",
+      "Add your project title and description",
+      "Choose a theme (light/dark)",
+      "Create form fields (email is required by default)",
+    ],
+    image: "/create-project.png",
+  },
+  {
+    title: "Install SDK",
+    description: "Add the Unified SDK to your project.",
+    steps: [
+      "Open your terminal",
+      "Navigate to your project",
+      "Run the install command:",
+    ],
+    code: "npm install unified-sdk",
+    image: "/install-sdk.png",
+  },
+  {
+    title: "Add Component",
+    description:
+      "Copy the integration code from project preview and add it to your app.",
+    code: `import { UnifiedFeedback } from 'unified-sdk';
 
 function App() {
   return (
     <UnifiedFeedback 
-      projectId="your-project-id"
+      projectId={import.meta.env.VITE_PROJECT_ID}
+      firebaseUid={import.meta.env.VITE_FIREBASE_UID}
       theme="light"
-      firebaseUid="your-firebase-uid"
     />
   );
-}`}</code>
-              </pre>
-            </div>
-          </div>
-        </section>
+}
+  
+export default App;`,
+    image: "/integration-code.png",
+  },
+  {
+    title: "View Feedback",
+    description: "Check responses and generate AI summaries.",
+    steps: [
+      "Go to your project in the dashboard",
+      "Click 'View Responses' to see all feedback",
+      "Use 'Generate Summary' for AI analysis",
+    ],
+    image: "/view-feedback.png",
+  },
+];
 
-        {/* Configuration */}
-        <section className="space-y-6">
-          <h3 className="text-xl font-bold flex items-center gap-2">
-            <RiPaletteLine className="text-[#f59e0b]" />
-            Configuration
-          </h3>
-          <div className="p-6 rounded-xl bg-[#262626] border border-[#404040] space-y-6">
-            <div className="space-y-2">
-              <h4 className="font-medium">Props</h4>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left border-b border-[#404040]">
-                    <th className="pb-2 text-[#e5e5e5]/60">Prop</th>
-                    <th className="pb-2 text-[#e5e5e5]/60">Type</th>
-                    <th className="pb-2 text-[#e5e5e5]/60">Description</th>
-                  </tr>
-                </thead>
-                <tbody className="space-y-2">
-                  <tr>
-                    <td className="py-3 text-[#f59e0b]">projectId</td>
-                    <td>string</td>
-                    <td>Your project's unique identifier</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 text-[#f59e0b]">theme</td>
-                    <td>string</td>
-                    <td>"light" or "dark" theme option</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 text-[#f59e0b]">firebaseUid</td>
-                    <td>string</td>
-                    <td>Your Firebase user ID for authentication</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+const Docs = () => {
+  return (
+    <div className="min-h-screen bg-[#171717] text-[#fafafa]">
+      <div className="max-w-4xl mx-auto py-12 px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-12"
+        >
+          {/* Header */}
+          <div className="text-center space-y-4 pb-8 border-b border-[#383838]">
+            <h1 className="text-4xl font-bold">Documentation</h1>
+            <p className="text-[#a1a1a1] text-lg">
+              Follow these simple steps to integrate Unified in your project
+            </p>
           </div>
-        </section>
 
-        {/* FAQ */}
-        <section className="space-y-6">
-          <h3 className="text-xl font-bold flex items-center gap-2">
-            <RiQuestionLine className="text-[#f59e0b]" />
-            FAQ
-          </h3>
-          <div className="space-y-4">
-            {[
-              {
-                q: "How do I get my Project ID?",
-                a: "You can find your Project ID in the project preview modal or in the project's feedback page URL.",
-              },
-              {
-                q: "How do I customize the form fields?",
-                a: "Form fields can be customized when creating or editing a project through the dashboard interface.",
-              },
-              {
-                q: "Can I change themes dynamically?",
-                a: "Yes, the theme prop can be updated dynamically to switch between light and dark modes.",
-              },
-            ].map((item, index) => (
+          {/* Steps */}
+          <div className="space-y-16">
+            {steps.map((step, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="p-6 rounded-xl bg-[#262626] border border-[#404040] space-y-2"
+                className="grid grid-cols-1 md:grid-cols-2 gap-8"
               >
-                <h4 className="font-medium">{item.q}</h4>
-                <p className="text-[#e5e5e5]/60">{item.a}</p>
+                {/* Content */}
+                <div className="space-y-4">
+                  <h2 className="text-2xl font-bold">
+                    {index + 1}. {step.title}
+                  </h2>
+                  <p className="text-[#a1a1a1]">{step.description}</p>
+
+                  {step.steps && (
+                    <ul className="space-y-2">
+                      {step.steps.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <RiArrowRightLine className="mt-1 flex-shrink-0 text-[#737373]" />
+                          <span className="text-[#a1a1a1]">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {step.code && (
+                    <pre className="bg-[#262626] p-4 rounded-lg overflow-x-auto border border-[#383838]">
+                      <code className="text-[#a1a1a1]">{step.code}</code>
+                    </pre>
+                  )}
+                </div>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.2 }}
+                  className="bg-[#191919] rounded-lg flex flex-col justify-center items-center border border-[#383838] overflow-hidden"
+                >
+                  <img
+                    src={step.image}
+                    alt={step.title}
+                    className="w-auto h-auto object-center"
+                    loading="lazy"
+                  />
+                </motion.div>
               </motion.div>
             ))}
           </div>
-        </section>
+        </motion.div>
       </div>
-    </DashboardLayout>
+    </div>
   );
 };
 
