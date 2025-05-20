@@ -13,6 +13,8 @@ h6 {
 
 body {
   font-family: "Inter", sans-serif;
+  background-color: #171717;
+  min-height: 100vh;
 }
 
 button {

@@ -15,15 +15,17 @@ const Landing = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#171717] text-[#e5e5e5]">
+    <div className="relative min-h-screen bg-[#171717] text-[#e5e5e5]">
       <Navbar onGetStarted={() => handleNavigation("/signup")} />
 
-      <main className="container mx-auto max-w-4xl px-6">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
         <Hero onGetStarted={() => handleNavigation("/signup")} />
-        <Features />
-        <Testimonials />
-        <CTA onGetStarted={() => handleNavigation("/signup")} />
-      </main>
+        <div className="space-y-32">
+          <Features />
+          <Testimonials />
+          <CTA onGetStarted={() => handleNavigation("/signup")} />
+        </div>
+      </div>
 
       <Footer />
     </div>

@@ -21,29 +21,40 @@ const features = [
 
 const Features = () => {
   return (
-    <motion.div
+    <motion.section
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
       viewport={{ once: true }}
-      className="mt-32"
+      className="relative mt-32"
       id="features"
     >
-      <h2 className="text-3xl font-bold text-center mb-12">
-        Powerful <span className="text-[#f59e0b]">Features</span>
+      <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-12 text-[#fafafa]">
+        Powerful <span className="text-[#737373]">Features</span>
       </h2>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {features.map((feature, index) => (
-          <div
+          <motion.div
             key={index}
-            className="p-6 rounded-xl bg-[#262626] border border-[#404040]"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.3,
+              delay: index * 0.1,
+              ease: "easeInOut",
+            }}
+            viewport={{ once: true }}
+            className="p-6 rounded-lg bg-[#191919] border border-[#383838]"
           >
-            <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-            <p className="text-[#e5e5e5]/70">{feature.description}</p>
-          </div>
+            <h3 className="text-xl font-bold mb-3 text-[#fafafa]">
+              {feature.title}
+            </h3>
+            <p className="text-[#a1a1a1]">{feature.description}</p>
+          </motion.div>
         ))}
       </div>
-    </motion.div>
+    </motion.section>
   );
 };
 

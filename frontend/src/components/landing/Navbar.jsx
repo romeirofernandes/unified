@@ -18,6 +18,13 @@ const Navbar = ({ onGetStarted }) => {
     }
   });
 
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <motion.div
       ref={ref}
@@ -26,10 +33,10 @@ const Navbar = ({ onGetStarted }) => {
       <motion.div
         animate={{
           backdropFilter: visible ? "blur(10px)" : "none",
-          border: visible ? "1px solid rgba(64, 64, 64, 0.3)" : "none",
+          border: visible ? "1px solid rgba(56, 56, 56, 0.3)" : "none",
           width: visible ? "40%" : "100%",
           y: visible ? 20 : 0,
-          backgroundColor: visible ? "rgba(23, 23, 23, 0.8)" : "transparent",
+          backgroundColor: visible ? "rgba(25, 25, 25, 0.8)" : "transparent",
         }}
         transition={{
           type: "spring",
@@ -39,7 +46,7 @@ const Navbar = ({ onGetStarted }) => {
         style={{
           minWidth: visible ? "800px" : "100%",
         }}
-        className="relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between rounded-full bg-transparent px-6 py-4 md:flex"
+        className="relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between rounded-lg bg-transparent px-6 py-4 md:flex"
       >
         <div className="flex w-full items-center justify-between">
           <motion.h1
@@ -51,7 +58,7 @@ const Navbar = ({ onGetStarted }) => {
               stiffness: 260,
               damping: 20,
             }}
-            className="text-2xl font-bold text-[#f59e0b]"
+            className="text-2xl font-bold text-[#fafafa]"
           >
             Unified
           </motion.h1>
@@ -62,11 +69,11 @@ const Navbar = ({ onGetStarted }) => {
             }}
             className="absolute left-1/2 flex -translate-x-1/2 items-center space-x-6"
           >
-            {["Features", "Testimonials", "Pricing"].map((item, idx) => (
-              <motion.a
+            {["Features", "Testimonials"].map((item, idx) => (
+              <motion.button
                 key={idx}
-                href={`#${item.toLowerCase()}`}
-                className="text-[#e5e5e5] hover:text-[#f59e0b] relative px-4 py-2"
+                onClick={() => scrollToSection(item.toLowerCase())}
+                className="text-[#a1a1a1] hover:text-[#fafafa] relative px-4 py-2"
                 whileHover={{ scale: 1.05 }}
                 transition={{
                   type: "spring",
@@ -75,7 +82,7 @@ const Navbar = ({ onGetStarted }) => {
                 }}
               >
                 {item}
-              </motion.a>
+              </motion.button>
             ))}
           </motion.nav>
 
@@ -87,7 +94,7 @@ const Navbar = ({ onGetStarted }) => {
               damping: 17,
             }}
             onClick={onGetStarted}
-            className="rounded-full bg-[#f59e0b] px-4 py-2 text-black hover:bg-[#92400e] hover:text-[#fde68a]"
+            className="transform rounded-lg bg-[#737373] px-6 py-2 font-medium text-[#fafafa] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#525252]"
           >
             Get Started
           </motion.button>
@@ -95,7 +102,7 @@ const Navbar = ({ onGetStarted }) => {
       </motion.div>
 
       {/* Mobile menu button */}
-      <button className="md:hidden fixed right-4 top-4 text-[#e5e5e5] text-2xl">
+      <button className="md:hidden fixed right-4 top-4 text-[#fafafa] text-2xl">
         <RiMenu4Line />
       </button>
     </motion.div>

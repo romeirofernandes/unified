@@ -44,7 +44,9 @@ const DashboardLayout = ({ children }) => {
         animate={{ x: 0 }}
         className="fixed left-0 top-0 h-full w-64 bg-[#262626] border-r border-[#404040] p-6"
       >
-        <h1 className="text-2xl font-bold text-[#f59e0b] mb-8">Unified</h1>
+        <Link to="/" className="flex items-center">
+          <h1 className="text-2xl font-bold text-[#f59e0b] mb-8">Unified</h1>
+        </Link>
 
         <nav className="space-y-2">
           {navItems.map((item) => {
