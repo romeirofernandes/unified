@@ -7,11 +7,25 @@ import {
   RiLogoutBoxLine,
   RiBookletLine,
 } from "react-icons/ri";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 
 const DashboardLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isActivePath = (path) => {
+    if (path === "/dashboard") {
+      return location.pathname === path;
+    }
+    return location.pathname.startsWith(path);
+  };
+
+  const navItems = [
+    { path: "/dashboard", label: "Projects", icon: RiDashboardLine },
+    { path: "/dashboard/docs", label: "Documentation", icon: RiBookletLine },
+    { path: "/dashboard/settings", label: "Settings", icon: RiSettingsLine },
+  ];
 
   const handleLogout = async () => {
     try {
@@ -33,27 +47,26 @@ const DashboardLayout = ({ children }) => {
         <h1 className="text-2xl font-bold text-[#f59e0b] mb-8">Unified</h1>
 
         <nav className="space-y-2">
-          <a
-            href="/dashboard"
-            className="flex items-center space-x-2 p-3 rounded-lg hover:bg-[#404040] transition-colors"
-          >
-            <RiDashboardLine />
-            <span>Projects</span>
-          </a>
-          <a
-            href="/dashboard/docs"
-            className="flex items-center space-x-2 p-3 rounded-lg hover:bg-[#404040] transition-colors"
-          >
-            <RiBookletLine />
-            <span>Documentation</span>
-          </a>
-          <a
-            href="/dashboard/settings"
-            className="flex items-center space-x-2 p-3 rounded-lg hover:bg-[#404040] transition-colors"
-          >
-            <RiSettingsLine />
-            <span>Settings</span>
-          </a>
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`
+                  flex items-center space-x-2 p-3 rounded-lg transition-colors
+                  ${
+                    isActivePath(item.path)
+                      ? "bg-[#404040] text-[#f59e0b]"
+                      : "hover:bg-[#404040] text-[#e5e5e5]"
+                  }
+                `}
+              >
+                <Icon />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
           <button
             onClick={handleLogout}
             className="flex items-center space-x-2 p-3 rounded-lg hover:bg-[#404040] transition-colors text-red-500 w-full text-left"
