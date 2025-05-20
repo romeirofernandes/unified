@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useCallback, memo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useTransform,
+} from "framer-motion";
 import { createPortal } from "react-dom";
 import { RiChat3Line } from "react-icons/ri";
 
@@ -120,7 +125,7 @@ const FeedbackModal = memo(
               <button
                 type="button"
                 onClick={onClose}
-                className={`px-4 py-2 rounded-lg ${
+                className={`cursor-pointer px-4 py-2 rounded-lg ${
                   theme === "dark" ? "hover:bg-[#404040]" : "hover:bg-gray-100"
                 } transition-colors`}
               >
@@ -128,7 +133,7 @@ const FeedbackModal = memo(
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 rounded-lg bg-[#f59e0b] text-black hover:bg-[#92400e] hover:text-[#fde68a] transition-colors"
+                className="cursor-pointer px-4 py-2 rounded-lg bg-[#f59e0b] text-black hover:bg-[#92400e] hover:text-[#fde68a] transition-colors"
               >
                 Submit
               </button>
@@ -141,12 +146,65 @@ const FeedbackModal = memo(
   }
 );
 
+const Toast = ({ onComplete }) => {
+  return (
+    <motion.div
+      initial={{ y: 100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: -100, opacity: 0 }}
+      onAnimationComplete={onComplete}
+      className={`
+        fixed bottom-6 right-6
+        bg-green-500 text-white
+        px-6 py-3 rounded-lg
+        shadow-lg
+        flex items-center space-x-2
+      `}
+    >
+      <span>✓</span>
+      <span>Thanks for your feedback!</span>
+    </motion.div>
+  );
+};
+
+const DeleteZone = ({ isVisible, isDragging }) => {
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 100, opacity: 0 }}
+          className={`
+            fixed bottom-0 left-0 right-0
+            h-24 bg-red-500/20
+            backdrop-blur-sm
+            flex items-center justify-center
+            border-t-2 border-red-500
+            ${isDragging ? "bg-red-500/40" : ""}
+          `}
+        >
+          <p className="text-red-500 font-medium">
+            Drop here to remove feedback button
+          </p>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 const UnifiedFeedback = memo(({ projectId, theme = "light", firebaseUid }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState({});
+  const [showToast, setShowToast] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -204,12 +262,23 @@ const UnifiedFeedback = memo(({ projectId, theme = "light", firebaseUid }) => {
           }),
         });
         setIsOpen(false);
+        setShowToast(true);
+        // Store in localStorage to prevent reappearing
+        localStorage.setItem(`unified-feedback-${projectId}`, "submitted");
       } catch (error) {
         console.error("Failed to submit feedback:", error);
       }
     },
     [answers, projectId, firebaseUid]
   );
+
+  // Check if feedback was already submitted
+  useEffect(() => {
+    const wasSubmitted = localStorage.getItem(`unified-feedback-${projectId}`);
+    if (wasSubmitted) {
+      setIsVisible(false);
+    }
+  }, [projectId]);
 
   const handleClose = useCallback(() => setIsOpen(false), []);
 
@@ -249,7 +318,7 @@ const UnifiedFeedback = memo(({ projectId, theme = "light", firebaseUid }) => {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className={`px-4 py-2 rounded-lg ${
+                className={`cursor-pointer px-4 py-2 rounded-lg ${
                   theme === "dark" ? "hover:bg-[#404040]" : "hover:bg-gray-100"
                 } transition-colors`}
               >
@@ -257,7 +326,7 @@ const UnifiedFeedback = memo(({ projectId, theme = "light", firebaseUid }) => {
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 rounded-lg bg-[#f59e0b] text-black hover:bg-[#92400e] hover:text-[#fde68a] transition-colors"
+                className="cursor-pointer px-4 py-2 rounded-lg bg-[#f59e0b] text-black hover:bg-[#92400e] hover:text-[#fde68a] transition-colors"
               >
                 Submit
               </button>
@@ -269,40 +338,67 @@ const UnifiedFeedback = memo(({ projectId, theme = "light", firebaseUid }) => {
     );
   };
 
-  if (loading || error || !formData) return null;
+  if (loading || error || !formData || !isVisible) return null;
 
   return (
     <>
-      <motion.button
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        whileHover={{
-          scale: 1.05,
-          boxShadow: "0 20px 25px -5px rgba(0,0,0,0.2)",
-        }}
-        transition={{ type: "spring", stiffness: 400, damping: 17 }}
-        onClick={() => setIsOpen(true)}
-        className={`
-          fixed bottom-6 right-6 
-          rounded-full 
-          w-13 h-13
-          flex items-center justify-center
-          bg-white
-          shadow-[0_8px_30px_rgb(0,0,0,0.12)]
-          border-[1.5px] border-black/5
-          hover:border-black/10
-          active:scale-95
-          transition-all
-          ${theme === "dark" ? "bg-opacity-90" : ""}
-        `}
-        style={{
-          background: "linear-gradient(135deg, #FF8C37 0%, #FF4C17 100%)",
-          boxShadow:
-            "0 8px 32px rgba(252, 88, 23, 0.24), inset 0 2px 4px rgba(255, 255, 255, 0.24)",
-        }}
-      >
-        <RiChat3Line size={25} className="text-white drop-shadow-sm" />
-      </motion.button>
+      <AnimatePresence>
+        {!showToast && (
+          <motion.div
+            drag
+            dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+            dragElastic={0.1}
+            dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
+            style={{ x, y }}
+            onDragStart={() => setIsDragging(true)}
+            onDragEnd={(event, info) => {
+              setIsDragging(false);
+              // Check if dropped in delete zone
+              if (info.point.y > window.innerHeight - 96) {
+                setIsVisible(false);
+                localStorage.setItem(
+                  `unified-feedback-${projectId}`,
+                  "removed"
+                );
+              }
+            }}
+            className="fixed bottom-6 right-6 z-50"
+          >
+            <motion.button
+              whileHover={{
+                scale: 1.05,
+                boxShadow: "0 20px 25px -5px rgba(0,0,0,0.2)",
+              }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              onClick={() => !isDragging && setIsOpen(true)}
+              className={`
+                rounded-full 
+                w-14 h-14
+                flex items-center justify-center
+                bg-white
+                shadow-[0_8px_30px_rgb(0,0,0,0.12)]
+                border-[1.5px] border-black/5
+                hover:border-black/10
+                cursor-pointer
+                ${theme === "dark" ? "bg-opacity-90" : ""}
+              `}
+              style={{
+                background: "linear-gradient(135deg, #FF8C37 0%, #FF4C17 100%)",
+                boxShadow:
+                  "0 8px 32px rgba(252, 88, 23, 0.24), inset 0 2px 4px rgba(255, 255, 255, 0.24)",
+              }}
+            >
+              <RiChat3Line size={26} className="text-white drop-shadow-sm" />
+            </motion.button>
+          </motion.div>
+        )}
+
+        {showToast && <Toast onComplete={() => setIsVisible(false)} />}
+      </AnimatePresence>
+
+      <DeleteZone isVisible={isDragging} isDragging={isDragging} />
+
       <AnimatePresence>
         {isOpen && (
           <FeedbackModal
