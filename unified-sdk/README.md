@@ -44,7 +44,7 @@ function App() {
 
 ## Usage
 
-1. Create a project in your [Unified Dashboard](https://unified.vercel.app/dashboard)
+1. Create a project in your [Unified Dashboard](https://unified-chi.vercel.app/dashboard)
 2. Set up your feedback form with custom fields
 3. Copy your project ID and Firebase UID
 4. Add the component to your React app
@@ -87,4 +87,8 @@ function App() {
 ## Support
 
 For issues and feature requests, please visit our [GitHub repository](https://github.com/romeirofernandes/unified).
+
+#Learn More
+
+For more information on how to use the Unified SDK, check out our [documentation](https://unified-chi.vercel.app/docs).
 
