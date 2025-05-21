@@ -1,7 +1,7 @@
 {
   "name": "unified-sdk",
   "private": false,
-  "version": "1.0.1",
+  "version": "2.0.0",
   "type": "module",
   "main": "dist/unified-sdk.umd.js",
   "module": "dist/unified-sdk.es.js",
@@ -40,5 +40,17 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
     "vite": "^6.3.5"
-  }
+  },
+  "description": "A unified feedback SDK for React applications",
+  "author": "Romeiro Fernandes",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/romeirofernandes/unified"
+  },
+  "keywords": [
+    "react",
+    "feedback",
+    "sdk",
+    "unified"
+  ]
 }
