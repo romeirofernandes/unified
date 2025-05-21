@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, memo } from "react";
+import React, { useState, useEffect, useCallback, memo} from "react";
 import {
   motion,
   AnimatePresence,
@@ -147,12 +147,22 @@ const FeedbackModal = memo(
 );
 
 const Toast = ({ onComplete }) => {
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+      onComplete();
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
   return (
     <motion.div
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: -100, opacity: 0 }}
-      onAnimationComplete={onComplete}
+      onAnimationComplete={() => !isVisible && onComplete()}
       className={`
         fixed bottom-6 right-6
         bg-green-500 text-white
