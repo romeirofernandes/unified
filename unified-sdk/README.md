@@ -68,8 +68,8 @@ function App() {
     <div>
       <h1>My Awesome App</h1>
       <UnifiedFeedback
-        projectId={process.env.UNIFIED_PROJECT_ID}
-        firebaseUid={process.env.FIREBASE_UID}
+        projectId={import.meta.env.UNIFIED_PROJECT_ID}
+        firebaseUid={import.meta.env.FIREBASE_UID}
         theme="dark"
       />
     </div>
@@ -88,7 +88,7 @@ function App() {
 
 For issues and feature requests, please visit our [GitHub repository](https://github.com/romeirofernandes/unified).
 
-#Learn More
+## Learn More
 
 For more information on how to use the Unified SDK, check out our [documentation](https://unified-chi.vercel.app/docs).
 
