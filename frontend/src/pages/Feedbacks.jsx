@@ -194,7 +194,7 @@ ${JSON.stringify(formattedData.responses, null, 2)}`;
             {/* Header */}
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium flex items-center gap-2 text-[#fafafa]">
-                <span className="text-[#737373]">AI</span> Analysis
+                AI Analysis
               </h3>
               <span className="text-xs text-[#a1a1a1]">
                 Generated {new Date(summary.timestamp).toLocaleString()}
@@ -219,20 +219,36 @@ ${JSON.stringify(formattedData.responses, null, 2)}`;
                 Key Features to Improve/Add
               </h4>
               <div className="grid gap-3">
-                {summary.features.map((feature, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="flex items-start gap-3 p-3 rounded-lg bg-[#262626] border border-[#383838] hover:border-[#525252] transition-colors group"
-                  >
-                    <div className="flex-shrink-0 w-1.5 h-1.5 mt-2 rounded-full bg-[#737373]" />
-                    <p className="text-sm text-[#a1a1a1] leading-relaxed group-hover:text-[#fafafa]">
-                      {feature.replace("• ", "")}
-                    </p>
-                  </motion.div>
-                ))}
+                {summary.features.map((feature, index) => {
+                  const featureText = feature.replace("• ", "");
+                  const boldPart = featureText.match(/\*\*(.*?)\*\*/)?.[1];
+                  const remainingText = featureText.replace(
+                    /\*\*(.*?)\*\*/,
+                    ""
+                  );
+
+                  return (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="flex items-start gap-3 p-3 rounded-lg bg-[#262626] border border-[#383838] hover:border-[#525252] transition-colors group"
+                    >
+                      <div className="flex-shrink-0 w-1.5 h-1.5 mt-2 rounded-full bg-[#737373]" />
+                      <p className="text-sm text-[#a1a1a1] leading-relaxed group-hover:text-[#fafafa]">
+                        {boldPart ? (
+                          <>
+                            <b>{boldPart}</b>
+                            {remainingText}
+                          </>
+                        ) : (
+                          featureText
+                        )}
+                      </p>
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
           </motion.div>
