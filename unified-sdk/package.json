@@ -1,7 +1,7 @@
 {
   "name": "unified-sdk",
   "private": false,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "main": "dist/unified-sdk.umd.js",
   "module": "dist/unified-sdk.es.js",
