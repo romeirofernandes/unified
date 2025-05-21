@@ -1,10 +1,5 @@
 import React, { useState, useEffect, useCallback, memo } from "react";
-import {
-  motion,
-  AnimatePresence,
-  useMotionValue,
-  useTransform,
-} from "framer-motion";
+import { motion, AnimatePresence, useMotionValue } from "framer-motion";
 import { createPortal } from "react-dom";
 import { RiChat3Line } from "react-icons/ri";
 
@@ -227,32 +222,39 @@ const FeedbackModal = memo(
   }
 );
 
-const Toast = ({ onComplete }) => {
-  const [isVisible, setIsVisible] = useState(true);
-
+const Toast = ({ onComplete, theme }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsVisible(false);
       onComplete();
-    }, 2000);
+    }, 3000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [onComplete]);
+
   return (
     <motion.div
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: -100, opacity: 0 }}
-      onAnimationComplete={() => !isVisible && onComplete()}
+      transition={{
+        duration: 0.3,
+        ease: "easeInOut",
+      }}
       className={`
         fixed bottom-6 right-6
-        bg-green-500 text-white
+        backdrop-blur-sm
         px-6 py-3 rounded-lg
         shadow-lg
-        flex items-center space-x-2
+        flex items-center space-x-3
+        border
+        ${
+          theme === "dark"
+            ? "bg-[#333333]/90 text-white border-[#444444]"
+            : "bg-white/90 text-gray-700 border-gray-200"
+        }
       `}
     >
-      <span>✓</span>
+      <span className="text-emerald-500">✓</span>
       <span>Thanks for your feedback!</span>
     </motion.div>
   );
@@ -329,7 +331,6 @@ const UnifiedFeedback = memo(({ projectId, theme = "light", firebaseUid }) => {
     }
   }, [projectId, firebaseUid]);
 
-  // Memoize the input handler to prevent re-renders
   const handleInputChange = useCallback((fieldId, value) => {
     setAnswers((prev) => ({
       ...prev,
@@ -354,7 +355,6 @@ const UnifiedFeedback = memo(({ projectId, theme = "light", firebaseUid }) => {
         });
         setIsOpen(false);
         setShowToast(true);
-        // Store in localStorage to prevent reappearing
         localStorage.setItem(`unified-feedback-${projectId}`, "submitted");
       } catch (error) {
         console.error("Failed to submit feedback:", error);
@@ -363,7 +363,6 @@ const UnifiedFeedback = memo(({ projectId, theme = "light", firebaseUid }) => {
     [answers, projectId, firebaseUid]
   );
 
-  // Check if feedback was already submitted
   useEffect(() => {
     const wasSubmitted = localStorage.getItem(`unified-feedback-${projectId}`);
     if (wasSubmitted) {
@@ -373,68 +372,12 @@ const UnifiedFeedback = memo(({ projectId, theme = "light", firebaseUid }) => {
 
   const handleClose = useCallback(() => setIsOpen(false), []);
 
-  const Modal = () => {
-    if (!isOpen) return null;
-
-    return createPortal(
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-          onClick={() => setIsOpen(false)}
-        />
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          className={`relative w-full max-w-md rounded-2xl p-6 ${
-            theme === "dark"
-              ? "bg-[#262626] text-[#e5e5e5]"
-              : "bg-white text-[#171717]"
-          }`}
-        >
-          <h2 className="text-2xl font-bold mb-6">{formData?.name}</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {formData?.fields.map((field, index) => (
-              <div key={index} className="space-y-2">
-                <label className="block">
-                  {field.label}
-                  {field.required && (
-                    <span className="text-red-500 ml-1">*</span>
-                  )}
-                </label>
-                {renderField(field)}
-              </div>
-            ))}
-            <div className="flex justify-end space-x-4 pt-4">
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className={`cursor-pointer px-4 py-2 rounded-lg ${
-                  theme === "dark" ? "hover:bg-[#404040]" : "hover:bg-gray-100"
-                } transition-colors`}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="cursor-pointer px-4 py-2 rounded-lg bg-[#f59e0b] text-black hover:bg-[#92400e] hover:text-[#fde68a] transition-colors"
-              >
-                Submit
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      </div>,
-      document.body
-    );
-  };
-
   if (loading || error || !formData || !isVisible) return null;
 
   return (
     <>
       <AnimatePresence>
-        {!showToast && (
+        {!showToast && isVisible && (
           <motion.div
             drag
             dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
@@ -444,7 +387,6 @@ const UnifiedFeedback = memo(({ projectId, theme = "light", firebaseUid }) => {
             onDragStart={() => setIsDragging(true)}
             onDragEnd={(event, info) => {
               setIsDragging(false);
-              // Check if dropped in delete zone
               if (info.point.y > window.innerHeight - 96) {
                 setIsVisible(false);
                 localStorage.setItem(
@@ -458,7 +400,7 @@ const UnifiedFeedback = memo(({ projectId, theme = "light", firebaseUid }) => {
             <motion.button
               whileHover={{
                 scale: 1.05,
-                boxShadow: "0 20px 25px -5px rgba(0,0,0,0.2)",
+                boxShadow: "0 20px 25px -5px rgba(0,0,0,0.12)",
               }}
               whileTap={{ scale: 0.95 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
@@ -467,25 +409,38 @@ const UnifiedFeedback = memo(({ projectId, theme = "light", firebaseUid }) => {
                 rounded-full 
                 w-14 h-14
                 flex items-center justify-center
-                bg-white
                 shadow-[0_8px_30px_rgb(0,0,0,0.12)]
-                border-[1.5px] border-black/5
-                hover:border-black/10
                 cursor-pointer
-                ${theme === "dark" ? "bg-opacity-90" : ""}
+                backdrop-blur-sm
+                ${
+                  theme === "dark"
+                    ? "bg-[#333333] hover:bg-[#404040] border border-[#444444]"
+                    : "bg-white hover:bg-gray-50 border border-gray-200"
+                }
               `}
-              style={{
-                background: "linear-gradient(135deg, #FF8C37 0%, #FF4C17 100%)",
-                boxShadow:
-                  "0 8px 32px rgba(252, 88, 23, 0.24), inset 0 2px 4px rgba(255, 255, 255, 0.24)",
-              }}
             >
-              <RiChat3Line size={26} className="text-white drop-shadow-sm" />
+              <RiChat3Line
+                size={24}
+                className={`${
+                  theme === "dark" ? "text-white" : "text-gray-700"
+                }`}
+              />
             </motion.button>
           </motion.div>
         )}
 
-        {showToast && <Toast onComplete={() => setIsVisible(false)} />}
+        <AnimatePresence mode="wait">
+          {showToast && (
+            <Toast
+              key="feedback-toast"
+              onComplete={() => {
+                setShowToast(false);
+                setIsVisible(false);
+              }}
+              theme={theme}
+            />
+          )}
+        </AnimatePresence>
       </AnimatePresence>
 
       <DeleteZone isVisible={isDragging} isDragging={isDragging} />
@@ -507,5 +462,4 @@ const UnifiedFeedback = memo(({ projectId, theme = "light", firebaseUid }) => {
   );
 });
 
-// Memoize the entire component
 export default memo(UnifiedFeedback);
