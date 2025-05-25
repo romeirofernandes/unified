@@ -39,7 +39,6 @@ const Dashboard = () => {
     }
   };
 
-  // Add this function to fetch feedbacks for each project
   const fetchProjectFeedbacks = async (projectId) => {
     try {
       const response = await fetch(
@@ -92,7 +91,6 @@ const Dashboard = () => {
     setIsPreviewOpen(true);
   };
 
-  // Add this function to handle project deletion
   const handleDeleteProject = async (projectId, e) => {
     e.stopPropagation(); // Prevent triggering the card click
     try {

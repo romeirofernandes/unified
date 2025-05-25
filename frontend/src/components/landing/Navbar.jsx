@@ -1,6 +1,11 @@
 import React, { useState, useRef } from "react";
-import { motion, useScroll, useMotionValueEvent } from "framer-motion";
-import { RiMenu4Line } from "react-icons/ri";
+import {
+  motion,
+  useScroll,
+  useMotionValueEvent,
+  AnimatePresence,
+} from "framer-motion";
+import { RiMenu4Line, RiCloseLine } from "react-icons/ri";
 
 const Navbar = ({ onGetStarted }) => {
   const ref = useRef(null);
@@ -9,6 +14,7 @@ const Navbar = ({ onGetStarted }) => {
     offset: ["start start", "end start"],
   });
   const [visible, setVisible] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     if (latest > 100) {
@@ -23,20 +29,24 @@ const Navbar = ({ onGetStarted }) => {
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
     }
+    setMobileMenuOpen(false); // Close menu after navigation
   };
 
   return (
     <motion.div
       ref={ref}
-      className="fixed inset-x-0 top-0 z-50 max-w-5xl mx-auto"
+      className="fixed inset-x-0 top-0 z-50 max-w-5xl mx-auto mb-16 md:mb-0"
     >
+      {/* Desktop Navbar */}
       <motion.div
         animate={{
           backdropFilter: visible ? "blur(10px)" : "none",
           border: visible ? "1px solid rgba(56, 56, 56, 0.3)" : "none",
           width: visible ? "40%" : "100%",
           y: visible ? 20 : 0,
-          backgroundColor: visible ? "rgba(25, 25, 25, 0.8)" : "transparent",
+          backgroundColor: visible
+            ? "rgba(25, 25, 25, 0.8)"
+            : "rgba(25, 25, 25, 0)",
         }}
         transition={{
           type: "spring",
@@ -46,7 +56,7 @@ const Navbar = ({ onGetStarted }) => {
         style={{
           minWidth: visible ? "800px" : "100%",
         }}
-        className="relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between rounded-lg bg-transparent px-6 py-4 md:flex"
+        className="relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between rounded-lg px-6 py-4 md:flex"
       >
         <div className="flex w-full items-center justify-between">
           <motion.h1
@@ -101,10 +111,85 @@ const Navbar = ({ onGetStarted }) => {
         </div>
       </motion.div>
 
-      {/* Mobile menu button */}
-      <button className="md:hidden fixed right-4 top-4 text-[#fafafa] text-2xl">
-        <RiMenu4Line />
-      </button>
+      {/* Mobile navbar */}
+      <motion.div
+        animate={{
+          backdropFilter: visible ? "blur(10px)" : "none",
+          border: visible ? "1px solid rgba(56, 56, 56, 0.3)" : "none",
+          y: visible ? 20 : 0,
+          backgroundColor: visible
+            ? "rgba(25, 25, 25, 0.8)"
+            : "rgba(25, 25, 25, 0)",
+        }}
+        transition={{
+          type: "spring",
+          stiffness: 200,
+          damping: 50,
+        }}
+        className="md:hidden flex items-center justify-between px-6 py-4 mt-4 mx-4 rounded-lg"
+      >
+        <motion.h1
+          animate={{
+            scale: visible ? 0.9 : 1,
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 260,
+            damping: 20,
+          }}
+          className="text-xl font-bold text-[#fafafa]"
+        >
+          Unified
+        </motion.h1>
+
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="text-[#fafafa] text-2xl p-1"
+        >
+          {mobileMenuOpen ? <RiCloseLine /> : <RiMenu4Line />}
+        </button>
+      </motion.div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{
+              type: "spring",
+              stiffness: 300,
+              damping: 30,
+            }}
+            className="md:hidden absolute top-full left-0 right-0 mt-2 mx-4"
+          >
+            <div className="bg-[rgba(25,25,25,0.95)] backdrop-blur-lg border border-[rgba(56,56,56,0.3)] rounded-lg p-4 space-y-4">
+              {["Features", "Testimonials"].map((item, idx) => (
+                <motion.button
+                  key={idx}
+                  onClick={() => scrollToSection(item.toLowerCase())}
+                  className="block w-full text-left text-[#a1a1a1] hover:text-[#fafafa] py-2 px-3 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors"
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {item}
+                </motion.button>
+              ))}
+
+              <motion.button
+                onClick={() => {
+                  onGetStarted();
+                  setMobileMenuOpen(false);
+                }}
+                whileTap={{ scale: 0.95 }}
+                className="w-full rounded-lg bg-[#737373] px-4 py-3 font-medium text-[#fafafa] transition-all duration-300 hover:bg-[#525252] mt-4"
+              >
+                Get Started
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
