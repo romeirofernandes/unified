@@ -118,22 +118,23 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2 text-[#fafafa]">
+      <div className="mb-6 sm:mb-8 pt-4 sm:pt-6">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-[#fafafa]">
           yo, {user?.email?.split("@")[0] || "there"} 👋
         </h1>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
         {/* Add Project Card */}
         <motion.button
           onClick={() => setIsModalOpen(true)}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="h-48 rounded-lg border-2 border-dashed border-[#383838] flex items-center justify-center text-[#a1a1a1] hover:border-[#737373] hover:text-[#737373] transition-colors group"
+          className="h-40 sm:h-48 rounded-lg border-2 border-dashed border-[#383838] flex items-center justify-center text-[#a1a1a1] hover:border-[#737373] hover:text-[#737373] transition-colors group"
         >
           <div className="text-center">
-            <RiAddLine className="text-3xl mx-auto mb-2 group-hover:scale-110 transition-transform" />
-            <span>Create New Project</span>
+            <RiAddLine className="text-2xl sm:text-3xl mx-auto mb-2 group-hover:scale-110 transition-transform" />
+            <span className="text-sm sm:text-base">Create New Project</span>
           </div>
         </motion.button>
 
@@ -143,31 +144,31 @@ const Dashboard = () => {
             key={project._id}
             whileHover={{ scale: 1.02 }}
             onClick={() => handleCardClick(project._id)}
-            className="relative h-48 rounded-lg bg-[#191919] border border-[#383838] p-6 flex flex-col justify-between cursor-pointer"
+            className="relative h-40 sm:h-48 rounded-lg bg-[#191919] border border-[#383838] p-4 sm:p-6 flex flex-col justify-between cursor-pointer"
           >
             <motion.button
               whileHover={{ scale: 1.1 }}
               onClick={(e) => handleDeleteProject(project._id, e)}
-              className="absolute top-2 right-2 p-2 bg-[#262626] rounded-lg text-red-500 hover:bg-red-500/10 hover:text-red-500 transition-colors"
+              className="absolute top-2 right-2 p-1.5 sm:p-2 bg-[#262626] rounded-lg text-red-500 hover:bg-red-500/10 hover:text-red-500 transition-colors"
             >
-              <RiDeleteBin6Line size={16} />
+              <RiDeleteBin6Line size={14} className="sm:w-4 sm:h-4" />
             </motion.button>
 
             <div>
-              <h3 className="text-xl font-bold mb-2 text-[#fafafa]">
+              <h3 className="text-lg sm:text-xl font-bold mb-2 text-[#fafafa] pr-8">
                 {project.name}
               </h3>
-              <p className="text-[#a1a1a1] text-sm line-clamp-2">
+              <p className="text-[#a1a1a1] text-xs sm:text-sm line-clamp-2">
                 {project.description}
               </p>
             </div>
 
-            <div className="flex justify-between items-center">
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-[#a1a1a1]">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
+              <div className="flex items-center space-x-3 sm:space-x-4">
+                <span className="text-xs sm:text-sm text-[#a1a1a1]">
                   {project.fields.length} fields
                 </span>
-                <span className="text-sm text-[#a1a1a1]">
+                <span className="text-xs sm:text-sm text-[#a1a1a1]">
                   {projectFeedbacks[project._id]?.length || 0} responses
                 </span>
               </div>
@@ -176,7 +177,7 @@ const Dashboard = () => {
                   e.stopPropagation();
                   handleProjectClick(project);
                 }}
-                className="px-3 py-1 rounded-lg text-xs bg-[#737373] text-[#fafafa] hover:bg-[#525252] transition-colors"
+                className="px-2 sm:px-3 py-1 rounded-lg text-xs bg-[#737373] text-[#fafafa] hover:bg-[#525252] transition-colors self-start sm:self-auto"
               >
                 Preview
               </button>

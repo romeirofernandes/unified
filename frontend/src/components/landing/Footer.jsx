@@ -13,7 +13,7 @@ const Footer = () => {
         viewport={{ once: true }}
         className="container mx-auto px-14 max-w-5xl"
       >
-        <div className="flex justify-between items-center text-[#a1a1a1] text-sm">
+        <div className="flex flex-col gap-4 sm:flex-row justify-between items-center text-[#a1a1a1] text-sm">
           <p>© {new Date().getFullYear()} Unified. All rights reserved.</p>
           <p>
             crafted by{" "}
