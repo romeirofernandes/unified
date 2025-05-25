@@ -8,7 +8,9 @@ const ProjectPreview = ({ isOpen, onClose, project }) => {
   const [showCode, setShowCode] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const codeSnippet = `import { UnifiedFeedback } from 'unified-sdk';
+  const codeSnippet = 
+`import { UnifiedFeedback } from "unified-sdk";
+import "unified-sdk/dist/unified-sdk.css";
 
 function App() {
   return (

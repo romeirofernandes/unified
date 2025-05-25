@@ -30,7 +30,10 @@ const steps = [
     title: "Add Component",
     description:
       "Copy the integration code from project preview and add it to your app.",
-    code: `import { UnifiedFeedback } from 'unified-sdk';
+    code: 
+    
+`import { UnifiedFeedback } from 'unified-sdk';
+import "unified-sdk/dist/unified-sdk.css";
 
 function App() {
   return (
