@@ -3,7 +3,6 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { resolve } from "path";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
@@ -11,6 +10,7 @@ export default defineConfig({
       entry: resolve(__dirname, "src/index.jsx"),
       name: "UnifiedSDK",
       fileName: (format) => `unified-sdk.${format}.js`,
+      formats: ["es", "umd"],
     },
     rollupOptions: {
       external: ["react", "react-dom"],
@@ -19,7 +19,12 @@ export default defineConfig({
           react: "React",
           "react-dom": "ReactDOM",
         },
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name === "style.css") return "unified-sdk.css";
+          return assetInfo.name;
+        },
       },
     },
+    cssCodeSplit: false,
   },
 });

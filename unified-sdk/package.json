@@ -1,15 +1,18 @@
 {
   "name": "unified-sdk",
   "private": false,
-  "version": "2.0.1",
+  "version": "2.1.2",
   "type": "module",
   "main": "dist/unified-sdk.umd.js",
   "module": "dist/unified-sdk.es.js",
+  "style": "dist/unified-sdk.css",
   "exports": {
     ".": {
       "import": "./dist/unified-sdk.es.js",
-      "require": "./dist/unified-sdk.umd.js"
-    }
+      "require": "./dist/unified-sdk.umd.js",
+      "style": "./dist/unified-sdk.css"
+    },
+    "./dist/unified-sdk.css": "./dist/unified-sdk.css"
   },
   "files": [
     "dist"

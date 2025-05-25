@@ -13,7 +13,7 @@ const DeleteZone = ({ isVisible, isDragging }) => {
         ease: "easeOut",
       }}
       className={`
-        fixed bottom-4 left-1/2 -translate-x-1/2
+        fixed bottom-10 left-1/2 -translate-x-1/2
         h-16 w-64
         pointer-events-${isVisible ? "auto" : "none"}
         backdrop-blur-sm
@@ -22,6 +22,7 @@ const DeleteZone = ({ isVisible, isDragging }) => {
         border-2 border-dashed border-red-500
         ${isDragging ? "bg-red-500/20" : "bg-red-500/10"}
         transition-colors duration-200
+        z-40
       `}
       data-delete-zone
     >
