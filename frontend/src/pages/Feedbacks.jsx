@@ -147,7 +147,7 @@ ${JSON.stringify(formattedData.responses, null, 2)}`;
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 mt-4 sm:mt-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">

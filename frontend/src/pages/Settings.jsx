@@ -30,7 +30,7 @@ const DeleteModal = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 "
             onClick={onClose}
           />
           <motion.div
@@ -159,7 +159,7 @@ const Settings = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-2xl space-y-8">
+      <div className="max-w-2xl space-y-8 mt-4 sm:mt-6">
         <div>
           <h2 className="text-2xl font-bold mb-6">Settings</h2>
         </div>
