@@ -9,7 +9,7 @@ const BuyMeCoffeeButton = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8000/api/payment/create-order", {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/payment/create-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount: 50 }),
@@ -40,7 +40,7 @@ const BuyMeCoffeeButton = () => {
   };
 
   const verifyPayment = async (paymentData) => {
-    await fetch("http://localhost:8000/api/payment/verify", {
+    await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/payment/verify`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(paymentData),
