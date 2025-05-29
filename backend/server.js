@@ -5,6 +5,7 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/auth");
 const projectRoutes = require("./routes/projects");
 const feedbackRoutes = require("./routes/feedback");
+const paymentRoutes = require("./routes/payments");
 const authMiddleware = require("./middleware/auth");
 
 const app = express();
@@ -22,9 +23,11 @@ app.use(
 app.use(express.json());
 
 // Routes
+
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", authMiddleware, projectRoutes);
 app.use("/api/feedback", authMiddleware, feedbackRoutes);
+app.use("/api/payment", paymentRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

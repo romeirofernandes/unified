@@ -6,6 +6,7 @@ import {
   AnimatePresence,
 } from "framer-motion";
 import { RiMenu4Line, RiCloseLine } from "react-icons/ri";
+import BuyMeCoffeeButton from "./BuyMeCoffeeButton";
 
 const Navbar = ({ onGetStarted }) => {
   const ref = useRef(null);
@@ -96,7 +97,7 @@ const Navbar = ({ onGetStarted }) => {
             ))}
           </motion.nav>
 
-          <motion.button
+          {/* <motion.button
             whileHover={{ scale: 1.05 }}
             transition={{
               type: "spring",
@@ -107,7 +108,8 @@ const Navbar = ({ onGetStarted }) => {
             className="transform rounded-lg bg-[#737373] px-6 py-2 font-medium text-[#fafafa] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#525252]"
           >
             Get Started
-          </motion.button>
+          </motion.button> */}
+          <BuyMeCoffeeButton />
         </div>
       </motion.div>
 
@@ -176,7 +178,7 @@ const Navbar = ({ onGetStarted }) => {
                 </motion.button>
               ))}
 
-              <motion.button
+              {/* <motion.button
                 onClick={() => {
                   onGetStarted();
                   setMobileMenuOpen(false);
@@ -185,7 +187,10 @@ const Navbar = ({ onGetStarted }) => {
                 className="w-full rounded-lg bg-[#737373] px-4 py-3 font-medium text-[#fafafa] transition-all duration-300 hover:bg-[#525252] mt-4"
               >
                 Get Started
-              </motion.button>
+              </motion.button> */}
+              <div className="mt-4">
+                <BuyMeCoffeeButton />
+              </div>
             </div>
           </motion.div>
         )}
