@@ -17,7 +17,7 @@ export default function CTA() {
         </div>
         <div className="flex flex-col items-start gap-3 md:items-end">
           <Link
-            className="inline-flex min-h-[46px] items-center justify-center gap-2 whitespace-nowrap rounded-[14px] border-2 border-[#30456d] bg-gradient-to-b from-[#5575b4] to-[#405783] px-5 text-[14px] font-semibold text-white shadow-[0_1px_0_#26385b,0_4px_9px_rgb(28_27_25_/_17%)] transition-[filter,transform,box-shadow] duration-200 hover:-translate-y-px hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#354972] focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4e9f2] active:translate-y-0 active:shadow-[0_1px_0_#26385b] dark:focus-visible:ring-offset-[#30394b]"
+            className="inline-flex min-h-[46px] items-center justify-center gap-2 whitespace-nowrap rounded-[14px] border-2 border-[#30456d] bg-gradient-to-b from-[#5575b4] to-[#405783] px-5 text-[14px] font-normal text-white shadow-[0_1px_0_#26385b,0_4px_9px_rgb(28_27_25_/_17%)] transition-[filter,transform,box-shadow] duration-200 hover:-translate-y-px hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#354972] focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4e9f2] active:translate-y-0 active:shadow-[0_1px_0_#26385b] dark:focus-visible:ring-offset-[#30394b]"
             to="/signup"
           >
             Create your project <HugeiconsIcon icon={ArrowRight01Icon} size={18} aria-hidden="true" />

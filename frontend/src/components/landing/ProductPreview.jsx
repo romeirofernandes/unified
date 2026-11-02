@@ -23,7 +23,7 @@ const sidebar = [
 
 export default function ProductPreview() {
   return (
-    <section id="product" className="w-full overflow-x-clip bg-[#f4f3ee] px-4 pb-16 text-[#282722] transition-colors duration-700 sm:px-8 sm:pb-20 lg:px-12 dark:bg-[#211f1d] dark:text-[#f4f1e9] motion-reduce:transition-none" aria-label="Unified product preview">
+    <section id="product" className="w-full overflow-x-clip bg-transparent px-4 pb-16 text-[#282722] transition-colors duration-700 sm:px-8 sm:pb-20 lg:px-12 dark:text-[#f4f1e9] motion-reduce:transition-none" aria-label="Unified product preview">
       <div className="mx-auto w-full max-w-[1200px] overflow-hidden rounded-[20px] border border-[#d6d3ca] bg-[#fbfaf7] shadow-[0_3px_0_rgb(28_27_25_/_4%),0_24px_60px_rgb(28_27_25_/_12%)] sm:rounded-[24px] dark:border-[#48463f] dark:bg-[#292724] dark:shadow-[0_30px_75px_rgb(0_0_0_/_24%)]">
         <div className="flex min-h-14 items-center justify-between gap-4 border-b border-[#e4e1d9] px-4 sm:min-h-[66px] sm:px-7 dark:border-[#45433e]">
           <div className="flex min-w-0 items-center gap-2.5 text-[13px] font-medium sm:gap-3 sm:text-sm">
