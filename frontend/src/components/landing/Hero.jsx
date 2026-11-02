@@ -20,7 +20,7 @@ export default function Hero() {
         </p>
         <div className="mt-6 flex w-full flex-col items-stretch justify-center gap-3 sm:mt-6 sm:w-auto sm:flex-row sm:items-center sm:gap-3">
           <Link
-            className={`${tactileButtonBase} ${tactilePrimaryButton} min-h-[46px] px-5 text-[14px] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3ee] dark:focus-visible:ring-offset-[#211f1d]`}
+            className={`${tactileButtonBase} ${tactilePrimaryButton} min-h-[46px] px-5 text-[14px] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3ee] dark:focus-visible:ring-offset-[#141413]`}
             to="/signup"
           >
             Create your project <HugeiconsIcon icon={ArrowRight01Icon} size={18} aria-hidden="true" />

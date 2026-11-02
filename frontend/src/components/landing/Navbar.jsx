@@ -21,7 +21,7 @@ export default function Navbar() {
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-[#d8d5ce] bg-[#f4f3ee]/95 text-[#24231f] backdrop-blur-xl transition-colors duration-700 dark:border-[#44423d] dark:bg-[#211f1d]/95 dark:text-[#f4f1e9] motion-reduce:transition-none">
+    <header className="sticky top-0 z-40 w-full border-b border-[#d8d5ce] bg-[#f4f3ee]/95 text-[#24231f] backdrop-blur-xl transition-colors duration-700 dark:border-[#343330] dark:bg-[#141413]/95 dark:text-[#f4f1e9] motion-reduce:transition-none">
       <div className="mx-auto grid min-h-[64px] w-full max-w-[1200px] grid-cols-[1fr_auto] items-center gap-4 px-5 sm:min-h-[72px] sm:grid-cols-[1fr_auto_1fr] sm:px-8 lg:px-12">
         <Link
           className="inline-flex w-fit items-center gap-2 font-serif text-[22px] leading-none tracking-[-0.045em] text-inherit no-underline sm:text-[24px]"
@@ -45,7 +45,7 @@ export default function Navbar() {
         <div className="hidden items-center justify-end gap-3 sm:flex">
           <ThemeToggle />
           <Link
-            className={`${tactileButtonBase} ${tactilePrimaryButton} min-h-10 px-4 text-[13px] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3ee] dark:focus-visible:ring-offset-[#211f1d]`}
+            className={`${tactileButtonBase} ${tactilePrimaryButton} min-h-10 px-4 text-[13px] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3ee] dark:focus-visible:ring-offset-[#141413]`}
             to="/signup"
           >
             Get started
@@ -68,7 +68,7 @@ export default function Navbar() {
       </div>
 
       {menuOpen && (
-        <nav id="landing-mobile-nav" className="absolute inset-x-0 top-full grid gap-1 border-b border-[#d8d5ce] bg-[#f4f3ee] px-5 py-4 shadow-xl sm:px-8 lg:hidden dark:border-[#44423d] dark:bg-[#211f1d]" aria-label="Mobile navigation">
+        <nav id="landing-mobile-nav" className="absolute inset-x-0 top-full grid gap-1 border-b border-[#d8d5ce] bg-[#f4f3ee] px-5 py-4 shadow-xl sm:px-8 lg:hidden dark:border-[#343330] dark:bg-[#141413]" aria-label="Mobile navigation">
           {links.map((link) => link.href.startsWith("/") ? (
             <Link key={link.label} className="rounded-xl px-4 py-3 text-[15px] text-inherit no-underline hover:bg-black/5 dark:hover:bg-white/5" to={link.href} onClick={closeMenu}>{link.label}</Link>
           ) : (

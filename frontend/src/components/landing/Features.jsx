@@ -28,7 +28,7 @@ const capabilities = [
 
 export default function Features() {
   return (
-    <section id="capabilities" className="w-full bg-[#eeede7] px-5 py-24 text-[#24231f] transition-colors duration-700 sm:px-8 sm:py-28 lg:px-12 lg:py-32 dark:bg-[#292724] dark:text-[#f4f1e9] motion-reduce:transition-none" aria-labelledby="capabilities-title">
+    <section id="capabilities" className="w-full bg-[#eeede7] px-5 py-24 text-[#24231f] transition-colors duration-700 sm:px-8 sm:py-28 lg:px-12 lg:py-32 dark:bg-[#141413] dark:text-[#f4f1e9] motion-reduce:transition-none" aria-labelledby="capabilities-title">
       <div className="mx-auto w-full max-w-[1200px]">
         <div className="grid gap-6 md:grid-cols-[minmax(0,0.9fr)_minmax(300px,0.8fr)] md:items-end md:gap-12">
           <h2 id="capabilities-title" className="max-w-[720px] font-serif text-[clamp(2.1rem,4.4vw,3.8rem)] font-normal leading-[1.08] tracking-[-0.025em] text-balance">

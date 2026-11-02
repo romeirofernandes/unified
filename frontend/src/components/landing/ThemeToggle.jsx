@@ -36,7 +36,7 @@ export default function ThemeToggle({ compact = false }) {
   return (
     <button
       type="button"
-      className={`${tactileButtonBase} ${tactileSecondaryButton} size-10 p-0 [view-transition-name:theme-toggle] transition-[filter,transform] duration-200 hover:scale-[1.06] active:scale-[0.96] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3ee] dark:focus-visible:ring-offset-[#211f1d] motion-reduce:transition-none ${compact ? "" : "px-0"}`}
+      className={`${tactileButtonBase} ${tactileSecondaryButton} size-10 p-0 transition-[filter,transform] duration-200 hover:scale-[1.06] active:scale-[0.96] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3ee] dark:focus-visible:ring-offset-[#141413] motion-reduce:transition-none ${compact ? "" : "px-0"}`}
       onClick={toggleTheme}
       aria-label={`Switch to ${nextTheme} theme`}
       title={`Switch to ${nextTheme} theme`}
