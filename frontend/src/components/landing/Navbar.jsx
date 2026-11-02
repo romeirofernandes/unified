@@ -22,7 +22,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[#d8d5ce] bg-[#f4f3ee]/95 text-[#24231f] backdrop-blur-xl transition-colors duration-700 dark:border-[#343330] dark:bg-[#141413]/95 dark:text-[#f4f1e9] motion-reduce:transition-none">
-      <div className="mx-auto grid min-h-[64px] w-full max-w-[1200px] grid-cols-[1fr_auto] items-center gap-4 px-5 sm:min-h-[72px] sm:grid-cols-[1fr_auto_1fr] sm:px-8 lg:px-12">
+      <div className="mx-auto grid min-h-[72px] w-full max-w-[1200px] grid-cols-[1fr_auto] items-center gap-4 px-5 sm:min-h-[80px] sm:grid-cols-[1fr_auto_1fr] sm:px-8 lg:px-12">
         <Link
           className="inline-flex w-fit items-center gap-2 font-serif text-[22px] leading-none tracking-[-0.045em] text-inherit no-underline sm:text-[24px]"
           to="/"
