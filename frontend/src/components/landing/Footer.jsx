@@ -1,30 +1,18 @@
-import React from "react";
-import { motion } from "motion/react";
-
-const Footer = () => {
+export default function Footer() {
   return (
-    <footer className="max-w-5xl mx-auto relative mt-32 py-8">
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#383838] to-transparent"></div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        viewport={{ once: true }}
-        className="container mx-auto px-14 max-w-5xl"
-      >
-        <div className="flex flex-col gap-4 sm:flex-row justify-between items-center text-[#a1a1a1] text-sm">
-          <p>© {new Date().getFullYear()} Unified. All rights reserved.</p>
-          <p>
-            crafted by{" "}
-            <a href="https://github.com/romeirofernandes" target="_blank">
-              <span className="text-white">romeiro</span>
-            </a>
-          </p>
-        </div>
-      </motion.div>
+    <footer className="landing-footer">
+      <div className="landing-container landing-footer__inner">
+        <a className="landing-brand" href="/" aria-label="Unified home">
+          <span className="landing-brand__mark" aria-hidden="true">u</span>
+          <span>unified</span>
+        </a>
+        <p>Feedback that helps you build with more context.</p>
+        <nav aria-label="Footer navigation">
+          <a href="/docs">Documentation</a>
+          <a href="https://github.com/romeirofernandes" target="_blank" rel="noreferrer">GitHub</a>
+        </nav>
+        <span className="landing-footer__copyright">© {new Date().getFullYear()} Unified</span>
+      </div>
     </footer>
   );
-};
-
-export default Footer;
+}

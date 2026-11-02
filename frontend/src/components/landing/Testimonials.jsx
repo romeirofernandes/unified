@@ -1,74 +1,42 @@
-import React from "react";
-import { motion } from "motion/react";
+import { ArrowUpRight, CheckCircle, Code01 } from "@untitledui/icons";
 
-const testimonials = [
+const steps = [
   {
-    content:
-      "Unified has completely transformed how we collect and analyze user feedback. The AI summaries are a game-changer!",
-    name: "Sarah Chen",
-    role: "Lead Developer at TechCorp",
-    initial: "S",
+    icon: Code01,
+    title: "Add the widget",
+    body: "Install the React SDK and connect it to your project.",
   },
   {
-    content:
-      "Implementation was super easy. Just one line of code and we were up and running with a professional feedback system.",
-    name: "Michael Ross",
-    role: "Frontend Engineer at StartupX",
-    initial: "M",
+    icon: CheckCircle,
+    title: "Collect what matters",
+    body: "Create the feedback form your customers need to answer.",
   },
   {
-    content:
-      "The customizable forms and real-time analytics have helped us make better product decisions faster than ever.",
-    name: "Alex Kumar",
-    role: "Product Manager at DevFlow",
-    initial: "A",
+    icon: ArrowUpRight,
+    title: "Choose what to improve",
+    body: "Review the responses, use a summary to find themes, and decide what to do next.",
   },
 ];
 
-const Testimonials = () => {
+export default function Testimonials() {
   return (
-    <motion.section
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      transition={{ duration: 0.6 }}
-      viewport={{ once: true }}
-      className="relative mt-32 px-4"
-      id="testimonials"
-    >
-
-      <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-12 text-[#fafafa]">
-        Loved by <span className="text-[#737373]">Developers</span>
-      </h2>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {testimonials.map((testimonial, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.3,
-              delay: index * 0.1,
-              ease: "easeInOut",
-            }}
-            viewport={{ once: true }}
-            className="p-6 rounded-lg bg-[#191919] border border-[#383838]"
-          >
-            <p className="text-[#a1a1a1] mb-4">"{testimonial.content}"</p>
-            <div className="flex items-center">
-              <div className="w-10 h-10 rounded-lg bg-[#262626] flex items-center justify-center text-[#737373] border border-[#383838]">
-                {testimonial.initial}
-              </div>
-              <div className="ml-3">
-                <p className="font-medium text-[#fafafa]">{testimonial.name}</p>
-                <p className="text-sm text-[#a1a1a1]">{testimonial.role}</p>
-              </div>
-            </div>
-          </motion.div>
+    <section id="testimonials" className="landing-process" aria-labelledby="process-title">
+      <div className="landing-process__intro">
+        <p className="landing-eyebrow">
+          <span className="landing-eyebrow__rule" aria-hidden="true" />
+          How it works
+        </p>
+        <h2 id="process-title">From a customer’s thought to your next release.</h2>
+      </div>
+      <div className="landing-process__steps">
+        {steps.map(({ icon: Icon, title, body }) => (
+          <article key={title} className="landing-process-step">
+            <span className="landing-process-step__icon"><Icon size={19} strokeWidth={1.7} aria-hidden="true" /></span>
+            <h3>{title}</h3>
+            <p>{body}</p>
+          </article>
         ))}
       </div>
-    </motion.section>
+    </section>
   );
-};
-
-export default Testimonials;
+}

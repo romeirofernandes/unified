@@ -1,61 +1,45 @@
-import React from "react";
-import { motion } from "motion/react";
+import { BarChartSquare02, MessageSquare01, Sliders03 } from "@untitledui/icons";
 
 const features = [
   {
-    title: "One-Click Installation",
-    description:
-      "Add our feedback component to your website with a single line of code. No complex setup required.",
+    icon: MessageSquare01,
+    title: "Ask in context",
+    description: "Place a feedback form in your React app, right where a thought or friction point happens.",
+    className: "landing-feature landing-feature--lead",
   },
   {
-    title: "Customizable Forms",
-    description:
-      "Create custom feedback forms with different field types. Collect exactly what you need.",
+    icon: Sliders03,
+    title: "Shape the questions",
+    description: "Choose the fields that fit your product, from a quick note to a structured response.",
+    className: "landing-feature landing-feature--form",
   },
   {
-    title: "AI-Powered Insights",
-    description:
-      "Get AI-generated summaries of your feedback to identify patterns and key themes.",
+    icon: BarChartSquare02,
+    title: "Find the signal",
+    description: "Review responses together and generate AI summaries to spot recurring themes.",
+    className: "landing-feature landing-feature--insight",
   },
 ];
 
-const Features = () => {
+export default function Features() {
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
-      viewport={{ once: true }}
-      className="mx-5 relative mt-32"
-      id="features"
-    >
-      <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-12 text-[#fafafa]">
-        Powerful <span className="text-[#737373]">Features</span>
-      </h2>
+    <section id="features" className="landing-features" aria-labelledby="features-title">
+      <div className="landing-section-heading">
+        <h2 id="features-title">Useful feedback starts with a better way to listen.</h2>
+        <p>Collect the details, see what repeats, and keep your next step close to the customer’s words.</p>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {features.map((feature, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.3,
-              delay: index * 0.1,
-              ease: "easeInOut",
-            }}
-            viewport={{ once: true }}
-            className="p-6 rounded-lg bg-[#191919] border border-[#383838]"
-          >
-            <h3 className="text-xl font-bold mb-3 text-[#fafafa]">
-              {feature.title}
-            </h3>
-            <p className="text-[#a1a1a1]">{feature.description}</p>
-          </motion.div>
+      <div className="landing-feature-grid">
+        {features.map(({ icon: Icon, title, description, className }) => (
+          <article key={title} className={className}>
+            <span className="landing-feature__icon"><Icon size={21} strokeWidth={1.7} aria-hidden="true" /></span>
+            <div>
+              <h3>{title}</h3>
+              <p>{description}</p>
+            </div>
+          </article>
         ))}
       </div>
-    </motion.section>
+    </section>
   );
-};
-
-export default Features;
+}

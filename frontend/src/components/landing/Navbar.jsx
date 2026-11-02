@@ -1,202 +1,82 @@
-import React, { useState, useRef } from "react";
-import {
-  motion,
-  useScroll,
-  useMotionValueEvent,
-  AnimatePresence,
-} from "motion/react";
-import { RiMenu4Line, RiCloseLine } from "react-icons/ri";
-import BuyMeCoffeeButton from "./BuyMeCoffeeButton";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Menu01, XClose } from "@untitledui/icons";
+import { Button } from "@/components/ui/button";
 
-const Navbar = ({ onGetStarted }) => {
-  const ref = useRef(null);
-  const { scrollY } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
-  });
-  const [visible, setVisible] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+const links = [
+  { label: "Features", href: "#features" },
+  { label: "How it works", href: "#testimonials" },
+  { label: "Documentation", href: "/docs" },
+];
 
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    if (latest > 100) {
-      setVisible(true);
-    } else {
-      setVisible(false);
-    }
-  });
+export default function Navbar({ onGetStarted }) {
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  const scrollToSection = (sectionId) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-    setMobileMenuOpen(false); // Close menu after navigation
-  };
+  const closeMenu = () => setMenuOpen(false);
 
   return (
-    <motion.div
-      ref={ref}
-      className="fixed inset-x-0 top-0 z-50 max-w-5xl mx-auto mb-16 md:mb-0"
-    >
-      {/* Desktop Navbar */}
-      <motion.div
-        animate={{
-          backdropFilter: visible ? "blur(10px)" : "none",
-          border: visible ? "1px solid rgba(56, 56, 56, 0.3)" : "none",
-          width: visible ? "40%" : "100%",
-          y: visible ? 20 : 0,
-          backgroundColor: visible
-            ? "rgba(25, 25, 25, 0.8)"
-            : "rgba(25, 25, 25, 0)",
-        }}
-        transition={{
-          type: "spring",
-          stiffness: 200,
-          damping: 50,
-        }}
-        style={{
-          minWidth: visible ? "800px" : "100%",
-        }}
-        className="relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between rounded-lg px-6 py-4 md:flex"
-      >
-        <div className="flex w-full items-center justify-between">
-          <motion.h1
-            animate={{
-              scale: visible ? 0.9 : 1,
-            }}
-            transition={{
-              type: "spring",
-              stiffness: 260,
-              damping: 20,
-            }}
-            className="text-2xl font-bold text-[#fafafa]"
-          >
-            Unified
-          </motion.h1>
+    <header className="landing-header">
+      <div className="landing-container landing-header__inner">
+        <Link className="landing-brand" to="/" aria-label="Unified home">
+          <span className="landing-brand__mark" aria-hidden="true">u</span>
+          <span>unified</span>
+        </Link>
 
-          <motion.nav
-            animate={{
-              opacity: 1,
-            }}
-            className="absolute left-1/2 flex -translate-x-1/2 items-center space-x-6"
-          >
-            {["Features", "Testimonials"].map((item, idx) => (
-              <motion.button
-                key={idx}
-                onClick={() => scrollToSection(item.toLowerCase())}
-                className="text-[#a1a1a1] hover:text-[#fafafa] relative px-4 py-2"
-                whileHover={{ scale: 1.05 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 400,
-                  damping: 17,
-                }}
-              >
-                {item}
-              </motion.button>
-            ))}
-          </motion.nav>
+        <nav className="landing-nav" aria-label="Main navigation">
+          {links.map((link) => (
+            link.href.startsWith("/") ? (
+              <Link key={link.label} className="landing-nav__link" to={link.href}>{link.label}</Link>
+            ) : (
+              <a key={link.label} className="landing-nav__link" href={link.href}>{link.label}</a>
+            )
+          ))}
+        </nav>
 
-          {/* <motion.button
-            whileHover={{ scale: 1.05 }}
-            transition={{
-              type: "spring",
-              stiffness: 400,
-              damping: 17,
-            }}
+        <div className="landing-header__actions">
+          <Link className="landing-signin" to="/login">Sign in</Link>
+          <Button
+            variant="secondary"
+            className="landing-button landing-button--primary landing-button--small"
             onClick={onGetStarted}
-            className="transform rounded-lg bg-[#737373] px-6 py-2 font-medium text-[#fafafa] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#525252]"
           >
-            Get Started
-          </motion.button> */}
-          <BuyMeCoffeeButton />
+            Get started
+          </Button>
         </div>
-      </motion.div>
-
-      {/* Mobile navbar */}
-      <motion.div
-        animate={{
-          backdropFilter: visible ? "blur(10px)" : "none",
-          border: visible ? "1px solid rgba(56, 56, 56, 0.3)" : "none",
-          y: visible ? 20 : 0,
-          backgroundColor: visible
-            ? "rgba(25, 25, 25, 0.8)"
-            : "rgba(25, 25, 25, 0)",
-        }}
-        transition={{
-          type: "spring",
-          stiffness: 200,
-          damping: 50,
-        }}
-        className="md:hidden flex items-center justify-between px-6 py-4 mt-4 mx-4 rounded-lg"
-      >
-        <motion.h1
-          animate={{
-            scale: visible ? 0.9 : 1,
-          }}
-          transition={{
-            type: "spring",
-            stiffness: 260,
-            damping: 20,
-          }}
-          className="text-xl font-bold text-[#fafafa]"
-        >
-          Unified
-        </motion.h1>
 
         <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="text-[#fafafa] text-2xl p-1"
+          className="landing-menu-toggle"
+          type="button"
+          aria-label={menuOpen ? "Close navigation" : "Open navigation"}
+          aria-expanded={menuOpen}
+          aria-controls="landing-mobile-nav"
+          onClick={() => setMenuOpen((open) => !open)}
         >
-          {mobileMenuOpen ? <RiCloseLine /> : <RiMenu4Line />}
+          {menuOpen ? <XClose size={20} /> : <Menu01 size={20} />}
         </button>
-      </motion.div>
+      </div>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{
-              type: "spring",
-              stiffness: 300,
-              damping: 30,
+      {menuOpen && (
+        <nav id="landing-mobile-nav" className="landing-mobile-nav" aria-label="Mobile navigation">
+          {links.map((link) => (
+            link.href.startsWith("/") ? (
+              <Link key={link.label} to={link.href} onClick={closeMenu}>{link.label}</Link>
+            ) : (
+              <a key={link.label} href={link.href} onClick={closeMenu}>{link.label}</a>
+            )
+          ))}
+          <Link to="/login" onClick={closeMenu}>Sign in</Link>
+          <Button
+            variant="secondary"
+            className="landing-button landing-button--primary"
+            onClick={() => {
+              closeMenu();
+              onGetStarted();
             }}
-            className="md:hidden absolute top-full left-0 right-0 mt-2 mx-4"
           >
-            <div className="bg-[rgba(25,25,25,0.95)] backdrop-blur-lg border border-[rgba(56,56,56,0.3)] rounded-lg p-4 space-y-4">
-              {["Features", "Testimonials"].map((item, idx) => (
-                <motion.button
-                  key={idx}
-                  onClick={() => scrollToSection(item.toLowerCase())}
-                  className="block w-full text-left text-[#a1a1a1] hover:text-[#fafafa] py-2 px-3 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors"
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {item}
-                </motion.button>
-              ))}
-
-              {/* <motion.button
-                onClick={() => {
-                  onGetStarted();
-                  setMobileMenuOpen(false);
-                }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full rounded-lg bg-[#737373] px-4 py-3 font-medium text-[#fafafa] transition-all duration-300 hover:bg-[#525252] mt-4"
-              >
-                Get Started
-              </motion.button> */}
-              <div className="mt-4">
-                <BuyMeCoffeeButton />
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+            Get started
+          </Button>
+        </nav>
+      )}
+    </header>
   );
-};
-
-export default Navbar;
+}
