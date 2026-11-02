@@ -1,12 +1,35 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowUpRight01Icon, UnionCircleIcon } from "@hugeicons/core-free-icons";
+import { Ascii } from "ascii.rest/react";
+import deepReef, { meta as deepReefMeta } from "ascii.rest/pieces/deep-reef";
+
+const waterPalette = [
+  "#26385b", "#354972", "#405783", "#5575b4", "#6e8dc9",
+  "#7c99d7", "#9bb3e3", "#b9c9e8", "#dfe6f5",
+];
+const footerReef = {
+  meta: {
+    ...deepReefMeta,
+    ground: "#141413",
+    palette: [...waterPalette, ...deepReefMeta.palette.slice(waterPalette.length)],
+  },
+  default: deepReef,
+};
 
 const rulerMarks = Array.from({ length: 17 }, (_, index) => index);
 
 export default function Footer() {
   return (
-    <footer className="w-full overflow-hidden bg-[#1d1c1a] px-5 pb-10 pt-16 text-[#f4f3ee] transition-colors duration-700 sm:px-8 sm:pb-12 sm:pt-20 lg:px-12 dark:bg-[#141413] motion-reduce:transition-none">
-      <div className="mx-auto w-full max-w-[1200px]">
+    <footer className="relative isolate w-full overflow-hidden bg-[#1d1c1a] px-5 pb-10 pt-16 text-[#f4f3ee] transition-colors duration-700 sm:px-8 sm:pb-12 sm:pt-20 lg:px-12 dark:bg-[#141413] motion-reduce:transition-none">
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+        <Ascii
+          piece={footerReef}
+          options={{ fps: 10 }}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-[#1d1c1a]/70 dark:bg-[#141413]/70" />
+      </div>
+      <div className="relative z-10 mx-auto w-full max-w-[1200px]">
         <div className="grid gap-8 pb-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:gap-7 sm:pb-3">
           <div className="max-w-[520px]">
             <a className="inline-flex items-center gap-2.5 font-serif text-[21px] leading-none tracking-[-0.035em] text-[#f4f3ee] no-underline" href="/" aria-label="unified home">

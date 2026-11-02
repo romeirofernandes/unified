@@ -26,7 +26,6 @@ export default function Landing() {
           <Process />
           <CTA />
         </div>
-        <CheckerDivider />
         <Footer />
       </main>
     </ReactLenis>
