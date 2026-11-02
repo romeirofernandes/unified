@@ -7,6 +7,7 @@ import {
   UnionCircleIcon,
 } from "@hugeicons/core-free-icons";
 import ThemeToggle from "./ThemeToggle";
+import { tactileButtonBase, tactilePrimaryButton } from "./buttonStyles";
 
 const links = [
   { label: "Capabilities", href: "#capabilities" },
@@ -44,7 +45,7 @@ export default function Navbar() {
         <div className="hidden items-center justify-end gap-3 sm:flex">
           <ThemeToggle />
           <Link
-            className="inline-flex min-h-10 items-center justify-center whitespace-nowrap rounded-[13px] border-2 border-[#30456d] bg-gradient-to-b from-[#5575b4] to-[#405783] px-4 text-[13px] font-normal text-white shadow-[0_1px_0_#26385b,0_4px_8px_rgb(28_27_25_/_17%)] transition-[filter,transform,box-shadow] duration-200 hover:-translate-y-px hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#496699] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3ee] active:translate-y-0 active:shadow-[0_1px_0_#26385b] dark:focus-visible:ring-offset-[#211f1d]"
+            className={`${tactileButtonBase} ${tactilePrimaryButton} min-h-10 px-4 text-[13px] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3ee] dark:focus-visible:ring-offset-[#211f1d]`}
             to="/signup"
           >
             Get started
@@ -54,7 +55,7 @@ export default function Navbar() {
         <div className="flex items-center gap-2 sm:hidden">
           <ThemeToggle compact />
           <button
-            className="grid size-11 place-items-center rounded-[14px] border border-[#d2cfc7] bg-white/70 text-[#24231f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#496699] dark:border-[#4a4842] dark:bg-[#302e2a] dark:text-white"
+            className={`${tactileButtonBase} ${tactilePrimaryButton} size-10 p-0`}
             type="button"
             aria-label={menuOpen ? "Close navigation" : "Open navigation"}
             aria-expanded={menuOpen}
@@ -74,7 +75,7 @@ export default function Navbar() {
             <a key={link.label} className="rounded-xl px-4 py-3 text-[15px] text-inherit no-underline hover:bg-black/5 dark:hover:bg-white/5" href={link.href} onClick={closeMenu}>{link.label}</a>
           ))}
           <Link
-            className="mt-2 inline-flex min-h-10 items-center justify-center rounded-[13px] border-2 border-[#30456d] bg-gradient-to-b from-[#5575b4] to-[#405783] px-4 text-[13px] font-normal text-white shadow-[0_1px_0_#26385b,0_4px_8px_rgb(28_27_25_/_17%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#496699] focus-visible:ring-offset-2"
+            className={`mt-2 ${tactileButtonBase} ${tactilePrimaryButton} min-h-10 px-4 text-[13px]`}
             to="/signup"
             onClick={closeMenu}
           >

@@ -1,0 +1,5 @@
+export const tactileButtonBase = "cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md border font-normal shadow-md ring-0 transition-[filter] duration-200 hover:brightness-110 active:brightness-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#7c99d7] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 inset-shadow-2xs inset-shadow-white/25";
+
+export const tactilePrimaryButton = "bg-linear-to-b from-[#6f8ecf]/85 to-[#5575b4] text-white [text-shadow:0_1px_0_#405783] border-[#30456d]/50 shadow-[#26385b]/20 dark:bg-linear-to-t dark:from-[#6e8dc9] dark:to-[#5575b4] dark:border-[#30456d]/60";
+
+export const tactileSecondaryButton = "bg-linear-to-b from-[#fffefa]/85 to-[#e4e1d9] text-[#383631] [text-shadow:0_1px_0_#ffffff] border-[#b9b6ad] shadow-[#4e4b43]/20 dark:bg-linear-to-t dark:from-[#484640] dark:to-[#302e2a] dark:text-[#f4f1e9] dark:border-white/10 dark:[text-shadow:0_1px_0_#171716]";

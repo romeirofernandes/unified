@@ -3,6 +3,7 @@ import { useTheme } from "next-themes";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ContrastIcon } from "@hugeicons/core-free-icons";
+import { tactileButtonBase, tactilePrimaryButton } from "./buttonStyles";
 
 const MotionDiv = motion.div;
 
@@ -44,7 +45,7 @@ export default function ThemeToggle({ compact = false }) {
     <>
       <button
         type="button"
-        className={`grid min-h-11 min-w-11 place-items-center rounded-[14px] border border-[#d2cfc7] bg-white/65 text-[#34322e] shadow-[0_1px_1px_rgb(28_27_25_/_5%)] transition-[background-color,color,border-color] duration-700 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#496699] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3ee] dark:border-[#4a4842] dark:bg-white/5 dark:text-[#f4f1e9] dark:hover:bg-white/10 dark:focus-visible:ring-offset-[#211f1d] motion-reduce:transition-none ${compact ? "" : "px-3"}`}
+        className={`${tactileButtonBase} ${tactilePrimaryButton} size-10 p-0 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3ee] dark:focus-visible:ring-offset-[#211f1d] motion-reduce:transition-none ${compact ? "" : "px-0"}`}
         onClick={toggleTheme}
         aria-label={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} theme`}
         title={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} theme`}
