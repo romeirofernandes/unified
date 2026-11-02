@@ -3,7 +3,8 @@ import DashboardLayout from "../components/dashboard/DashboardLayout";
 import ProjectModal from "../components/dashboard/ProjectModal";
 import ProjectPreview from "../components/dashboard/ProjectPreview";
 import { motion } from "motion/react";
-import { RiAddLine, RiDeleteBin6Line } from "react-icons/ri";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Add01Icon, Delete01Icon } from "@hugeicons/core-free-icons";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -133,7 +134,7 @@ const Dashboard = () => {
           className="h-40 sm:h-48 rounded-lg border-2 border-dashed border-[#383838] flex items-center justify-center text-[#a1a1a1] hover:border-[#737373] hover:text-[#737373] transition-colors group"
         >
           <div className="text-center">
-            <RiAddLine className="text-2xl sm:text-3xl mx-auto mb-2 group-hover:scale-110 transition-transform" />
+            <HugeiconsIcon icon={Add01Icon} className="text-2xl sm:text-3xl mx-auto mb-2 group-hover:scale-110 transition-transform" aria-hidden="true" />
             <span className="text-sm sm:text-base">Create New Project</span>
           </div>
         </motion.button>
@@ -151,7 +152,7 @@ const Dashboard = () => {
               onClick={(e) => handleDeleteProject(project._id, e)}
               className="absolute top-2 right-2 p-1.5 sm:p-2 bg-[#262626] rounded-lg text-red-500 hover:bg-red-500/10 hover:text-red-500 transition-colors"
             >
-              <RiDeleteBin6Line size={14} className="sm:w-4 sm:h-4" />
+              <HugeiconsIcon icon={Delete01Icon} size={14} className="sm:w-4 sm:h-4" aria-hidden="true" />
             </motion.button>
 
             <div>

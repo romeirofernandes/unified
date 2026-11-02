@@ -1,11 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import {
-  RiCloseLine,
-  RiAddLine,
-  RiArrowLeftLine,
-  RiDeleteBin6Line,
-} from "react-icons/ri";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon, Add01Icon, ArrowLeft01Icon, Delete01Icon } from "@hugeicons/core-free-icons";
 
 const ProjectModal = ({ isOpen, onClose, onSubmit }) => {
   const [step, setStep] = useState(1);
@@ -132,7 +128,7 @@ const ProjectModal = ({ isOpen, onClose, onSubmit }) => {
                   }}
                   className="p-2 text-red-500 hover:bg-[#404040] rounded-lg"
                 >
-                  <RiDeleteBin6Line size={16} />
+                  <HugeiconsIcon icon={Delete01Icon} size={16}  aria-hidden="true" />
                 </button>
               </div>
             ))}
@@ -213,7 +209,7 @@ const ProjectModal = ({ isOpen, onClose, onSubmit }) => {
                     onClick={() => setStep(1)}
                     className="mr-2 sm:mr-4 p-2 hover:bg-[#262626] rounded-lg transition-colors"
                   >
-                    <RiArrowLeftLine size={20} className="text-[#a1a1a1]" />
+                    <HugeiconsIcon icon={ArrowLeft01Icon} size={20} className="text-[#a1a1a1]"  aria-hidden="true" />
                   </button>
                 )}
                 <h2 className="text-lg sm:text-2xl font-bold text-[#fafafa]">
@@ -224,7 +220,7 @@ const ProjectModal = ({ isOpen, onClose, onSubmit }) => {
                 onClick={handleClose}
                 className="p-2 hover:bg-[#262626] rounded-lg transition-colors text-[#a1a1a1]"
               >
-                <RiCloseLine size={20} className="sm:w-6 sm:h-6" />
+                <HugeiconsIcon icon={Cancel01Icon} size={20} className="sm:w-6 sm:h-6"  aria-hidden="true" />
               </button>
             </div>
 
@@ -282,7 +278,7 @@ const ProjectModal = ({ isOpen, onClose, onSubmit }) => {
                         onClick={handleAddField}
                         className="flex items-center justify-center sm:justify-start space-x-2 text-[#737373] hover:text-[#525252] p-2 sm:p-0 rounded-lg hover:bg-[#262626] sm:hover:bg-transparent"
                       >
-                        <RiAddLine />
+                        <HugeiconsIcon icon={Add01Icon}  aria-hidden="true" />
                         <span className="text-sm sm:text-base">Add Field</span>
                       </button>
                     </div>
@@ -343,7 +339,7 @@ const ProjectModal = ({ isOpen, onClose, onSubmit }) => {
                                   onClick={() => handleRemoveField(index)}
                                   className="p-2 text-red-500 hover:bg-[#191919] rounded-lg ml-2 sm:ml-4"
                                 >
-                                  <RiDeleteBin6Line size={16} />
+                                  <HugeiconsIcon icon={Delete01Icon} size={16}  aria-hidden="true" />
                                 </button>
                               )}
                             </div>

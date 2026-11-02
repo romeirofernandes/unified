@@ -5,11 +5,10 @@
 // Wrap the root layout's children in <FluidRoot>, inside your theme provider.
 
 import { FluidProvider } from "@/lib/fluid-provider";
-import { untitleduiIcons } from "@/lib/icons-untitledui";
 
 export function FluidRoot({ children }: { children: React.ReactNode }) {
   return (
-    <FluidProvider shape="rounded" size="default" icons={untitleduiIcons}>
+    <FluidProvider shape="rounded" size="default">
       {children}
     </FluidProvider>
   );

@@ -13,6 +13,7 @@ dist-ssr
 *.local
 .agents/skills/
 skills-lock.json
+.tmp/ferndesk-reference/
 
 # Editor directories and files
 .vscode/*

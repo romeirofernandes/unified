@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { RiArrowLeftLine, RiFileTextLine } from "react-icons/ri";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon, File01Icon } from "@hugeicons/core-free-icons";
 import { useAuth } from "../context/AuthContext";
 import DashboardLayout from "../components/dashboard/DashboardLayout";
 
@@ -156,7 +157,7 @@ ${JSON.stringify(formattedData.responses, null, 2)}`;
               onClick={() => navigate("/dashboard")}
               className="p-2 rounded-lg hover:bg-[#262626] transition-colors text-[#a1a1a1]"
             >
-              <RiArrowLeftLine size={20} />
+              <HugeiconsIcon icon={ArrowLeft01Icon} size={20} aria-hidden="true" />
             </motion.button>
             <div>
               <h1 className="text-2xl font-bold text-[#fafafa]">
@@ -179,7 +180,7 @@ ${JSON.stringify(formattedData.responses, null, 2)}`;
               transition-colors
             `}
           >
-            <RiFileTextLine />
+            <HugeiconsIcon icon={File01Icon} aria-hidden="true" />
             <span>{isSummarizing ? "Generating..." : "Generate Summary"}</span>
           </motion.button>
         </div>

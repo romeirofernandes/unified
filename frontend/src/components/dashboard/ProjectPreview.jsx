@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { RiCloseLine, RiCodeLine, RiCheckLine } from "react-icons/ri";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon, CodeIcon, CheckIcon } from "@hugeicons/core-free-icons";
 import { useAuth } from "../../context/AuthContext";
 
 const ProjectPreview = ({ isOpen, onClose, project }) => {
@@ -118,7 +119,7 @@ export default App;`;
                 onClick={onClose}
                 className="p-2 hover:bg-[#262626] rounded-lg transition-colors text-[#a1a1a1]"
               >
-                <RiCloseLine size={24} />
+                <HugeiconsIcon icon={Cancel01Icon} size={24} aria-hidden="true" />
               </button>
             </div>
 
@@ -167,7 +168,7 @@ export default App;`;
                       onClick={handleCopyCode}
                       className="absolute top-2 right-2 p-2 rounded-lg bg-[#191919] hover:bg-[#737373] text-[#fafafa] transition-colors"
                     >
-                      {copied ? <RiCheckLine /> : <RiCodeLine />}
+                      {copied ? <HugeiconsIcon icon={CheckIcon} aria-hidden="true" /> : <HugeiconsIcon icon={CodeIcon} aria-hidden="true" />}
                     </button>
                   </div>
 

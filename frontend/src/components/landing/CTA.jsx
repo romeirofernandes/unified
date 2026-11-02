@@ -1,4 +1,5 @@
-import { ArrowRight } from "@untitledui/icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";
 
 export default function CTA({ onGetStarted }) {
@@ -10,11 +11,10 @@ export default function CTA({ onGetStarted }) {
       <div className="landing-cta__action">
         <Button
           variant="secondary"
-          trailingIcon={ArrowRight}
           className="landing-button landing-button--primary"
           onClick={onGetStarted}
         >
-          Create your project
+          Create your project <HugeiconsIcon icon={ArrowRight01Icon} size={17} aria-hidden="true" />
         </Button>
         <p>Set up a project and add Unified to your React app.</p>
       </div>

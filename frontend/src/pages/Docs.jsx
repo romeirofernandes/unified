@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "motion/react";
-import { RiArrowRightLine } from "react-icons/ri";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 
 const steps = [
   {
@@ -98,7 +99,7 @@ const Docs = () => {
                     <ul className="space-y-2">
                       {step.steps.map((item, idx) => (
                         <li key={idx} className="flex items-start gap-2">
-                          <RiArrowRightLine className="mt-1 flex-shrink-0 text-[#737373]" />
+                          <HugeiconsIcon icon={ArrowRight01Icon} className="mt-1 flex-shrink-0 text-[#737373]" aria-hidden="true" />
                           <span className="text-[#a1a1a1]">{item}</span>
                         </li>
                       ))}

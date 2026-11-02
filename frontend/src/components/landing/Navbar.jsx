@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu01, XClose } from "@untitledui/icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon, Menu01Icon, Message01Icon } from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";
 
 const links = [
@@ -18,7 +19,7 @@ export default function Navbar({ onGetStarted }) {
     <header className="landing-header">
       <div className="landing-container landing-header__inner">
         <Link className="landing-brand" to="/" aria-label="Unified home">
-          <span className="landing-brand__mark" aria-hidden="true">u</span>
+          <span className="landing-brand__mark" aria-hidden="true"><HugeiconsIcon icon={Message01Icon} size={18} /></span>
           <span>unified</span>
         </Link>
 
@@ -34,12 +35,8 @@ export default function Navbar({ onGetStarted }) {
 
         <div className="landing-header__actions">
           <Link className="landing-signin" to="/login">Sign in</Link>
-          <Button
-            variant="secondary"
-            className="landing-button landing-button--primary landing-button--small"
-            onClick={onGetStarted}
-          >
-            Get started
+          <Button variant="secondary" className="landing-button landing-button--primary landing-button--small" onClick={onGetStarted}>
+            <HugeiconsIcon icon={Message01Icon} size={16} aria-hidden="true" /> Get started
           </Button>
         </div>
 
@@ -51,7 +48,7 @@ export default function Navbar({ onGetStarted }) {
           aria-controls="landing-mobile-nav"
           onClick={() => setMenuOpen((open) => !open)}
         >
-          {menuOpen ? <XClose size={20} /> : <Menu01 size={20} />}
+          <HugeiconsIcon icon={menuOpen ? Cancel01Icon : Menu01Icon} size={20} aria-hidden="true" />
         </button>
       </div>
 

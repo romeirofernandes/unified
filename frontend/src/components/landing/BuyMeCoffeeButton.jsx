@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Coffee } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Coffee01Icon } from "@hugeicons/core-free-icons";
 import { motion } from "motion/react";
 
 const BuyMeCoffeeButton = () => {
@@ -105,7 +106,7 @@ const BuyMeCoffeeButton = () => {
             ease: "linear",
           }}
         >
-          <Coffee size={20} className="text-[#fefefe]" />
+          <HugeiconsIcon icon={Coffee01Icon} size={20} className="text-[#fefefe]" aria-hidden="true" />
         </motion.div>
 
         {/* Button text */}

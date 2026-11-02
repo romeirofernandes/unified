@@ -1,20 +1,21 @@
-import { BarChartSquare02, MessageSquare01, Sliders03 } from "@untitledui/icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { BarChartIcon, Message01Icon, SlidersHorizontalIcon } from "@hugeicons/core-free-icons";
 
 const features = [
   {
-    icon: MessageSquare01,
+    icon: Message01Icon,
     title: "Ask in context",
     description: "Place a feedback form in your React app, right where a thought or friction point happens.",
     className: "landing-feature landing-feature--lead",
   },
   {
-    icon: Sliders03,
+    icon: SlidersHorizontalIcon,
     title: "Shape the questions",
     description: "Choose the fields that fit your product, from a quick note to a structured response.",
     className: "landing-feature landing-feature--form",
   },
   {
-    icon: BarChartSquare02,
+    icon: BarChartIcon,
     title: "Find the signal",
     description: "Review responses together and generate AI summaries to spot recurring themes.",
     className: "landing-feature landing-feature--insight",
@@ -32,7 +33,7 @@ export default function Features() {
       <div className="landing-feature-grid">
         {features.map(({ icon: Icon, title, description, className }) => (
           <article key={title} className={className}>
-            <span className="landing-feature__icon"><Icon size={21} strokeWidth={1.7} aria-hidden="true" /></span>
+            <span className="landing-feature__icon"><HugeiconsIcon icon={Icon} size={21} strokeWidth={1.7} aria-hidden="true" /></span>
             <div>
               <h3>{title}</h3>
               <p>{description}</p>

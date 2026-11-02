@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@fontsource-variable/inter/opsz.css";
+@import "@fontsource-variable/geist";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
@@ -29,7 +30,7 @@ h3 {
 }
 
 body {
-  font-family: "Inter Variable", "Inter", sans-serif;
+  font-family: "Geist Variable", "Inter Variable", sans-serif;
   font-optical-sizing: auto;
   min-height: 100vh;
 }
@@ -40,7 +41,7 @@ button {
 
 @theme inline {
   --font-heading: var(--font-sans);
-  --font-sans: 'Inter Variable', sans-serif;
+  --font-sans: 'Geist Variable', 'Inter Variable', sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);

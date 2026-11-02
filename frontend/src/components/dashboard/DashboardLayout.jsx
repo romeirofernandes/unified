@@ -1,15 +1,8 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { useAuth } from "../../context/AuthContext";
-import {
-  RiDashboardLine,
-  RiSettingsLine,
-  RiLogoutBoxLine,
-  RiMenuFoldLine,
-  RiMenuUnfoldLine,
-  RiMenu4Line,
-  RiCloseLine,
-} from "react-icons/ri";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { DashboardSquare01Icon, Settings01Icon, LogOutIcon, Menu04Icon, Menu01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 
 const DashboardLayout = ({ children }) => {
@@ -27,8 +20,8 @@ const DashboardLayout = ({ children }) => {
   };
 
   const navItems = [
-    { path: "/dashboard", label: "Projects", icon: RiDashboardLine },
-    { path: "/dashboard/settings", label: "Settings", icon: RiSettingsLine },
+    { path: "/dashboard", label: "Projects", icon: DashboardSquare01Icon },
+    { path: "/dashboard/settings", label: "Settings", icon: Settings01Icon },
   ];
 
   const handleLogout = async () => {
@@ -57,7 +50,7 @@ const DashboardLayout = ({ children }) => {
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="p-2 hover:bg-[#262626] rounded-lg transition-colors"
           >
-            {isCollapsed ? <RiMenuUnfoldLine /> : <RiMenuFoldLine />}
+            {isCollapsed ? <HugeiconsIcon icon={Menu01Icon} /> : <HugeiconsIcon icon={Menu04Icon} />}
           </button>
         </div>
 
@@ -78,7 +71,7 @@ const DashboardLayout = ({ children }) => {
                   }
                 `}
               >
-                <Icon size={20} />
+                <HugeiconsIcon icon={Icon} size={20} />
                 {!isCollapsed && <span>{item.label}</span>}
               </Link>
             );
@@ -91,7 +84,7 @@ const DashboardLayout = ({ children }) => {
             onClick={handleLogout}
             className="flex items-center space-x-2 p-3 rounded-lg hover:bg-[#262626] transition-colors text-red-500 w-full"
           >
-            <RiLogoutBoxLine size={20} />
+            <HugeiconsIcon icon={LogOutIcon} size={20} />
             {!isCollapsed && <span>Logout</span>}
           </button>
         </div>
@@ -105,9 +98,9 @@ const DashboardLayout = ({ children }) => {
           className="p-2 hover:bg-[#262626] rounded-lg transition-colors"
         >
           {isMobileMenuOpen ? (
-            <RiCloseLine size={24} />
+            <HugeiconsIcon icon={Cancel01Icon} size={24} />
           ) : (
-            <RiMenu4Line size={24} />
+            <HugeiconsIcon icon={Menu04Icon} size={24} />
           )}
         </button>
       </div>
@@ -150,7 +143,7 @@ const DashboardLayout = ({ children }) => {
                   }
                 `}
               >
-                <Icon size={20} />
+                <HugeiconsIcon icon={Icon} size={20} />
                 <span>{item.label}</span>
               </Link>
             );
@@ -163,7 +156,7 @@ const DashboardLayout = ({ children }) => {
             onClick={handleLogout}
             className="flex items-center space-x-2 p-3 rounded-lg hover:bg-[#262626] transition-colors text-red-500 w-full"
           >
-            <RiLogoutBoxLine size={20} />
+            <HugeiconsIcon icon={LogOutIcon} size={20} />
             <span>Logout</span>
           </button>
         </div>

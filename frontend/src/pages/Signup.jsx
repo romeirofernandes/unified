@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { FcGoogle } from "react-icons/fc";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { GoogleIcon } from "@hugeicons/core-free-icons";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
@@ -112,7 +113,7 @@ const Signup = () => {
             }}
             className="mt-4 w-full flex items-center justify-center gap-3 rounded-lg border border-[#383838] bg-[#262626] px-4 py-3 text-[#fafafa] text-sm sm:text-base hover:bg-[#191919] active:bg-[#191919] transition-colors"
           >
-            <FcGoogle size={20} />
+            <HugeiconsIcon icon={GoogleIcon} size={20} aria-hidden="true" />
             <span>Continue with Google</span>
           </motion.button>
         </div>

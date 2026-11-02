@@ -1,4 +1,5 @@
-import { ArrowRight, Check } from "@untitledui/icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRight01Icon, CheckIcon, Message01Icon } from "@hugeicons/core-free-icons";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -26,20 +27,21 @@ export default function Hero({ onGetStarted }) {
         <div className="landing-hero__actions">
           <Button
             variant="secondary"
-            trailingIcon={ArrowRight}
             className="landing-button landing-button--primary"
             onClick={onGetStarted}
           >
+            <HugeiconsIcon icon={Message01Icon} size={18} aria-hidden="true" />
             Start collecting feedback
+            <HugeiconsIcon icon={ArrowRight01Icon} size={17} aria-hidden="true" />
           </Button>
           <Link className="landing-text-link" to="/docs">
-            Read the documentation <ArrowRight size={16} aria-hidden="true" />
+            Read the documentation <HugeiconsIcon icon={ArrowRight01Icon} size={16} aria-hidden="true" />
           </Link>
         </div>
         <div className="landing-hero__assurances" aria-label="Product details">
-          <span><Check size={15} aria-hidden="true" /> Made for React</span>
-          <span><Check size={15} aria-hidden="true" /> Custom forms</span>
-          <span><Check size={15} aria-hidden="true" /> AI summaries</span>
+          <span><HugeiconsIcon icon={CheckIcon} size={15} aria-hidden="true" /> Made for React</span>
+          <span><HugeiconsIcon icon={CheckIcon} size={15} aria-hidden="true" /> Custom forms</span>
+          <span><HugeiconsIcon icon={CheckIcon} size={15} aria-hidden="true" /> AI summaries</span>
         </div>
       </div>
 
@@ -55,7 +57,7 @@ export default function Hero({ onGetStarted }) {
         <div className="landing-code-card__footer">
           <span>Install the SDK, add your project ID, and you’re ready.</span>
           <Link to="/docs" aria-label="Read integration documentation">
-            <ArrowRight size={18} aria-hidden="true" />
+            <HugeiconsIcon icon={ArrowRight01Icon} size={18} aria-hidden="true" />
           </Link>
         </div>
       </aside>
