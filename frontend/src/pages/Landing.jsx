@@ -5,15 +5,14 @@ import Features from "../components/landing/Features";
 import Process from "../components/landing/Testimonials";
 import CTA from "../components/landing/CTA";
 import Footer from "../components/landing/Footer";
-import "../components/landing/Landing.css";
 
 export default function Landing() {
   const navigate = useNavigate();
 
   return (
-    <main className="landing-page">
+    <main className="min-h-screen overflow-x-clip bg-[#f4f3ee] text-[#1c1b19] font-sans dark:bg-[#201f1d] dark:text-[#f2f0ea]">
       <Navbar onGetStarted={() => navigate("/signup")} />
-      <div className="landing-container">
+      <div className="mx-auto w-full max-w-[1160px] px-5 sm:px-8">
         <Hero
           onGetStarted={() => navigate("/signup")}
         />
