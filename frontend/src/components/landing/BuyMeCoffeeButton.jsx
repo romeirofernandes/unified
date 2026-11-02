@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Coffee } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 const BuyMeCoffeeButton = () => {
   const [loading, setLoading] = useState(false);

@@ -4,7 +4,7 @@ import {
   useScroll,
   useMotionValueEvent,
   AnimatePresence,
-} from "framer-motion";
+} from "motion/react";
 import { RiMenu4Line, RiCloseLine } from "react-icons/ri";
 import BuyMeCoffeeButton from "./BuyMeCoffeeButton";
 

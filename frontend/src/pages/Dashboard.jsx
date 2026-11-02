@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import DashboardLayout from "../components/dashboard/DashboardLayout";
 import ProjectModal from "../components/dashboard/ProjectModal";
 import ProjectPreview from "../components/dashboard/ProjectPreview";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { RiAddLine, RiDeleteBin6Line } from "react-icons/ri";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
