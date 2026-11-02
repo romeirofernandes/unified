@@ -27,7 +27,7 @@ export default function Footer() {
           options={{ fps: 10 }}
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-[#1d1c1a]/70 dark:bg-[#141413]/70" />
+        <div className="absolute inset-0 bg-[#1d1c1a]/60 dark:bg-[#141413]/70" />
       </div>
       <div className="relative z-10 mx-auto w-full max-w-[1200px]">
         <div className="grid gap-8 pb-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:gap-7 sm:pb-3">
