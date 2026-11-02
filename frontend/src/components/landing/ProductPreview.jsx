@@ -23,8 +23,8 @@ const sidebar = [
 
 export default function ProductPreview() {
   return (
-    <section id="product" className="w-full bg-[#f4f3ee] px-4 pb-20 text-[#282722] transition-colors duration-700 sm:px-8 sm:pb-28 lg:px-12 dark:bg-[#211f1d] dark:text-[#f4f1e9] motion-reduce:transition-none" aria-label="Unified product preview">
-      <div className="mx-auto w-full max-w-[1240px] overflow-hidden rounded-[22px] border border-[#d6d3ca] bg-[#fbfaf7] shadow-[0_3px_0_rgb(28_27_25_/_4%),0_28px_70px_rgb(28_27_25_/_12%)] sm:rounded-[28px] dark:border-[#48463f] dark:bg-[#292724] dark:shadow-[0_30px_75px_rgb(0_0_0_/_24%)]">
+    <section id="product" className="w-full overflow-x-clip bg-[#f4f3ee] px-4 pb-16 text-[#282722] transition-colors duration-700 sm:px-8 sm:pb-20 lg:px-12 dark:bg-[#211f1d] dark:text-[#f4f1e9] motion-reduce:transition-none" aria-label="Unified product preview">
+      <div className="mx-auto w-full max-w-[1200px] overflow-hidden rounded-[20px] border border-[#d6d3ca] bg-[#fbfaf7] shadow-[0_3px_0_rgb(28_27_25_/_4%),0_24px_60px_rgb(28_27_25_/_12%)] sm:rounded-[24px] dark:border-[#48463f] dark:bg-[#292724] dark:shadow-[0_30px_75px_rgb(0_0_0_/_24%)]">
         <div className="flex min-h-14 items-center justify-between gap-4 border-b border-[#e4e1d9] px-4 sm:min-h-[66px] sm:px-7 dark:border-[#45433e]">
           <div className="flex min-w-0 items-center gap-2.5 text-[13px] font-medium sm:gap-3 sm:text-sm">
             <span className="grid size-8 shrink-0 place-items-center rounded-[10px] bg-[#e6ebf5] text-[#4f6da9] dark:bg-[#374460] dark:text-[#d8e2f9]">
@@ -60,11 +60,11 @@ export default function ProductPreview() {
             </div>
           </nav>
 
-          <div className="min-w-0 p-4 sm:p-6 lg:p-8">
+          <div className="min-w-0 p-4 sm:p-5 lg:p-7">
             <div className="mb-5 flex flex-wrap items-end justify-between gap-4 sm:mb-6">
               <div>
                 <p className="mb-1 text-[12px] text-[#817e76]">Customer voice</p>
-                <h2 className="font-serif text-[26px] leading-tight tracking-[-0.025em] sm:text-[32px]">Recent feedback</h2>
+                <h2 className="font-serif text-[23px] leading-tight tracking-[-0.025em] sm:text-[28px]">Recent feedback</h2>
               </div>
               <span className="inline-flex min-h-10 items-center gap-2 rounded-[11px] border border-[#d8d5ce] bg-white px-3 text-[12px] font-medium text-[#4b4943] dark:border-[#4a4842] dark:bg-[#302e2a] dark:text-[#ece9e1]">
                 <HugeiconsIcon icon={FilterIcon} size={15} aria-hidden="true" /> Filter
@@ -74,7 +74,7 @@ export default function ProductPreview() {
             <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1.45fr)_minmax(220px,0.8fr)]">
               <div className="grid min-w-0 gap-3">
                 {responses.map((response) => (
-                  <article className="min-w-0 rounded-[15px] border border-[#e2dfd7] bg-white p-4 sm:p-5 dark:border-[#45433e] dark:bg-[#302e2a]" key={response.title}>
+              <article className="min-w-0 rounded-[14px] border border-[#e2dfd7] bg-white p-3.5 sm:p-4 dark:border-[#45433e] dark:bg-[#302e2a]" key={response.title}>
                     <div className="mb-3 flex items-center gap-2.5">
                       <span className={`grid size-8 shrink-0 place-items-center rounded-full text-[10px] font-semibold ${response.color} dark:bg-[#3b3a37] dark:text-[#dce5f4]`}>{response.initials}</span>
                       <div className="min-w-0 flex-1">
@@ -85,7 +85,7 @@ export default function ProductPreview() {
                         <HugeiconsIcon icon={ArrowUpRight01Icon} size={17} />
                       </span>
                     </div>
-                    <h3 className="font-serif text-[17px] leading-[1.25] tracking-[-0.015em] sm:text-[19px]">{response.title}</h3>
+                    <h3 className="font-serif text-[16px] leading-[1.25] tracking-[-0.015em] sm:text-[18px]">{response.title}</h3>
                     <p className="mt-2 line-clamp-2 text-[12px] leading-[1.55] text-[#6b6861] sm:text-[13px] dark:text-[#c5c1b8]">{response.body}</p>
                     <span className="mt-4 inline-flex rounded-full bg-[#f1f0ec] px-2.5 py-1 text-[10px] font-medium text-[#66635c] dark:bg-[#3a3834] dark:text-[#d2cec5]">{response.tag}</span>
                   </article>
