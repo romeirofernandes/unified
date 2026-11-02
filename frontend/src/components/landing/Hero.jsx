@@ -7,6 +7,10 @@ export default function Hero() {
   return (
     <section className="w-full bg-transparent px-5 pb-7 pt-8 text-center text-[#24231f] transition-colors duration-700 sm:px-8 sm:pb-9 sm:pt-10 lg:px-12 lg:pt-12 dark:text-[#f4f1e9] motion-reduce:transition-none" aria-labelledby="landing-title">
       <div className="mx-auto grid w-full min-w-0 max-w-[1200px] justify-items-center">
+        <p className="mb-5 inline-flex min-h-9 max-w-full items-center justify-center gap-2 rounded-full border border-[#d6d3ca] bg-white/70 px-3.5 py-2 text-center text-[12px] font-medium tracking-[0.015em] text-[#56534d] shadow-[0_2px_8px_rgb(28_27_25_/_4%)] dark:border-[#45433e] dark:bg-white/5 dark:text-[#d0ccc3]">
+          <span className="size-2 rounded-full bg-[#7c99d7]" aria-hidden="true" />
+          Feedback that makes the next release clearer
+        </p>
         <h1 id="landing-title" className="w-full min-w-0 max-w-[1000px] font-serif text-[clamp(2.3rem,4.9vw,4.5rem)] font-normal leading-[1.08] tracking-[-0.025em] text-balance text-[#24231f] dark:text-[#f4f1e9]">
           <span className="sm:block">Make customer feedback</span>{" "}
           <span className="sm:block">part of your next release.</span>
