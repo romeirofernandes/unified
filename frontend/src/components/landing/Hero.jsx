@@ -1,65 +1,45 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowRight01Icon, CheckIcon, Message01Icon } from "@hugeicons/core-free-icons";
+import { ArrowDown01Icon, ArrowRight01Icon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
 import { Link } from "react-router-dom";
 
-const integrationCode = `import { UnifiedFeedback } from "unified-sdk";
-import "unified-sdk/dist/unified-sdk.css";
-
-<UnifiedFeedback
-  projectId={projectId}
-  firebaseUid={firebaseUid}
-  theme="light"
-/>`;
-
-export default function Hero({ onGetStarted }) {
+export default function Hero() {
   return (
-    <section className="grid min-h-[600px] grid-cols-1 justify-items-center content-center py-16 text-center sm:min-h-[640px] sm:py-24" aria-labelledby="landing-title">
-      <div className="w-full max-w-[800px]">
-        <p className="mb-5 flex items-center justify-center gap-3 text-[12px] font-medium tracking-wide text-[#625f59] sm:mb-6 sm:text-[13px] dark:text-[#c0bdb5]">
-          <span className="h-px w-7 bg-[#7c99d7]" aria-hidden="true" />
-          A feedback loop for thoughtful teams
+    <section className="w-full bg-[#f4f3ee] px-5 pb-12 pt-16 text-center text-[#24231f] transition-colors duration-700 sm:px-8 sm:pb-16 sm:pt-24 lg:px-12 lg:pt-28 dark:bg-[#211f1d] dark:text-[#f4f1e9] motion-reduce:transition-none" aria-labelledby="landing-title">
+      <div className="mx-auto grid w-full max-w-[1060px] justify-items-center">
+        <p className="mb-7 inline-flex min-h-10 items-center gap-2.5 rounded-full border border-[#d6d3ca] bg-white/70 px-4 py-2 text-[13px] font-medium tracking-[0.015em] text-[#56534d] shadow-[0_2px_8px_rgb(28_27_25_/_4%)] dark:border-[#45433e] dark:bg-white/5 dark:text-[#d0ccc3]">
+          <span className="size-2 rounded-full bg-[#7c99d7]" aria-hidden="true" />
+          Feedback that makes the next release clearer
         </p>
-        <h1 id="landing-title" className="font-serif text-[clamp(2.75rem,8vw,5.5rem)] font-normal leading-[0.98] tracking-[-0.065em] text-[#1c1b19] dark:text-[#f2f0ea]">Make feedback part of how you build.</h1>
-        <p className="mx-auto mt-5 max-w-[630px] text-[15px] leading-relaxed text-[#625f59] sm:mt-6 sm:text-[17px] dark:text-[#c0bdb5]">
-          Give customers a clear way to speak up, then turn their responses into product decisions.
+        <h1 id="landing-title" className="max-w-[1060px] font-serif text-[clamp(2.5rem,5.4vw,5rem)] font-normal leading-[1.1] tracking-[-0.02em] text-balance text-[#24231f] dark:text-[#f4f1e9]">
+          <span className="sm:block">Make customer feedback</span>{" "}
+          <span className="sm:block">part of your next release.</span>
+        </h1>
+        <p className="mx-auto mt-6 max-w-[680px] text-[16px] leading-[1.65] text-pretty text-[#5e5b54] sm:mt-7 sm:text-[18px] dark:text-[#c6c2b9]">
+          Collect useful feedback inside your React app, see what customers keep asking for, and decide what to build next.
         </p>
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-4 sm:mt-8 sm:gap-6">
-          <button
-            type="button"
-            className="inline-flex min-h-12 items-center justify-center gap-2 whitespace-nowrap rounded-[14px] border-2 border-[#4f6da9] bg-gradient-to-b from-[#87a2dd] to-[#6684c4] px-4 text-sm font-semibold text-white shadow-[0_1px_0_#405785,0_3px_7px_rgb(28_27_25_/_19%)] transition hover:-translate-y-px hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7c99d7] focus-visible:ring-offset-2 sm:px-5"
-            onClick={onGetStarted}
+        <div className="mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
+          <Link
+            className="inline-flex min-h-[52px] items-center justify-center gap-2.5 whitespace-nowrap rounded-[15px] border-2 border-[#30456d] bg-gradient-to-b from-[#5575b4] to-[#405783] px-6 text-[15px] font-semibold text-white shadow-[0_1px_0_#26385b,0_4px_9px_rgb(28_27_25_/_18%)] transition-[filter,transform,box-shadow] duration-200 hover:-translate-y-px hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#405783] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3ee] active:translate-y-0 active:shadow-[0_1px_0_#26385b] dark:focus-visible:ring-offset-[#211f1d]"
+            to="/signup"
           >
-            <HugeiconsIcon icon={Message01Icon} size={18} aria-hidden="true" />
-            Start collecting feedback
-            <HugeiconsIcon icon={ArrowRight01Icon} size={17} aria-hidden="true" />
-          </button>
-          <Link className="inline-flex items-center gap-2 text-sm font-medium text-[#1c1b19] no-underline hover:text-[#4f6da9] dark:text-[#f2f0ea]" to="/docs">
-            Read the documentation <HugeiconsIcon icon={ArrowRight01Icon} size={16} aria-hidden="true" />
+            Create your project <HugeiconsIcon icon={ArrowRight01Icon} size={18} aria-hidden="true" />
+          </Link>
+          <Link className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-[15px] border border-[#d4d1c8] bg-white/60 px-6 text-[15px] font-medium text-[#383631] no-underline shadow-[0_2px_4px_rgb(28_27_25_/_5%)] transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#405783] focus-visible:ring-offset-2 dark:border-[#4a4842] dark:bg-white/5 dark:text-[#f4f1e9] dark:hover:bg-white/10" to="/docs">
+            Read the documentation
           </Link>
         </div>
-        <div className="mt-7 flex flex-wrap justify-center gap-x-5 gap-y-2 text-[11px] text-[#817e76] sm:mt-10 sm:gap-5 sm:text-xs" aria-label="Product details">
-          <span className="inline-flex items-center gap-1.5"><HugeiconsIcon icon={CheckIcon} size={15} className="text-[#4f6da9]" aria-hidden="true" /> Made for React</span>
-          <span className="inline-flex items-center gap-1.5"><HugeiconsIcon icon={CheckIcon} size={15} className="text-[#4f6da9]" aria-hidden="true" /> Custom forms</span>
-          <span className="inline-flex items-center gap-1.5"><HugeiconsIcon icon={CheckIcon} size={15} className="text-[#4f6da9]" aria-hidden="true" /> AI summaries</span>
-        </div>
+        <ul className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 p-0 text-[13px] text-[#716e67] dark:text-[#aaa69e]">
+          {["Built for React", "Custom feedback forms", "AI summaries"].map((item) => (
+            <li className="inline-flex list-none items-center gap-2" key={item}>
+              <HugeiconsIcon icon={CheckmarkCircle02Icon} size={16} className="text-[#5575b4] dark:text-[#9bb3e3]" aria-hidden="true" />
+              {item}
+            </li>
+          ))}
+        </ul>
+        <a className="mt-11 grid size-11 place-items-center rounded-full text-[#6a675f] no-underline transition-colors hover:bg-black/5 hover:text-[#24231f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#405783] dark:text-[#c6c2b9] dark:hover:bg-white/5 dark:hover:text-white" href="#product" aria-label="Explore the Unified product preview">
+          <HugeiconsIcon icon={ArrowDown01Icon} size={20} aria-hidden="true" />
+        </a>
       </div>
-
-      <aside className="mt-10 w-full max-w-[740px] rounded-2xl border border-[#d8d5ce] bg-white p-4 text-left shadow-[inset_0_1px_0_rgb(255_255_255_/_90%),0_2px_0_rgb(28_27_25_/_4%),0_22px_48px_rgb(28_27_25_/_8%)] sm:mt-14 sm:rounded-[18px] sm:p-7 dark:border-[#45433e] dark:bg-[#2a2926] dark:shadow-[0_22px_48px_rgb(0_0_0_/_18%)]" aria-label="Example Unified integration">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <span className="mb-2 block text-xs text-[#817e76]">A small addition</span>
-            <h2 className="font-serif text-xl font-normal tracking-tight text-[#1c1b19] sm:text-[23px] dark:text-[#f2f0ea]">One component. A clearer signal.</h2>
-          </div>
-          <span className="rounded-md border border-[#d8d5ce] bg-[#f8f7f3] px-2 py-1 text-[11px] text-[#625f59] dark:border-[#45433e] dark:bg-[#252421] dark:text-[#c0bdb5]">React</span>
-        </div>
-        <pre className="my-5 overflow-x-auto rounded-xl border border-[#d8d5ce]/70 bg-[#f5f4f0] p-3 font-mono text-[10px] leading-7 text-[#354034] sm:my-6 sm:p-5 sm:text-[13px] dark:border-[#45433e] dark:bg-[#222936] dark:text-[#d3ddf3]"><code>{integrationCode}</code></pre>
-        <div className="flex items-center justify-between gap-3 text-[11px] leading-relaxed text-[#625f59] sm:text-xs dark:text-[#c0bdb5]">
-          <span>Install the SDK, add your project ID, and you’re ready.</span>
-          <Link className="grid size-[34px] shrink-0 place-items-center rounded-lg border border-[#d8d5ce] bg-[#f8f7f3] text-[#4f6da9] no-underline dark:border-[#45433e] dark:bg-[#252421]" to="/docs" aria-label="Read integration documentation">
-            <HugeiconsIcon icon={ArrowRight01Icon} size={18} aria-hidden="true" />
-          </Link>
-        </div>
-      </aside>
     </section>
   );
 }

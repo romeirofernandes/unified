@@ -1,43 +1,58 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import { BarChartIcon, Message01Icon, SlidersHorizontalIcon } from "@hugeicons/core-free-icons";
+import {
+  ChartLineData01Icon,
+  Message01Icon,
+  SlidersHorizontalIcon,
+} from "@hugeicons/core-free-icons";
 
-const features = [
+const capabilities = [
   {
+    number: "01",
     icon: Message01Icon,
-    title: "Ask in context",
-    description: "Place a feedback form in your React app, right where a thought or friction point happens.",
+    title: "Ask at the right moment",
+    description: "Put a feedback form inside your React product, close to the task or moment customers want to talk about.",
   },
   {
+    number: "02",
     icon: SlidersHorizontalIcon,
-    title: "Shape the questions",
-    description: "Choose the fields that fit your product, from a quick note to a structured response.",
+    title: "Shape a useful response",
+    description: "Choose the fields that fit your question, from a quick note to a more structured conversation.",
   },
   {
-    icon: BarChartIcon,
-    title: "Find the signal",
-    description: "Review responses together and generate AI summaries to spot recurring themes.",
+    number: "03",
+    icon: ChartLineData01Icon,
+    title: "See what keeps coming up",
+    description: "Bring related responses together and use AI summaries to spot themes worth acting on.",
   },
 ];
 
 export default function Features() {
   return (
-    <section id="features" className="py-14 sm:py-20" aria-labelledby="features-title">
-      <div className="mb-8 h-1.5 w-full bg-[repeating-linear-gradient(90deg,#d8d5ce_0_5px,transparent_5px_10px)] opacity-70 sm:mb-11" aria-hidden="true" />
-      <div className="mx-auto mb-8 max-w-[720px] text-center sm:mb-12">
-        <h2 id="features-title" className="font-serif text-[clamp(2rem,5vw,3.125rem)] font-normal leading-tight tracking-[-0.055em] text-[#1c1b19] dark:text-[#f2f0ea]">Useful feedback starts with a better way to listen.</h2>
-        <p className="mx-auto mt-4 max-w-[570px] text-sm leading-7 text-[#625f59] sm:text-[15px] dark:text-[#c0bdb5]">Collect the details, see what repeats, and keep your next step close to the customer’s words.</p>
-      </div>
+    <section id="capabilities" className="w-full bg-[#eeede7] px-5 py-20 text-[#24231f] transition-colors duration-700 sm:px-8 sm:py-28 lg:px-12 dark:bg-[#292724] dark:text-[#f4f1e9] motion-reduce:transition-none" aria-labelledby="capabilities-title">
+      <div className="mx-auto w-full max-w-[1200px]">
+        <div className="grid gap-6 md:grid-cols-[minmax(0,0.9fr)_minmax(300px,0.8fr)] md:items-end md:gap-12">
+          <h2 id="capabilities-title" className="max-w-[720px] font-serif text-[clamp(2.25rem,4.8vw,4.5rem)] font-normal leading-[1.1] tracking-[-0.02em] text-balance">
+            A clearer path from question to action.
+          </h2>
+          <p className="max-w-[520px] pb-1 text-[15px] leading-[1.65] text-[#5f5c55] sm:text-[17px] dark:text-[#c6c2b9]">
+            Unified gives customer feedback a home your team can return to, understand, and use to make better product decisions.
+          </p>
+        </div>
 
-      <div className="grid grid-cols-1 border-y border-[#d8d5ce] sm:grid-cols-3 dark:border-[#45433e]">
-        {features.map(({ icon: Icon, title, description }, index) => (
-          <article key={title} className={`flex min-h-[190px] flex-col gap-6 px-2 py-6 sm:min-h-[220px] sm:gap-8 sm:px-7 sm:py-7 ${index < features.length - 1 ? "border-b border-[#d8d5ce] sm:border-b-0 sm:border-r dark:border-[#45433e]" : ""}`}>
-            <span className="grid size-[42px] shrink-0 place-items-center rounded-[13px] border border-[#7c99d7]/40 bg-gradient-to-br from-white to-[#e5ebf7] text-[#4f6da9] shadow-[inset_0_1px_0_rgb(255_255_255_/_80%)] dark:from-[#2a2926] dark:to-[#303b50] dark:text-[#b5c8f0]"><HugeiconsIcon icon={Icon} size={21} strokeWidth={1.7} aria-hidden="true" /></span>
-            <div>
-              <h3 className="font-serif text-xl font-normal tracking-tight text-[#1c1b19] dark:text-[#f2f0ea]">{title}</h3>
-              <p className="mt-2 max-w-[430px] text-sm leading-relaxed text-[#625f59] dark:text-[#c0bdb5]">{description}</p>
-            </div>
-          </article>
-        ))}
+        <div className="mt-12 grid grid-cols-1 border-y border-[#d4d1c8] sm:mt-16 md:grid-cols-3 dark:border-[#494740]">
+          {capabilities.map(({ number, icon, title, description }, index) => (
+            <article className={`grid min-h-[240px] grid-cols-[44px_minmax(0,1fr)] gap-x-4 py-6 sm:min-h-[280px] sm:gap-x-5 sm:py-8 md:grid-cols-1 md:gap-y-8 md:px-7 lg:px-9 ${index === 0 ? "md:pl-0" : ""} ${index < capabilities.length - 1 ? "border-b border-[#d4d1c8] md:border-b-0 md:border-r dark:border-[#494740]" : ""}`} key={number}>
+              <span className="row-span-2 grid size-11 place-items-center rounded-[14px] border border-[#c8d2e7] bg-[#e4e9f3] text-[#4b679f] dark:border-[#52617c] dark:bg-[#343f53] dark:text-[#cbd8f1]">
+                <HugeiconsIcon icon={icon} size={21} aria-hidden="true" />
+              </span>
+              <span className="self-center text-[12px] font-medium tabular-nums tracking-[0.04em] text-[#858178] md:order-first dark:text-[#aaa69e]">{number}</span>
+              <div className="col-start-2 row-start-2 md:col-auto md:row-auto">
+                <h3 className="font-serif text-[23px] leading-[1.2] tracking-[-0.02em] sm:text-[25px]">{title}</h3>
+                <p className="mt-3 max-w-[370px] text-[14px] leading-[1.65] text-[#65625b] sm:text-[15px] dark:text-[#c6c2b9]">{description}</p>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
     </section>
   );

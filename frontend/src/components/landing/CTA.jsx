@@ -1,21 +1,29 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
+import { Link } from "react-router-dom";
 
-export default function CTA({ onGetStarted }) {
+export default function CTA() {
   return (
-    <section className="relative mb-16 flex flex-col items-start justify-between gap-7 bg-[#7c99d7] px-6 py-8 text-white sm:mb-24 sm:flex-row sm:items-end sm:gap-12 sm:px-12 sm:py-14" aria-labelledby="landing-cta-title">
-      <div className="max-w-[610px]">
-        <h2 id="landing-cta-title" className="font-serif text-[clamp(2rem,4vw,2.75rem)] font-normal leading-tight tracking-[-0.055em]">Make space for the feedback that moves you forward.</h2>
-      </div>
-      <div className="w-full shrink-0 sm:w-auto sm:max-w-[245px]">
-        <button
-          type="button"
-          className="inline-flex min-h-12 w-full items-center justify-center gap-2 whitespace-nowrap rounded-[14px] border-2 border-[#405785] bg-gradient-to-b from-[#87a2dd] to-[#6684c4] px-5 text-sm font-semibold text-white shadow-[0_1px_0_#405785,0_3px_7px_rgb(28_27_25_/_19%)] transition hover:-translate-y-px hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7c99d7] focus-visible:ring-offset-2 sm:w-auto"
-          onClick={onGetStarted}
-        >
-          Create your project <HugeiconsIcon icon={ArrowRight01Icon} size={17} aria-hidden="true" />
-        </button>
-        <p className="mt-3 text-xs leading-relaxed text-white/80">Set up a project and add Unified to your React app.</p>
+    <section className="w-full bg-[#e4e9f2] px-5 py-16 text-[#24231f] transition-colors duration-700 sm:px-8 sm:py-24 lg:px-12 dark:bg-[#30394b] dark:text-[#f4f1e9] motion-reduce:transition-none" aria-labelledby="landing-cta-title">
+      <div className="mx-auto grid w-full max-w-[1200px] gap-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:gap-12">
+        <div className="max-w-[760px]">
+          <p className="mb-4 text-[13px] font-medium tracking-[0.05em] text-[#526b9d] dark:text-[#c5d3f1]">Bring the customer voice closer</p>
+          <h2 id="landing-cta-title" className="font-serif text-[clamp(2.25rem,4.5vw,4.5rem)] font-normal leading-[1.1] tracking-[-0.02em] text-balance">
+            Build the thing your customers keep asking for.
+          </h2>
+          <p className="mt-5 max-w-[620px] text-[15px] leading-[1.65] text-[#5c5a55] sm:text-[17px] dark:text-[#d3d8e4]">
+            Start collecting product feedback with a small addition to your React app.
+          </p>
+        </div>
+        <div className="flex flex-col items-start gap-3 md:items-end">
+          <Link
+            className="inline-flex min-h-[52px] items-center justify-center gap-2.5 whitespace-nowrap rounded-[15px] border-2 border-[#30456d] bg-gradient-to-b from-[#5575b4] to-[#405783] px-6 text-[15px] font-semibold text-white shadow-[0_1px_0_#26385b,0_4px_9px_rgb(28_27_25_/_17%)] transition-[filter,transform,box-shadow] duration-200 hover:-translate-y-px hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#354972] focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4e9f2] active:translate-y-0 active:shadow-[0_1px_0_#26385b] dark:focus-visible:ring-offset-[#30394b]"
+            to="/signup"
+          >
+            Create your project <HugeiconsIcon icon={ArrowRight01Icon} size={18} aria-hidden="true" />
+          </Link>
+          <Link className="text-[13px] text-[#4d4a44] underline decoration-[#9ba8c2] underline-offset-4 hover:text-[#202c44] dark:text-[#e2e6ef] dark:hover:text-white" to="/docs">Read the setup guide</Link>
+        </div>
       </div>
     </section>
   );
