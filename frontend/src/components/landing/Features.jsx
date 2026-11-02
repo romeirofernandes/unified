@@ -28,7 +28,7 @@ const capabilities = [
 
 export default function Features() {
   return (
-    <section id="capabilities" className="w-full bg-[#eeede7] px-5 py-16 text-[#24231f] transition-colors duration-700 sm:px-8 sm:py-20 lg:px-12 dark:bg-[#292724] dark:text-[#f4f1e9] motion-reduce:transition-none" aria-labelledby="capabilities-title">
+    <section id="capabilities" className="w-full bg-[#eeede7] px-5 py-24 text-[#24231f] transition-colors duration-700 sm:px-8 sm:py-28 lg:px-12 lg:py-32 dark:bg-[#292724] dark:text-[#f4f1e9] motion-reduce:transition-none" aria-labelledby="capabilities-title">
       <div className="mx-auto w-full max-w-[1200px]">
         <div className="grid gap-6 md:grid-cols-[minmax(0,0.9fr)_minmax(300px,0.8fr)] md:items-end md:gap-12">
           <h2 id="capabilities-title" className="max-w-[720px] font-serif text-[clamp(2.1rem,4.4vw,3.8rem)] font-normal leading-[1.08] tracking-[-0.025em] text-balance">
@@ -39,9 +39,9 @@ export default function Features() {
           </p>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 border-y border-[#d4d1c8] sm:mt-12 md:grid-cols-3 dark:border-[#494740]">
+        <div className="mt-14 grid grid-cols-1 border-y border-[#d4d1c8] sm:mt-16 md:grid-cols-3 dark:border-[#494740]">
           {capabilities.map(({ number, icon, title, description }, index) => (
-            <article className={`grid min-h-[210px] grid-cols-[40px_minmax(0,1fr)] gap-x-3.5 py-5 sm:min-h-[240px] sm:gap-x-4 sm:py-7 md:grid-cols-1 md:gap-y-6 md:px-6 lg:px-8 ${index === 0 ? "md:pl-0" : ""} ${index < capabilities.length - 1 ? "border-b border-[#d4d1c8] md:border-b-0 md:border-r dark:border-[#494740]" : ""}`} key={number}>
+            <article className={`grid min-h-[240px] grid-cols-[40px_minmax(0,1fr)] gap-x-3.5 py-7 sm:min-h-[280px] sm:gap-x-4 sm:py-9 md:grid-cols-1 md:gap-y-6 md:px-6 lg:px-8 ${index === 0 ? "md:pl-0" : ""} ${index < capabilities.length - 1 ? "border-b border-[#d4d1c8] md:border-b-0 md:border-r dark:border-[#494740]" : ""}`} key={number}>
               <span className="row-span-2 grid size-10 place-items-center rounded-[13px] border border-[#c8d2e7] bg-[#e4e9f3] text-[#4b679f] dark:border-[#52617c] dark:bg-[#343f53] dark:text-[#cbd8f1]">
                 <HugeiconsIcon icon={icon} size={19} aria-hidden="true" />
               </span>

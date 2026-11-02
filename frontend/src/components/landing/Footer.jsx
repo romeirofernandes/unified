@@ -5,7 +5,7 @@ const rulerMarks = Array.from({ length: 17 }, (_, index) => index);
 
 export default function Footer() {
   return (
-    <footer className="w-full overflow-hidden bg-[#1d1c1a] px-5 pb-6 pt-10 text-[#f4f3ee] transition-colors duration-700 sm:px-8 sm:pb-8 sm:pt-12 lg:px-12 dark:bg-[#141413] motion-reduce:transition-none">
+    <footer className="w-full overflow-hidden bg-[#1d1c1a] px-5 pb-10 pt-16 text-[#f4f3ee] transition-colors duration-700 sm:px-8 sm:pb-12 sm:pt-20 lg:px-12 dark:bg-[#141413] motion-reduce:transition-none">
       <div className="mx-auto w-full max-w-[1200px]">
         <div className="grid gap-8 pb-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:gap-7 sm:pb-3">
           <div className="max-w-[520px]">
@@ -25,7 +25,7 @@ export default function Footer() {
           </nav>
         </div>
 
-        <div className="relative my-7 border border-white/20 px-3 pb-4 pt-5 sm:my-9 sm:px-6 sm:pb-5 sm:pt-6">
+        <div className="relative my-10 border border-white/20 px-3 pb-4 pt-5 sm:my-12 sm:px-6 sm:pb-5 sm:pt-6">
           <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#1d1c1a] px-2 font-mono text-[9px] tracking-[0.08em] text-[#aaa69e] dark:bg-[#141413] sm:text-[10px]">1200 px</div>
           <span className="absolute -left-2 top-1/2 -translate-y-1/2 bg-[#1d1c1a] px-1 font-mono text-[8px] tracking-[0.05em] text-[#aaa69e] [writing-mode:vertical-rl] dark:bg-[#141413] sm:text-[9px]">246 px</span>
           <div className="mb-1 flex items-center justify-between font-mono text-[8px] tracking-[0.04em] text-[#817e76] sm:text-[9px]">

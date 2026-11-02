@@ -1,77 +1,48 @@
-import { useState } from "react";
+import { useRef } from "react";
+import { flushSync } from "react-dom";
 import { useTheme } from "next-themes";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ContrastIcon } from "@hugeicons/core-free-icons";
-import { tactileButtonBase, tactilePrimaryButton } from "./buttonStyles";
-
-const MotionDiv = motion.div;
+import { tactileButtonBase, tactileSecondaryButton } from "./buttonStyles";
 
 export default function ThemeToggle({ compact = false }) {
   const { resolvedTheme, setTheme } = useTheme();
-  const reduceMotion = useReducedMotion();
-  const [reveal, setReveal] = useState(null);
+  const transitionInProgress = useRef(false);
 
-  function toggleTheme(event) {
-    const nextTheme = resolvedTheme === "dark" ? "light" : "dark";
+  function toggleTheme() {
+    if (transitionInProgress.current) return;
 
-    if (reduceMotion) {
+    const currentTheme = resolvedTheme === "dark" ? "dark" : "light";
+    const nextTheme = currentTheme === "dark" ? "light" : "dark";
+
+    if (typeof document.startViewTransition !== "function") {
       setTheme(nextTheme);
       return;
     }
 
-    const bounds = event.currentTarget.getBoundingClientRect();
-    setReveal({
-      x: bounds.left + bounds.width / 2,
-      y: bounds.top + bounds.height / 2,
-      current: resolvedTheme === "dark" ? "dark" : "light",
-      next: nextTheme,
-      phase: "cover",
+    transitionInProgress.current = true;
+    const transition = document.startViewTransition(() => {
+      flushSync(() => setTheme(nextTheme));
     });
+    const releaseToggle = () => {
+      transitionInProgress.current = false;
+    };
+
+    transition.finished.then(releaseToggle, releaseToggle);
   }
 
-  function advanceReveal() {
-    if (reveal?.phase === "cover") {
-      setTheme(reveal.next);
-      setReveal({ ...reveal, phase: "reveal" });
-      return;
-    }
-    setReveal(null);
-  }
-
-  const overlayTheme = reveal?.phase === "cover" ? reveal.current : reveal?.next;
+  const nextTheme = resolvedTheme === "dark" ? "light" : "dark";
 
   return (
-    <>
-      <button
-        type="button"
-        className={`${tactileButtonBase} ${tactilePrimaryButton} size-10 p-0 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3ee] dark:focus-visible:ring-offset-[#211f1d] motion-reduce:transition-none ${compact ? "" : "px-0"}`}
-        onClick={toggleTheme}
-        aria-label={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} theme`}
-        title={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} theme`}
-      >
-        <HugeiconsIcon icon={ContrastIcon} size={20} aria-hidden="true" />
-        {!compact && <span className="sr-only">Change appearance</span>}
-      </button>
-      <AnimatePresence>
-        {reveal && (
-          <MotionDiv
-            key={`${reveal.current}-${reveal.next}`}
-            aria-hidden="true"
-            className={`pointer-events-none fixed inset-0 z-[100] ${overlayTheme === "dark" ? "bg-[#211f1d]" : "bg-[#f4f3ee]"}`}
-            initial={{
-              clipPath: `circle(${reveal.phase === "cover" ? "0px" : "150vmax"} at ${reveal.x}px ${reveal.y}px)`,
-              filter: "blur(18px)",
-            }}
-            animate={{
-              clipPath: `circle(${reveal.phase === "cover" ? "150vmax" : "0px"} at ${reveal.x}px ${reveal.y}px)`,
-              filter: reveal.phase === "cover" ? "blur(0px)" : "blur(18px)",
-            }}
-            transition={{ duration: 0.62, ease: [0.22, 1, 0.36, 1] }}
-            onAnimationComplete={advanceReveal}
-          />
-        )}
-      </AnimatePresence>
-    </>
+    <button
+      type="button"
+      className={`${tactileButtonBase} ${tactileSecondaryButton} size-10 p-0 [view-transition-name:theme-toggle] transition-[filter,transform] duration-200 hover:scale-[1.06] active:scale-[0.96] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3ee] dark:focus-visible:ring-offset-[#211f1d] motion-reduce:transition-none ${compact ? "" : "px-0"}`}
+      onClick={toggleTheme}
+      aria-label={`Switch to ${nextTheme} theme`}
+      title={`Switch to ${nextTheme} theme`}
+    >
+      <HugeiconsIcon icon={ContrastIcon} size={20} aria-hidden="true" />
+      {!compact && <span className="sr-only">Change appearance</span>}
+    </button>
   );
 }

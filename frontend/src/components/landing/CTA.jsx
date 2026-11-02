@@ -5,8 +5,8 @@ import { tactileButtonBase, tactilePrimaryButton } from "./buttonStyles";
 
 export default function CTA() {
   return (
-    <section className="w-full bg-[#e4e9f2] px-5 py-16 text-[#24231f] transition-colors duration-700 sm:px-8 sm:py-20 lg:px-12 dark:bg-[#30394b] dark:text-[#f4f1e9] motion-reduce:transition-none" aria-labelledby="landing-cta-title">
-      <div className="mx-auto grid w-full max-w-[1200px] gap-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:gap-12">
+    <section className="w-full bg-[#e4e9f2] px-5 py-24 text-[#24231f] transition-colors duration-700 sm:px-8 sm:py-28 lg:px-12 lg:py-32 dark:bg-[#30394b] dark:text-[#f4f1e9] motion-reduce:transition-none" aria-labelledby="landing-cta-title">
+      <div className="mx-auto grid w-full max-w-[1200px] gap-10 md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:gap-12">
         <div className="max-w-[760px]">
           <p className="mb-4 text-[13px] font-medium tracking-[0.05em] text-[#526b9d] dark:text-[#c5d3f1]">Bring the customer voice closer</p>
           <h2 id="landing-cta-title" className="font-serif text-[clamp(2.1rem,4.2vw,3.8rem)] font-normal leading-[1.08] tracking-[-0.025em] text-balance">

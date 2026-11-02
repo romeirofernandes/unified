@@ -1023,3 +1023,80 @@ button {
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
 }
+
+/* Reveal the incoming theme like anatomycn, keyed to next-themes' html class. */
+::view-transition-old(root) {
+  animation: none;
+  z-index: -1;
+}
+
+html.dark::view-transition-new(root) {
+  will-change: clip-path, filter;
+  animation: theme-reveal-bottom-up 850ms cubic-bezier(0.45, 0, 0.55, 1) both;
+}
+
+html:not(.dark)::view-transition-new(root) {
+  will-change: clip-path, filter;
+  animation: theme-reveal-top-down 850ms cubic-bezier(0.45, 0, 0.55, 1) both;
+}
+
+@keyframes theme-reveal-bottom-up {
+  from {
+    clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
+    filter: blur(8px);
+  }
+  50% { filter: blur(4px); }
+  to {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    filter: blur(0);
+  }
+}
+
+@keyframes theme-reveal-top-down {
+  from {
+    clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+    filter: blur(8px);
+  }
+  50% { filter: blur(4px); }
+  to {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    filter: blur(0);
+  }
+}
+
+::view-transition-group(theme-toggle) {
+  animation-duration: 500ms;
+  animation-timing-function: ease-in-out;
+}
+
+::view-transition-old(theme-toggle) { animation: none; }
+
+html:not(.dark)::view-transition-new(theme-toggle) {
+  animation: theme-toggle-turn-in 500ms ease-in-out both;
+}
+
+html.dark::view-transition-new(theme-toggle) {
+  animation: theme-toggle-turn-back 500ms ease-in-out both;
+}
+
+@keyframes theme-toggle-turn-in {
+  from { transform: rotate(-180deg); }
+}
+
+@keyframes theme-toggle-turn-back {
+  from { transform: rotate(180deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(theme-toggle) { animation: none; }
+  ::view-transition-old(root) { animation: none; }
+  ::view-transition-new(root) {
+    animation: theme-reveal-fade 150ms ease-out;
+    filter: none;
+  }
+  ::view-transition-new(theme-toggle) { animation: none; }
+}
+
+@keyframes theme-reveal-fade {
+  from { opacity: 0; }
+}
