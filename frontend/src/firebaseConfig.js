@@ -1,5 +1,4 @@
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
@@ -14,7 +13,17 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// Analytics is optional and loads separately from authentication.
+let analytics = null;
+if (typeof window !== "undefined") {
+  import("firebase/analytics")
+    .then(async ({ getAnalytics, isSupported }) => {
+      if (await isSupported()) analytics = getAnalytics(app);
+    })
+    .catch(() => {
+      // Tracking must not prevent sign-in in browsers without analytics support.
+    });
+}
 const auth = getAuth(app);
 
 export { auth, analytics };

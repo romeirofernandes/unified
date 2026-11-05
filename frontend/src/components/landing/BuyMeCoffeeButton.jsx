@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Coffee01Icon } from "@hugeicons/core-free-icons";
-import { motion } from "motion/react";
+import { motion as Motion } from "motion/react";
 
 const BuyMeCoffeeButton = () => {
   const [loading, setLoading] = useState(false);
@@ -10,16 +10,19 @@ const BuyMeCoffeeButton = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/payment/create-order`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: 50 }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/payment/create-order`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: 50 }),
+        },
+      );
 
       const { orderId, amount } = await response.json();
 
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID, 
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: amount,
         currency: "INR",
         name: "Buy Me a Coffee",
@@ -49,12 +52,12 @@ const BuyMeCoffeeButton = () => {
   };
 
   return (
-    <motion.div
+    <Motion.div
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       className="relative"
     >
-      <motion.button
+      <Motion.button
         onClick={handlePayment}
         disabled={loading}
         className="relative overflow-hidden px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-3 transition-all duration-300 border-2 border-gray-700/50"
@@ -80,7 +83,7 @@ const BuyMeCoffeeButton = () => {
         <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-black/40 to-transparent" />
 
         {/* Animated background shimmer */}
-        <motion.div
+        <Motion.div
           className="absolute inset-0 opacity-0"
           animate={{
             background: [
@@ -98,7 +101,7 @@ const BuyMeCoffeeButton = () => {
         />
 
         {/* Coffee icon */}
-        <motion.div
+        <Motion.div
           animate={loading ? { rotate: 360 } : {}}
           transition={{
             duration: 1,
@@ -106,15 +109,20 @@ const BuyMeCoffeeButton = () => {
             ease: "linear",
           }}
         >
-          <HugeiconsIcon icon={Coffee01Icon} size={20} className="text-[#fefefe]" aria-hidden="true" />
-        </motion.div>
+          <HugeiconsIcon
+            icon={Coffee01Icon}
+            size={20}
+            className="text-[#fefefe]"
+            aria-hidden="true"
+          />
+        </Motion.div>
 
         {/* Button text */}
         <span className="relative z-10 text-gray-100">
           {loading ? "Brewing..." : "Buy Me a Coffee"}
         </span>
-      </motion.button>
-    </motion.div>
+      </Motion.button>
+    </Motion.div>
   );
 };
 

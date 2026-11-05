@@ -1,0 +1,55 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { apiRequest } from "../src/lib/api.js";
+
+test("API requests preserve cancellation, identity, method, and JSON payload", async () => {
+  const original = globalThis.fetch;
+  const controller = new AbortController();
+  try {
+    globalThis.fetch = async (url, options) => {
+      assert.equal(url, "http://localhost:8000/api/projects");
+      assert.equal(options.method, "POST");
+      assert.equal(options.headers["firebase-uid"], "user");
+      assert.equal(options.headers["Content-Type"], "application/json");
+      assert.equal(options.body, '{"name":"App"}');
+      assert.equal(options.signal, controller.signal);
+      return { ok: true, status: 201, json: async () => ({ _id: "project" }) };
+    };
+    assert.deepEqual(
+      await apiRequest("/projects", {
+        method: "POST",
+        uid: "user",
+        body: { name: "App" },
+        signal: controller.signal,
+      }),
+      { _id: "project" },
+    );
+  } finally {
+    globalThis.fetch = original;
+  }
+});
+
+test("HTTP errors retain the status needed for auth recovery", async () => {
+  const original = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => ({
+      ok: false,
+      status: 404,
+      json: async () => ({ message: "User not found" }),
+    });
+    await assert.rejects(apiRequest("/auth/login"), {
+      message: "User not found",
+      status: 404,
+    });
+    globalThis.fetch = async () => ({
+      ok: false,
+      status: 502,
+      json: async () => {
+        throw new SyntaxError();
+      },
+    });
+    await assert.rejects(apiRequest("/projects"), { status: 502 });
+  } finally {
+    globalThis.fetch = original;
+  }
+});
