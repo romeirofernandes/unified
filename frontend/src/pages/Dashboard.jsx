@@ -22,11 +22,18 @@ export default function Dashboard() {
     user?.uid,
   );
   const [creating, setCreating] = useState(false);
+  const [creationKey, setCreationKey] = useState(0);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [preview, setPreview] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [pending, setPending] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const projects = data || [];
+
+  function openCreate() {
+    setCreationKey((previous) => previous + 1);
+    setCreating(true);
+  }
 
   async function createProject(body) {
     const project = await apiRequest("/projects", {
@@ -38,6 +45,7 @@ export default function Dashboard() {
       ...(previous || []),
       { ...project, feedbackCount: 0 },
     ]);
+    reload();
   }
 
   async function deleteProject() {
@@ -65,7 +73,9 @@ export default function Dashboard() {
         title="Your projects"
         description="Collect feedback, follow the conversation, and make the next release clearer."
         action={
-          <Button onClick={() => setCreating(true)}>Create project</Button>
+          <Button onClick={openCreate} disabled={loading}>
+            Create project
+          </Button>
         }
       />
       <ErrorMessage>{error}</ErrorMessage>
@@ -84,7 +94,10 @@ export default function Dashboard() {
               <ProjectCard
                 key={project._id}
                 project={project}
-                onPreview={setPreview}
+                onPreview={(project) => {
+                  setPreview(project);
+                  setPreviewOpen(true);
+                }}
                 onDelete={(project) => {
                   setDeleteError("");
                   setDeleting(project);
@@ -97,24 +110,21 @@ export default function Dashboard() {
             title="Make room for your first conversation."
             description="Create a project, choose your questions, and add the feedback widget to your app."
             action="Create your first project"
-            onAction={() => setCreating(true)}
+            onAction={openCreate}
           />
         ))
       )}
-      {creating && (
-        <ProjectModal
-          isOpen
-          onClose={() => setCreating(false)}
-          onSubmit={createProject}
-        />
-      )}
-      {preview && (
-        <ProjectPreview
-          isOpen
-          onClose={() => setPreview(null)}
-          project={preview}
-        />
-      )}
+      <ProjectModal
+        key={creationKey}
+        isOpen={creating}
+        onClose={() => setCreating(false)}
+        onSubmit={createProject}
+      />
+      <ProjectPreview
+        isOpen={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        project={preview}
+      />
       <ConfirmDialog
         open={!!deleting}
         onClose={() => setDeleting(null)}

@@ -4,6 +4,7 @@ import FormField from "@/components/shared/FormField";
 import { Button } from "@/components/ui/button";
 
 export default function DeleteAccountDialog({
+  isOpen,
   isGoogleUser,
   onClose,
   onConfirm,
@@ -14,7 +15,7 @@ export default function DeleteAccountDialog({
   const [visible, setVisible] = useState(false);
   return (
     <ConfirmDialog
-      open
+      open={isOpen}
       onClose={onClose}
       title="Delete your account?"
       description={

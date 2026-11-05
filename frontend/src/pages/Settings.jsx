@@ -27,6 +27,7 @@ import { typeClass } from "@/lib/type-scale";
 export default function Settings() {
   const { user, logout } = useAuth();
   const [deleting, setDeleting] = useState(false);
+  const [deletionKey, setDeletionKey] = useState(0);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -138,6 +139,7 @@ export default function Settings() {
               className="text-destructive"
               onClick={() => {
                 setError("");
+                setDeletionKey((previous) => previous + 1);
                 setDeleting(true);
               }}
             >
@@ -146,15 +148,15 @@ export default function Settings() {
           </CardContent>
         </Card>
       </div>
-      {deleting && (
-        <DeleteAccountDialog
-          isGoogleUser={isGoogleUser}
-          onClose={() => setDeleting(false)}
-          onConfirm={deleteAccount}
-          pending={pending}
-          error={error}
-        />
-      )}
+      <DeleteAccountDialog
+        key={deletionKey}
+        isOpen={deleting}
+        isGoogleUser={isGoogleUser}
+        onClose={() => setDeleting(false)}
+        onConfirm={deleteAccount}
+        pending={pending}
+        error={error}
+      />
     </DashboardLayout>
   );
 }
