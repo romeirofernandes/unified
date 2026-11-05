@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { ThemeProvider, useTheme } from "next-themes";
 import { FluidRoot } from "@/components/fluid-root";
+import { AuthProvider } from "@/context/AuthContext";
 
 function ThemeShortcut() {
   const { resolvedTheme, setTheme } = useTheme();
@@ -39,7 +40,7 @@ export function Providers({ children }: { children: ReactNode }) {
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <FluidRoot>
         <ThemeShortcut />
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </FluidRoot>
     </ThemeProvider>
   );
