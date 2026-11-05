@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { EyeIcon, EyeOffIcon } from "@hugeicons/core-free-icons";
+import { ViewIcon, ViewOffSlashIcon } from "@hugeicons/core-free-icons";
 import { useAuth } from "@/hooks/use-auth";
 import FormField from "@/components/shared/FormField";
 import Brand from "@/components/shared/Brand";
@@ -60,7 +60,7 @@ export default function AuthForm({ mode }) {
       <main className="grid min-h-[calc(100svh-5rem)] place-items-center px-5 pb-12 pt-6 sm:px-8 sm:pb-16">
         <section
           aria-labelledby="auth-title"
-          className="w-full max-w-[420px] rounded-2xl border border-[#d6d3ca] bg-[#fbfaf7] p-5 shadow-[0_2px_12px_rgb(28_27_25_/_5%)] sm:p-8 dark:border-[#343330] dark:bg-[#1d1c1a] dark:shadow-[0_2px_16px_rgb(0_0_0_/_18%)]"
+          className="w-full max-w-[420px] rounded-2xl border border-[#c9c6bd] bg-linear-to-b from-[#fffefa] to-[#f1efe8] p-5 shadow-[0_3px_0_#e3e0d8,0_10px_24px_rgb(43_41_35_/_8%),inset_0_1px_0_rgb(255_255_255_/_90%),inset_0_-1px_0_rgb(217_214_205_/_70%)] sm:p-8 dark:border-[#393834] dark:from-[#242321] dark:to-[#1a1917] dark:shadow-[0_3px_0_#151514,0_10px_24px_rgb(0_0_0_/_24%),inset_0_1px_0_rgb(255_255_255_/_6%),inset_0_-1px_0_rgb(0_0_0_/_24%)]"
         >
           <div className="space-y-6">
             <div className="space-y-2">
@@ -132,7 +132,8 @@ export default function AuthForm({ mode }) {
                   disabled={!!pending}
                 >
                   <HugeiconsIcon
-                    icon={showPassword ? EyeOffIcon : EyeIcon}
+                    icon={showPassword ? ViewOffSlashIcon : ViewIcon}
+                    size={22}
                     aria-hidden="true"
                   />
                 </button>
