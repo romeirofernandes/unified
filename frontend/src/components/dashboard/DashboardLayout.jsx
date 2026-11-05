@@ -38,7 +38,7 @@ function WorkspaceNavigation() {
   const { setOpenMobile } = useSidebar();
   return (
     <nav aria-label="Workspace">
-      <SidebarMenu>
+      <SidebarMenu className="gap-y-2">
         {navigation.map(({ path, label, icon }) => {
           const active =
             path === "/dashboard"
@@ -122,7 +122,7 @@ export default function DashboardLayout({ children }) {
           </div>
           <ErrorMessage>{error}</ErrorMessage>
           <Button
-            variant="ghost"
+            variant="destructive"
             className="w-full justify-start"
             onClick={handleLogout}
             loading={signingOut}

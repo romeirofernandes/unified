@@ -136,8 +136,7 @@ export default function Settings() {
           </CardHeader>
           <CardContent>
             <Button
-              variant="secondary"
-              className="text-destructive"
+              variant="destructive"
               onClick={() => {
                 setError("");
                 setDeletionKey((previous) => previous + 1);

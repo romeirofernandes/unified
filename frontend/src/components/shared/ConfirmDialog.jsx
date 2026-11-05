@@ -44,7 +44,7 @@ export default function ConfirmDialog({
           <Button
             onClick={onConfirm}
             loading={pending}
-            className="text-white [--foreground:var(--destructive)]"
+            variant="destructive"
           >
             {confirmLabel}
           </Button>

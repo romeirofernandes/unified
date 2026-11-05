@@ -42,7 +42,7 @@ export default function ProjectCard({ project, onPreview, onDelete }) {
           Preview & code
         </Button>
         <Button
-          variant="ghost"
+          variant="destructive-ghost"
           onClick={() => onDelete(project)}
           aria-label={`Delete ${project.name}`}
         >

@@ -29,10 +29,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "text-background",
-        secondary: "text-foreground",
+        primary: "text-primary-foreground [text-shadow:0_1px_0_#405783]",
+        secondary: "text-foreground [text-shadow:0_1px_0_#ffffff] dark:[text-shadow:0_1px_0_#171716]",
         tertiary: "text-foreground",
         ghost: "text-muted-foreground hover:text-foreground",
+        destructive: "text-white",
+        "destructive-ghost": "text-destructive hover:text-destructive",
       },
       // The two-step size ladder shared by every control — see /docs/sizes.
       // default = 36px control height, compact = 28px for dense surfaces.
@@ -116,9 +118,9 @@ interface ButtonProps
    double up, since an outer shadow renders only outside the surface box. */
 const bgVariants: Record<string, string> = {
   primary:
-    "[--btn-bg:var(--foreground)] group-hover:[--btn-bg:color-mix(in_oklab,var(--foreground)_90%,var(--background))] group-active:[--btn-bg:color-mix(in_oklab,var(--foreground)_80%,var(--background))] bg-[var(--btn-bg)] shadow-[0_0_0_1px_var(--btn-bg)] group-active:shadow-[0_0_0_0px_var(--btn-bg)]",
+    "bg-[image:var(--button-primary-gradient)] shadow-[0_0_0_1px_var(--button-primary-border)] group-hover:brightness-110 group-active:brightness-95 group-active:shadow-[0_0_0_0px_var(--button-primary-border)]",
   secondary:
-    "[--btn-bg:var(--tint)] group-hover:[--btn-bg:var(--tint-hover)] group-active:[--btn-bg:var(--tint)] bg-[var(--btn-bg)] shadow-[0_0_0_1px_var(--btn-bg)] group-active:shadow-[0_0_0_0px_var(--btn-bg)]",
+    "bg-[image:var(--button-secondary-gradient)] shadow-[0_0_0_1px_var(--button-secondary-border)] group-hover:brightness-105 group-active:brightness-95 group-active:shadow-[0_0_0_0px_var(--button-secondary-border)]",
   // The border ring is an outer 1px shadow at rest that hands off to an
   // inset 1px shadow when pressed, so the ring moves inward with the
   // surface. The translucent fill only ever reaches the ring's inner edge
@@ -129,19 +131,27 @@ const bgVariants: Record<string, string> = {
   // render only outside the surface box.
   ghost:
     "bg-transparent shadow-[0_0_0_1px_transparent] group-hover:bg-hover group-hover:shadow-[0_0_0_1px_var(--hover)] group-active:bg-active group-active:shadow-[0_0_0_0px_var(--active)]",
+  destructive:
+    "bg-[image:var(--button-destructive-gradient)] shadow-[0_0_0_1px_var(--button-destructive-border)] group-hover:brightness-110 group-active:brightness-95 group-active:shadow-[0_0_0_0px_var(--button-destructive-border)]",
+  "destructive-ghost":
+    "bg-transparent shadow-[0_0_0_1px_transparent] group-hover:bg-destructive/10 group-hover:shadow-[0_0_0_1px_var(--destructive-border)] group-active:bg-destructive/15 group-active:shadow-[0_0_0_0px_var(--destructive-border)]",
 };
 
 /* Forced-active (`active` prop): pressed colors at full size; the
    geometric press-collapse still reacts on top. */
 const activeBgVariants: Record<string, string> = {
   primary:
-    "[--btn-bg:color-mix(in_oklab,var(--foreground)_80%,var(--background))] bg-[var(--btn-bg)] shadow-[0_0_0_1px_var(--btn-bg)] group-active:shadow-[0_0_0_0px_var(--btn-bg)]",
+    "bg-[image:var(--button-primary-gradient)] shadow-[0_0_0_1px_var(--button-primary-border)] group-active:brightness-95 group-active:shadow-[0_0_0_0px_var(--button-primary-border)]",
   secondary:
-    "[--btn-bg:var(--tint)] bg-[var(--btn-bg)] shadow-[0_0_0_1px_var(--btn-bg)] group-active:shadow-[0_0_0_0px_var(--btn-bg)]",
+    "bg-[image:var(--button-secondary-gradient)] shadow-[0_0_0_1px_var(--button-secondary-border)] group-active:brightness-95 group-active:shadow-[0_0_0_0px_var(--button-secondary-border)]",
   tertiary:
     "bg-active shadow-[0_0_0_1px_var(--border),inset_0_0_0_0px_var(--border)] group-active:shadow-[0_0_0_0px_var(--border),inset_0_0_0_1px_var(--border)]",
   ghost:
     "bg-active shadow-[0_0_0_1px_var(--active)] group-active:shadow-[0_0_0_0px_var(--active)]",
+  destructive:
+    "bg-[image:var(--button-destructive-gradient)] shadow-[0_0_0_1px_var(--button-destructive-border)] group-active:brightness-95 group-active:shadow-[0_0_0_0px_var(--button-destructive-border)]",
+  "destructive-ghost":
+    "bg-destructive/10 shadow-[0_0_0_1px_var(--destructive-border)] group-active:bg-destructive/15 group-active:shadow-[0_0_0_0px_var(--destructive-border)]",
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -215,7 +225,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         <span
           aria-hidden
           className={cn(
-            "absolute inset-px rounded-[inherit] transition-[box-shadow,background-color] [transition-duration:180ms,80ms] [transition-timing-function:cubic-bezier(0.23,1,0.32,1),ease] group-active:[transition-duration:80ms,80ms]",
+            "absolute inset-px rounded-[inherit] transition-[box-shadow,background-color,filter] [transition-duration:180ms,80ms,200ms] [transition-timing-function:cubic-bezier(0.23,1,0.32,1),ease,ease] group-active:[transition-duration:80ms,80ms,80ms]",
             bgClass
           )}
         />

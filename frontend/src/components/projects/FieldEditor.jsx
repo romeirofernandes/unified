@@ -18,7 +18,7 @@ export default function FieldEditor({ field, index, onChange, onRemove }) {
         <h3 className={typeClass("subtitle")}>Question {index + 1}</h3>
         {index > 0 && (
           <Button
-            variant="ghost"
+            variant="destructive-ghost"
             size="compact"
             onClick={onRemove}
             aria-label={`Remove question ${index + 1}`}
@@ -93,7 +93,7 @@ export default function FieldEditor({ field, index, onChange, onRemove }) {
                 />
               </div>
               <Button
-                variant="ghost"
+                variant="destructive-ghost"
                 onClick={() =>
                   onChange({
                     options: field.options.filter(
