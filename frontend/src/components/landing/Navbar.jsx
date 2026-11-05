@@ -21,8 +21,8 @@ export default function Navbar() {
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-[#d8d5ce] bg-[#f4f3ee]/95 text-[#24231f] backdrop-blur-xl transition-colors duration-700 dark:border-[#343330] dark:bg-[#141413]/95 dark:text-[#f4f1e9] motion-reduce:transition-none">
-      <div className="mx-auto grid min-h-[72px] w-full max-w-[1200px] grid-cols-[1fr_auto] items-center gap-4 px-5 sm:min-h-[80px] sm:grid-cols-[1fr_auto_1fr] sm:px-8 lg:px-12">
+    <header className="sticky top-0 z-40 w-full border-b border-[#d8d5ce] bg-[#f4f3ee]/95 text-[#24231f] px-5 backdrop-blur-xl transition-colors sm:px-8 lg:px-12 duration-700 dark:border-[#343330] dark:bg-[#141413]/95 dark:text-[#f4f1e9] motion-reduce:transition-none">
+      <div className="mx-auto grid min-h-[72px] w-full max-w-[1200px] grid-cols-[1fr_auto] items-center gap-4 sm:min-h-[80px] sm:grid-cols-[1fr_auto_1fr]">
         <Link
           className="inline-flex w-fit items-center gap-2 font-serif text-[22px] leading-none tracking-[-0.045em] text-inherit no-underline sm:text-[24px]"
           to="/"
