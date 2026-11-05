@@ -16,6 +16,16 @@ import { raisedCardSurface } from "@/components/ui/cardStyles";
 export default function ProjectCard({ project, onPreview, onDelete }) {
   return (
     <Card className={`${raisedCardSurface} relative flex h-full min-w-0 flex-col`}>
+      <Button
+        variant="destructive"
+        size="icon-compact"
+        className="absolute right-4 top-4"
+        onClick={() => onDelete(project)}
+        aria-label={`Delete ${project.name}`}
+        title={`Delete ${project.name}`}
+      >
+        <HugeiconsIcon icon={Delete01Icon} size={15} aria-hidden="true" />
+      </Button>
       <CardHeader className="pr-12">
         <CardTitle>
           <Link
@@ -42,16 +52,6 @@ export default function ProjectCard({ project, onPreview, onDelete }) {
       <CardFooter className="flex flex-wrap gap-3">
         <Button variant="secondary" onClick={() => onPreview(project)}>
           Preview & code
-        </Button>
-        <Button
-          variant="destructive"
-          size="icon-compact"
-          className="absolute right-4 top-4"
-          onClick={() => onDelete(project)}
-          aria-label={`Delete ${project.name}`}
-          title={`Delete ${project.name}`}
-        >
-          <HugeiconsIcon icon={Delete01Icon} size={15} aria-hidden="true" />
         </Button>
       </CardFooter>
     </Card>

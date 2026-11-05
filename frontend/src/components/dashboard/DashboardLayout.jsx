@@ -25,6 +25,10 @@ import { ErrorMessage } from "@/components/shared/PageState";
 import ThemeToggle from "@/components/landing/ThemeToggle";
 import { typeClass } from "@/lib/type-scale";
 
+function SignOutGlyph({ size }) {
+  return <HugeiconsIcon icon={LogOutIcon} size={size} aria-hidden="true" />;
+}
+
 const navigation = [
   { path: "/dashboard", label: "Projects", icon: DashboardSquare01Icon },
   { path: "/dashboard/docs", label: "Documentation", icon: File01Icon },
@@ -36,7 +40,7 @@ function WorkspaceNavigation() {
   const { setOpenMobile } = useSidebar();
   return (
     <nav aria-label="Workspace">
-      <SharedLayoutBg as="ul" className="list-none gap-y-2 px-2" inset={8} pillClassName="rounded-md bg-selected">
+      <SharedLayoutBg as="ul" className="list-none gap-y-2 px-2" inset={8} pillClassName="rounded-md bg-[color-mix(in_oklab,var(--fluid-accent)_14%,transparent)] dark:bg-white/5">
         {navigation.map(({ path, label, icon }) => {
           const active =
             path === "/dashboard"
@@ -117,18 +121,18 @@ export default function DashboardLayout({ children }) {
           <ErrorMessage>{error}</ErrorMessage>
           <Button
             variant="destructive"
-            className="w-full justify-start gap-2 [&>span:nth-child(2)]:w-full [&>span:nth-child(2)]:justify-start"
+            leadingIcon={SignOutGlyph}
+            className="w-full justify-start [&>span:nth-child(2)]:w-full [&>span:nth-child(2)]:justify-start"
             onClick={handleLogout}
             loading={signingOut}
           >
-            <HugeiconsIcon icon={LogOutIcon} size={18} aria-hidden="true" />
             Sign out
           </Button>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className="min-w-0">
         <SidebarInsetTopbar className="sticky top-0 z-20 h-16 border-b border-border bg-background/95 backdrop-blur-xl">
-          <div className="mx-auto flex w-full max-w-[1400px] items-center gap-2 px-5 sm:px-8 lg:px-10">
+          <div className="flex w-full items-center gap-2 px-5 sm:px-8 lg:px-10">
             <span className={`${typeClass("body")} text-muted-foreground`}>
               Workspace / <span className="text-foreground">{title}</span>
             </span>
@@ -140,7 +144,7 @@ export default function DashboardLayout({ children }) {
         <div
           id="workspace-content"
           tabIndex={-1}
-          className="mx-auto w-full max-w-[1400px] space-y-7 px-5 py-7 outline-none sm:px-8 sm:py-8 lg:px-10 lg:py-10"
+          className="w-full space-y-7 px-7 py-7 outline-none sm:px-8 sm:py-8 lg:px-8 lg:py-10"
         >
           {children}
         </div>
