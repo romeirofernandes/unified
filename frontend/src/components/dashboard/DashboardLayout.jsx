@@ -1,184 +1,69 @@
-import React, { useState } from "react";
-import { motion } from "motion/react";
-import { useAuth } from "../../context/AuthContext";
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { DashboardSquare01Icon, Settings01Icon, LogOutIcon, Menu04Icon, Menu01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { DashboardSquare01Icon, Settings01Icon, File01Icon, LogOutIcon } from "@hugeicons/core-free-icons";
+import { useAuth } from "@/context/AuthContext";
+import { Sidebar, SidebarProvider, SidebarContent, SidebarHeader, SidebarFooter, SidebarInset, SidebarMenu, SidebarMenuItem, SidebarMenuButton, useSidebar } from "@/components/ui/sidebar";
+import { SidebarInsetTopbar } from "@/components/sidebar-app/inset-topbar";
+import { Button } from "@/components/ui/button";
+import Brand from "@/components/shared/Brand";
+import { ErrorMessage } from "@/components/shared/PageState";
+import ThemeToggle from "@/components/landing/ThemeToggle";
+import { typeClass } from "@/lib/type-scale";
 
-const DashboardLayout = ({ children }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+const navigation = [
+  { path: "/dashboard", label: "Projects", icon: DashboardSquare01Icon },
+  { path: "/dashboard/docs", label: "Documentation", icon: File01Icon },
+  { path: "/dashboard/settings", label: "Settings", icon: Settings01Icon },
+];
+
+function WorkspaceNavigation() {
+  const { pathname } = useLocation();
+  const { setOpenMobile } = useSidebar();
+  return <nav aria-label="Workspace"><SidebarMenu>{navigation.map(({ path, label, icon }) => {
+    const active = path === "/dashboard" ? pathname === path || pathname.startsWith("/project/") : pathname.startsWith(path);
+    return <SidebarMenuItem key={path}><SidebarMenuButton isActive={active} render={<Link to={path} aria-current={active ? "page" : undefined} onClick={() => setOpenMobile(false)} />}><HugeiconsIcon icon={icon} size={18} aria-hidden="true" /><span>{label}</span></SidebarMenuButton></SidebarMenuItem>;
+  })}</SidebarMenu></nav>;
+}
+
+export default function DashboardLayout({ children }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
+  const { pathname } = useLocation();
+  const [error, setError] = useState("");
+  const [signingOut, setSigningOut] = useState(false);
+  const title = navigation.find(({ path }) => path !== "/dashboard" && pathname.startsWith(path))?.label || "Projects";
 
-  const isActivePath = (path) => {
-    if (path === "/dashboard") {
-      return location.pathname === path;
-    }
-    return location.pathname.startsWith(path);
-  };
-
-  const navItems = [
-    { path: "/dashboard", label: "Projects", icon: DashboardSquare01Icon },
-    { path: "/dashboard/settings", label: "Settings", icon: Settings01Icon },
-  ];
-
-  const handleLogout = async () => {
+  async function handleLogout() {
+    setSigningOut(true);
     try {
       await logout();
-      navigate("/login");
-    } catch (error) {
-      console.error("Failed to logout:", error);
+      navigate("/login", { replace: true });
+    } catch {
+      setError("Couldn’t sign out. Please try again.");
+    } finally {
+      setSigningOut(false);
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-[#171717] text-[#e5e5e5]">
-      {/* Desktop Sidebar */}
-      <motion.div
-        initial={{ width: "256px" }}
-        animate={{ width: isCollapsed ? "80px" : "256px" }}
-        className="fixed left-0 top-0 h-full bg-[#191919] border-r border-[#383838] flex-col hidden lg:flex"
-      >
-        {/* Header */}
-        <div className="p-4 flex items-center justify-between border-b border-[#383838]">
-          {!isCollapsed && (
-            <h1 className="text-2xl font-bold text-[#737373]">Unified</h1>
-          )}
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-2 hover:bg-[#262626] rounded-lg transition-colors"
-          >
-            {isCollapsed ? <HugeiconsIcon icon={Menu01Icon} /> : <HugeiconsIcon icon={Menu04Icon} />}
-          </button>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`
-                  flex items-center space-x-2 p-3 rounded-lg transition-colors
-                  ${
-                    isActivePath(item.path)
-                      ? "bg-[#262626] text-[#737373]"
-                      : "hover:bg-[#262626] text-[#e5e5e5]"
-                  }
-                `}
-              >
-                <HugeiconsIcon icon={Icon} size={20} />
-                {!isCollapsed && <span>{item.label}</span>}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Logout Button */}
-        <div className="p-4 border-t border-[#383838]">
-          <button
-            onClick={handleLogout}
-            className="flex items-center space-x-2 p-3 rounded-lg hover:bg-[#262626] transition-colors text-red-500 w-full"
-          >
-            <HugeiconsIcon icon={LogOutIcon} size={20} />
-            {!isCollapsed && <span>Logout</span>}
-          </button>
-        </div>
-      </motion.div>
-
-      {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#191919] border-b border-[#383838] px-4 py-3 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-[#737373]">Unified</h1>
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 hover:bg-[#262626] rounded-lg transition-colors"
-        >
-          {isMobileMenuOpen ? (
-            <HugeiconsIcon icon={Cancel01Icon} size={24} />
-          ) : (
-            <HugeiconsIcon icon={Menu04Icon} size={24} />
-          )}
-        </button>
-      </div>
-
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div
-          className="lg:hidden fixed inset-0 z-40 bg-black/50"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Mobile Sidebar */}
-      <motion.div
-        initial={{ x: "-100%" }}
-        animate={{ x: isMobileMenuOpen ? 0 : "-100%" }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="lg:hidden fixed left-0 top-0 h-full w-64 bg-[#191919] border-r border-[#383838] flex flex-col z-50"
-      >
-        {/* Mobile Header */}
-        <div className="p-4 border-b border-[#383838]">
-          <h1 className="text-2xl font-bold text-[#737373]">Unified</h1>
-        </div>
-
-        {/* Mobile Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`
-                  flex items-center space-x-2 p-3 rounded-lg transition-colors
-                  ${
-                    isActivePath(item.path)
-                      ? "bg-[#262626] text-[#737373]"
-                      : "hover:bg-[#262626] text-[#e5e5e5]"
-                  }
-                `}
-              >
-                <HugeiconsIcon icon={Icon} size={20} />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Mobile Logout Button */}
-        <div className="p-4 border-t border-[#383838]">
-          <button
-            onClick={handleLogout}
-            className="flex items-center space-x-2 p-3 rounded-lg hover:bg-[#262626] transition-colors text-red-500 w-full"
-          >
-            <HugeiconsIcon icon={LogOutIcon} size={20} />
-            <span>Logout</span>
-          </button>
-        </div>
-      </motion.div>
-
-      {/* Main Content */}
-      <motion.div
-        animate={{
-          marginLeft:
-            window.innerWidth >= 1024
-              ? isCollapsed
-                ? "80px"
-                : "256px"
-              : "0px",
-          paddingTop: window.innerWidth >= 1024 ? "0px" : "70px",
-        }}
-        className="p-4 sm:p-6 lg:p-8"
-      >
-        {children}
-      </motion.div>
-    </div>
+    <SidebarProvider width="248px" className="min-h-svh bg-background text-foreground">
+      <a href="#workspace-content" className="sr-only z-50 rounded-lg bg-background p-3 focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to content</a>
+      <Sidebar>
+        <SidebarHeader className="px-4 py-6"><Brand /></SidebarHeader>
+        <SidebarContent className="px-2"><WorkspaceNavigation /></SidebarContent>
+        <SidebarFooter className="space-y-3 border-t border-border p-4">
+          <div className="min-w-0"><p className={typeClass("body")}>{user?.displayName || "Your workspace"}</p><p className={`${typeClass("caption")} truncate text-muted-foreground`} title={user?.email}>{user?.email}</p></div>
+          <ErrorMessage>{error}</ErrorMessage>
+          <Button variant="ghost" className="w-full justify-start" onClick={handleLogout} loading={signingOut}><HugeiconsIcon icon={LogOutIcon} size={18} aria-hidden="true" />Sign out</Button>
+        </SidebarFooter>
+      </Sidebar>
+      <SidebarInset className="min-w-0">
+        <SidebarInsetTopbar className="sticky top-0 z-20 h-16 border-b border-border bg-background/95 px-4 backdrop-blur-xl sm:px-6">
+          <span className={`${typeClass("body")} text-muted-foreground`}>Workspace / <span className="text-foreground">{title}</span></span><div className="ml-auto"><ThemeToggle /></div>
+        </SidebarInsetTopbar>
+        <div id="workspace-content" tabIndex={-1} className="mx-auto w-full max-w-[1400px] space-y-7 p-5 outline-none sm:p-8 lg:p-10">{children}</div>
+      </SidebarInset>
+    </SidebarProvider>
   );
-};
-
-export default DashboardLayout;
+}

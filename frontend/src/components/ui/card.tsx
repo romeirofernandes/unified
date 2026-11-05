@@ -13,7 +13,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from "react";
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { fontWeights } from "@/lib/font-weight";
 import { useShape } from "@/lib/shape-context";
@@ -347,7 +347,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
     const overlay = clickable && !disabled ? (
       href ? (
         <Link
-          href={href}
+          to={href}
           onClick={onClick}
           target={external ? "_blank" : undefined}
           rel={external ? "noopener noreferrer" : undefined}
@@ -978,7 +978,7 @@ function CardButton({
   if (href) {
     return (
       <Link
-        href={href}
+        to={href}
         onClick={onClick}
         target={external ? "_blank" : undefined}
         rel={external ? "noopener noreferrer" : undefined}
