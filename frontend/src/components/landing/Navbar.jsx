@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/use-auth";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Cancel01Icon,
@@ -17,6 +18,8 @@ const links = [
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user } = useAuth();
+  const actionPath = user ? "/dashboard" : "/signup";
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -46,7 +49,7 @@ export default function Navbar() {
           <ThemeToggle />
           <Link
             className={`${tactileButtonBase} ${tactilePrimaryButton} min-h-10 px-4 text-[13px] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3ee] dark:focus-visible:ring-offset-[#141413]`}
-            to="/signup"
+            to={actionPath}
           >
             Get started
           </Link>
@@ -76,7 +79,7 @@ export default function Navbar() {
           ))}
           <Link
             className={`mt-2 ${tactileButtonBase} ${tactilePrimaryButton} min-h-10 px-4 text-[13px]`}
-            to="/signup"
+            to={actionPath}
             onClick={closeMenu}
           >
             Get started

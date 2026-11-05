@@ -1,9 +1,11 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/use-auth";
 import { tactileButtonBase, tactilePrimaryButton } from "./buttonStyles";
 
 export default function CTA() {
+  const { user } = useAuth();
   return (
     <section className="w-full bg-[#e4e9f2] px-5 py-24 text-[#24231f] transition-colors duration-700 sm:px-8 sm:py-28 lg:px-12 lg:py-32 dark:bg-[#141413] dark:text-[#f4f1e9] motion-reduce:transition-none" aria-labelledby="landing-cta-title">
       <div className="mx-auto grid w-full max-w-[1200px] gap-10 md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:gap-12">
@@ -19,7 +21,7 @@ export default function CTA() {
         <div className="flex flex-col items-start gap-3 md:items-end">
           <Link
             className={`${tactileButtonBase} ${tactilePrimaryButton} min-h-[46px] px-5 text-[14px] focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4e9f2] dark:focus-visible:ring-offset-[#141413]`}
-            to="/signup"
+            to={user ? "/dashboard" : "/signup"}
           >
             Create your project <HugeiconsIcon icon={ArrowRight01Icon} size={18} aria-hidden="true" />
           </Link>

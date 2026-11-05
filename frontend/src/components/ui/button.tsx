@@ -29,7 +29,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "text-primary-foreground [text-shadow:0_1px_0_#405783]",
+        primary: "text-white [text-shadow:0_1px_0_#405783]",
         secondary: "text-foreground [text-shadow:0_1px_0_#ffffff] dark:[text-shadow:0_1px_0_#171716]",
         tertiary: "text-foreground",
         ghost: "text-muted-foreground hover:text-foreground",
@@ -39,7 +39,7 @@ const buttonVariants = cva(
       // The two-step size ladder shared by every control — see /docs/sizes.
       // default = 36px control height, compact = 28px for dense surfaces.
       size: {
-        default: "h-9 px-4 text-[length:var(--fs-body,13px)] leading-[var(--lh-body,20px)] gap-1.5",
+        default: "h-10 px-4 text-[length:var(--fs-body,13px)] leading-[var(--lh-body,20px)] gap-2",
         compact: "h-7 px-3 text-[length:var(--fs-body-compact,12px)] leading-[var(--lh-body-compact,18px)] gap-1",
         icon: "h-9 w-9 p-0 [&_svg]:h-4 [&_svg]:w-4",
         "icon-compact": "h-7 w-7 p-0 [&_svg]:h-3.5 [&_svg]:w-3.5",
@@ -229,7 +229,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             bgClass
           )}
         />
-        <span className="relative inline-flex items-center justify-center gap-[inherit]">
+        <span className="relative inline-flex flex-row flex-nowrap items-center justify-center gap-[inherit] whitespace-nowrap">
           {loading ? (
             <>
               <span className="flex items-center justify-center gap-[inherit] opacity-0">

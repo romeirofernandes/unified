@@ -319,7 +319,7 @@ button {
 .dark {
   --button-primary-gradient: linear-gradient(to top, #4b699f, #5674ad);
   --button-primary-border: rgb(48 69 109 / 60%);
-  --button-secondary-gradient: linear-gradient(to top, #302e2a, #484640);
+  --button-secondary-gradient: linear-gradient(to top, #303030, #484848);
   --button-secondary-border: rgb(255 255 255 / 10%);
   --button-destructive-gradient: linear-gradient(to top, #a83f3b, #bf4b46);
   --button-destructive-border: #7e302d;

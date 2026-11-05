@@ -1,9 +1,11 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/use-auth";
 import { tactileButtonBase, tactilePrimaryButton, tactileSecondaryButton } from "./buttonStyles";
 
 export default function Hero() {
+  const { user } = useAuth();
   return (
     <section className="w-full bg-transparent px-5 pb-7 pt-8 text-center text-[#24231f] transition-colors duration-700 sm:px-8 sm:pb-9 sm:pt-10 lg:px-12 lg:pt-12 dark:text-[#f4f1e9] motion-reduce:transition-none" aria-labelledby="landing-title">
       <div className="mx-auto grid w-full min-w-0 max-w-[1200px] justify-items-center">
@@ -21,7 +23,7 @@ export default function Hero() {
         <div className="mt-6 flex w-full flex-col items-stretch justify-center gap-3 sm:mt-6 sm:w-auto sm:flex-row sm:items-center sm:gap-3">
           <Link
             className={`${tactileButtonBase} ${tactilePrimaryButton} min-h-[46px] px-5 text-[14px] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3ee] dark:focus-visible:ring-offset-[#141413]`}
-            to="/signup"
+            to={user ? "/dashboard" : "/signup"}
           >
             Create your project <HugeiconsIcon icon={ArrowRight01Icon} size={18} aria-hidden="true" />
           </Link>
