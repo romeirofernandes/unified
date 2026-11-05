@@ -22,44 +22,51 @@ function ProjectFeedback({ projectId }) {
 
   return (
     <>
-      <Button variant="ghost" asChild>
-        <Link to="/dashboard">← All projects</Link>
-      </Button>
-      <PageHeader
-        title={project.data?.name || "Customer feedback"}
-        description={
-          loading
-            ? "Loading your customer conversations…"
-            : `${responses.length} responses. Find the thread and decide what comes next.`
-        }
-        action={
-          <Button
-            onClick={() => analysis.generate(project.data, responses)}
-            loading={analysis.pending}
-            disabled={loading || !!error || !responses.length}
-          >
-            Generate summary
-          </Button>
-        }
-      />
-      <ErrorMessage>{error}</ErrorMessage>
-      {error && (
-        <Button
-          variant="secondary"
-          onClick={() => {
-            project.reload();
-            feedback.reload();
-          }}
-        >
-          Try again
+      <div className="space-y-4">
+        <Button variant="ghost" asChild>
+          <Link to="/dashboard">← All projects</Link>
         </Button>
+        <PageHeader
+          title={project.data?.name || "Customer feedback"}
+          description={
+            loading
+              ? "Loading your customer conversations…"
+              : `${responses.length} responses. Find the thread and decide what comes next.`
+          }
+          action={
+            <Button
+              onClick={() => analysis.generate(project.data, responses)}
+              loading={analysis.pending}
+              disabled={loading || !!error || !responses.length}
+            >
+              Generate summary
+            </Button>
+          }
+        />
+      </div>
+      {error && (
+        <div className="space-y-3">
+          <ErrorMessage>{error}</ErrorMessage>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              project.reload();
+              feedback.reload();
+            }}
+          >
+            Try again
+          </Button>
+        </div>
       )}
       <ErrorMessage>{analysis.error}</ErrorMessage>
       {loading && <LoadingState />}
       {!loading && !error && (
         <>
           {analysis.summary && <SummaryCard summary={analysis.summary} />}
-          <FeedbackList responses={responses} fields={project.data.fields} />
+          <FeedbackList
+            responses={responses}
+            fields={project.data?.fields || []}
+          />
         </>
       )}
     </>

@@ -6,10 +6,11 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { typeClass } from "@/lib/type-scale";
+import { raisedCardSurface } from "@/components/ui/cardStyles";
 
 export default function SummaryCard({ summary }) {
   return (
-    <Card>
+    <Card className={raisedCardSurface}>
       <CardHeader>
         <CardTitle>What your customers are saying</CardTitle>
         <CardDescription>

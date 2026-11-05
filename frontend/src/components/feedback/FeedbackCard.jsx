@@ -1,9 +1,10 @@
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { typeClass } from "@/lib/type-scale";
+import { raisedCardSurface } from "@/components/ui/cardStyles";
 
 export default function FeedbackCard({ feedback, labels }) {
   return (
-    <Card className="min-w-0">
+    <Card className={`${raisedCardSurface} min-w-0`}>
       <CardHeader>
         <time
           className={`${typeClass("caption")} text-muted-foreground`}

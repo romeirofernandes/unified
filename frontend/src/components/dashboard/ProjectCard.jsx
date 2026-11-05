@@ -9,10 +9,11 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { typeClass } from "@/lib/type-scale";
+import { raisedCardSurface } from "@/components/ui/cardStyles";
 
 export default function ProjectCard({ project, onPreview, onDelete }) {
   return (
-    <Card className="flex h-full min-w-0 flex-col">
+    <Card className={`${raisedCardSurface} flex h-full min-w-0 flex-col`}>
       <CardHeader>
         <CardTitle>
           <Link
@@ -36,7 +37,7 @@ export default function ProjectCard({ project, onPreview, onDelete }) {
           <span>{project.theme === "dark" ? "Dark" : "Light"} widget</span>
         </div>
       </CardContent>
-      <CardFooter className="flex flex-wrap gap-2">
+      <CardFooter className="flex flex-wrap gap-3">
         <Button variant="secondary" onClick={() => onPreview(project)}>
           Preview & code
         </Button>

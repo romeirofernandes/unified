@@ -18,7 +18,7 @@ export function LoadingState() {
     <div role="status" className="space-y-4 py-2">
       <span className="sr-only">Loading content</span>
       <Skeleton className="h-8 w-48" />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
         {[1, 2, 3].map((id) => (
           <Skeleton key={id} className="h-48 rounded-xl" />
         ))}

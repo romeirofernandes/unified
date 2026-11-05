@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "@/components/landing/ThemeToggle";
 import { typeClass } from "@/lib/type-scale";
+import { raisedCardSurface } from "@/components/ui/cardStyles";
 
 export default function Settings() {
   const { user, logout } = useAuth();
@@ -77,7 +78,7 @@ export default function Settings() {
         description="Your account, your workspace, and how it feels."
       />
       <div className="max-w-3xl space-y-6">
-        <Card>
+        <Card className={raisedCardSurface}>
           <CardHeader>
             <CardTitle>Account</CardTitle>
             <CardDescription>
@@ -85,7 +86,7 @@ export default function Settings() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <dl className="grid gap-6 sm:grid-cols-2">
+            <dl className="grid gap-6 lg:grid-cols-2">
               {[
                 ["Email", user?.email],
                 [
@@ -113,7 +114,7 @@ export default function Settings() {
             </dl>
           </CardContent>
         </Card>
-        <Card>
+        <Card className={raisedCardSurface}>
           <CardHeader>
             <CardTitle>Appearance</CardTitle>
             <CardDescription>
@@ -125,7 +126,7 @@ export default function Settings() {
             <ThemeToggle />
           </CardContent>
         </Card>
-        <Card className="border border-destructive/25">
+        <Card className={`${raisedCardSurface} border-destructive/25`}>
           <CardHeader>
             <CardTitle>Delete account</CardTitle>
             <CardDescription>

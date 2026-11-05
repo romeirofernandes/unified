@@ -2,7 +2,7 @@ import { typeClass } from "@/lib/type-scale";
 
 export default function PageHeader({ title, description, action }) {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
       <div className="min-w-0 space-y-2">
         <h1 className={`${typeClass("display")} break-words text-foreground`}>
           {title}

@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import FormField from "@/components/shared/FormField";
 import { fieldTypes } from "@/lib/project-fields";
 import { typeClass } from "@/lib/type-scale";
+import { raisedCardSurface } from "@/components/ui/cardStyles";
 
 export default function FieldEditor({ field, index, onChange, onRemove }) {
   const updateOption = (id, label) =>
@@ -12,7 +13,7 @@ export default function FieldEditor({ field, index, onChange, onRemove }) {
       ),
     });
   return (
-    <Card className="space-y-4 p-4">
+    <Card className={`${raisedCardSurface} space-y-4 p-4`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className={typeClass("subtitle")}>Question {index + 1}</h3>
         {index > 0 && (

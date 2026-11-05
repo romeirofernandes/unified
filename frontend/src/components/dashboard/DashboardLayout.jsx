@@ -76,7 +76,7 @@ export default function DashboardLayout({ children }) {
   const title =
     navigation.find(
       ({ path }) => path !== "/dashboard" && pathname.startsWith(path),
-    )?.label || "Projects";
+    )?.label || (pathname.startsWith("/project/") ? "Feedback" : "Projects");
 
   async function handleLogout() {
     setSigningOut(true);

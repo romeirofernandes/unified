@@ -32,7 +32,7 @@ export default function ProjectPreview({ isOpen, onClose, project }) {
             Try your questions, then copy the integration into your React app.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid min-w-0 gap-6 md:grid-cols-2">
+        <div className="grid min-w-0 gap-6 lg:grid-cols-2">
           <section className="min-w-0 space-y-4">
             <h3 className={typeClass("title")}>Widget preview</h3>
             <div

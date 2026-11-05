@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { integrationCode } from "@/lib/integration-code";
 import { typeClass } from "@/lib/type-scale";
+import { raisedCardSurface } from "@/components/ui/cardStyles";
 
 const steps = [
   {
@@ -77,7 +78,7 @@ export default function Quickstart() {
             <Card
               key={step.id}
               id={step.id}
-              className="scroll-mt-24 space-y-5 p-5 sm:p-7"
+              className={`${raisedCardSurface} scroll-mt-24 space-y-5 p-5 sm:p-7`}
             >
               <div className="space-y-2">
                 <p className={`${typeClass("caption")} text-muted-foreground`}>

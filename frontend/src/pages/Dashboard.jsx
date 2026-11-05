@@ -78,18 +78,20 @@ export default function Dashboard() {
           </Button>
         }
       />
-      <ErrorMessage>{error}</ErrorMessage>
       {error && (
-        <Button variant="secondary" onClick={reload}>
-          Try again
-        </Button>
+        <div className="space-y-3">
+          <ErrorMessage>{error}</ErrorMessage>
+          <Button variant="secondary" onClick={reload}>
+            Try again
+          </Button>
+        </div>
       )}
       {loading ? (
         <LoadingState />
       ) : (
         !error &&
         (projects.length ? (
-          <div className="grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid items-stretch gap-5 lg:grid-cols-2 xl:grid-cols-3">
             {projects.map((project) => (
               <ProjectCard
                 key={project._id}

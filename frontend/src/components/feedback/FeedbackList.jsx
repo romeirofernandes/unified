@@ -11,7 +11,7 @@ export default function FeedbackList({ responses, fields }) {
     );
   const labels = new Map(fields.map((field) => [field._id, field.label]));
   return (
-    <div className="grid items-start gap-4 lg:grid-cols-2">
+    <div className="grid items-start gap-5 lg:grid-cols-2">
       {responses.map((response) => (
         <FeedbackCard key={response._id} feedback={response} labels={labels} />
       ))}
