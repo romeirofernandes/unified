@@ -1,6 +1,7 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowUpRight01Icon, UnionCircleIcon } from "@hugeicons/core-free-icons";
 import { Ascii } from "ascii.rest/react";
+import { useTheme } from "next-themes";
 import deepReef, { meta as deepReefMeta } from "ascii.rest/pieces/deep-reef";
 
 const waterPalette = [
@@ -16,18 +17,38 @@ const footerReef = {
   default: deepReef,
 };
 
+// Keep the reef's color families, with inks suited to a warm, light canvas.
+const lightFooterReef = {
+  meta: {
+    ...deepReefMeta,
+    ground: "#eeece5",
+    palette: [
+      "#b3c9dc", "#9dbbd5", "#87accd", "#719bc3", "#608aba",
+      "#547aad", "#476b9c", "#3b5d8b", "#304f79",
+      "#b4b8a3", "#9ea88d", "#899975", "#74865f",
+      "#bec59b", "#a9b680", "#93a568", "#7e9254", "#6b8045", "#596d38",
+      "#c88b9e", "#be758d", "#cb806c", "#d4966d",
+      "#ab91bc", "#9878ad", "#855f9c",
+      "#9fb5bf", "#849fac", "#698997",
+    ],
+  },
+  default: deepReef,
+};
+
 const rulerMarks = Array.from({ length: 17 }, (_, index) => index);
 
 export default function Footer() {
+  const { resolvedTheme } = useTheme();
+
   return (
     <footer className="relative isolate w-full overflow-hidden bg-[#eeece5] px-5 pb-10 pt-16 text-[#24231f] transition-colors duration-700 sm:px-8 sm:pb-12 sm:pt-20 lg:px-12 dark:bg-[#141413] dark:text-[#f4f3ee] motion-reduce:transition-none">
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-[0.12] mix-blend-multiply dark:opacity-100 dark:mix-blend-normal" aria-hidden="true">
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
         <Ascii
-          piece={footerReef}
+          piece={resolvedTheme === "dark" ? footerReef : lightFooterReef}
           options={{ fps: 10 }}
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-[#eeece5]/60 dark:bg-[#141413]/70" />
+        <div className="absolute inset-0 bg-[#eeece5]/15 dark:bg-[#141413]/70" />
       </div>
       <div className="relative z-10 mx-auto w-full max-w-[1200px]">
         <div className="grid gap-8 pb-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:gap-7 sm:pb-3">
