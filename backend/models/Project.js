@@ -50,4 +50,6 @@ const projectSchema = new mongoose.Schema({
   },
 });
 
+projectSchema.index({ userId: 1 });
+
 module.exports = mongoose.model("Project", projectSchema);

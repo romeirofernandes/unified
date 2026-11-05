@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Project = require("../models/Project");
+const Feedback = require("../models/Feedback");
 
 // Create project
 router.post("/", async (req, res) => {
@@ -29,8 +30,26 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const userId = req.user.id; // Will add auth middleware later
-    const projects = await Project.find({ userId });
-    res.json(projects);
+    const projects = await Project.find({ userId }).lean();
+    const counts = projects.length
+      ? await Feedback.aggregate([
+          {
+            $match: {
+              projectId: { $in: projects.map((project) => project._id) },
+            },
+          },
+          { $group: { _id: "$projectId", count: { $sum: 1 } } },
+        ])
+      : [];
+    const countByProject = new Map(
+      counts.map((entry) => [String(entry._id), entry.count]),
+    );
+    res.json(
+      projects.map((project) => ({
+        ...project,
+        feedbackCount: countByProject.get(String(project._id)) || 0,
+      })),
+    );
   } catch (error) {
     res
       .status(500)
@@ -42,7 +61,10 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     res.header("Content-Type", "application/json");
-    const project = await Project.findById(req.params.id);
+    const project = await Project.findOne({
+      _id: req.params.id,
+      userId: req.user.id,
+    });
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
@@ -58,11 +80,12 @@ router.get("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { name, description, fields, theme } = req.body;
-    const project = await Project.findByIdAndUpdate(
-      req.params.id,
+    const project = await Project.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.id },
       { name, description, fields, theme },
-      { new: true }
+      { new: true, runValidators: true },
     );
+    if (!project) return res.status(404).json({ message: "Project not found" });
     res.json(project);
   } catch (error) {
     res
@@ -74,7 +97,14 @@ router.put("/:id", async (req, res) => {
 // Delete project
 router.delete("/:id", async (req, res) => {
   try {
-    await Project.findByIdAndDelete(req.params.id);
+    const project = await Project.findOne({
+      _id: req.params.id,
+      userId: req.user.id,
+    });
+    if (!project) return res.status(404).json({ message: "Project not found" });
+    // Keep the project available for a retry if feedback cleanup fails.
+    await Feedback.deleteMany({ projectId: project._id });
+    await Project.deleteOne({ _id: project._id, userId: req.user.id });
     res.json({ message: "Project deleted successfully" });
   } catch (error) {
     res

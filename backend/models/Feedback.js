@@ -17,4 +17,6 @@ const feedbackSchema = new mongoose.Schema({
   },
 });
 
+feedbackSchema.index({ projectId: 1, timestamp: -1 });
+
 module.exports = mongoose.model("Feedback", feedbackSchema);
