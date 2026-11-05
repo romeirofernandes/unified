@@ -18,7 +18,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowDown01Icon, ArrowLeft01Icon, ArrowRight01Icon, ArrowUp01Icon,
   ArtificialIntelligence01Icon, BookOpen01Icon, BulbIcon, Calendar01Icon,
-  CheckIcon, ChevronDownIcon, ChevronRightIcon, CircleIcon, Clock01Icon,
+  CheckIcon, ChevronDownIcon, ChevronRightIcon, CircleIcon, Clock01Icon, Cancel01Icon,
   Comment01Icon, Copy01Icon, CornerDownLeftIcon, CornerDownRightIcon,
   Delete01Icon, DotIcon, DropperIcon, Folder01Icon, GlobalIcon, HeartIcon,
   Home01Icon, Image01Icon, InboxIcon, InformationCircleIcon, LayoutLeftIcon,
@@ -69,7 +69,7 @@ function iconComponent(icon: object): IconComponent {
 
 export const defaultIcons: Record<IconName, IconComponent> = {
   "chevron-right": iconComponent(ChevronRightIcon), "chevron-down": iconComponent(ChevronDownIcon),
-  "pipette": iconComponent(DropperIcon), "x": iconComponent(Delete01Icon), "copy": iconComponent(Copy01Icon),
+  "pipette": iconComponent(DropperIcon), "x": iconComponent(Cancel01Icon), "copy": iconComponent(Copy01Icon),
   "menu": iconComponent(Menu01Icon), "dot": iconComponent(DotIcon), "monitor": iconComponent(MonitorIcon),
   "sun": iconComponent(Sun01Icon), "moon": iconComponent(Moon01Icon), "rectangle-horizontal": iconComponent(RectangleHorizontalIcon),
   "circle": iconComponent(CircleIcon), "square-library": iconComponent(BookOpen01Icon), "clock": iconComponent(Clock01Icon),

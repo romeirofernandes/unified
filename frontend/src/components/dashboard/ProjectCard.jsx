@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Delete01Icon } from "@hugeicons/core-free-icons";
 import {
   Card,
   CardHeader,
@@ -13,8 +15,8 @@ import { raisedCardSurface } from "@/components/ui/cardStyles";
 
 export default function ProjectCard({ project, onPreview, onDelete }) {
   return (
-    <Card className={`${raisedCardSurface} flex h-full min-w-0 flex-col`}>
-      <CardHeader>
+    <Card className={`${raisedCardSurface} relative flex h-full min-w-0 flex-col`}>
+      <CardHeader className="pr-12">
         <CardTitle>
           <Link
             to={`/project/${project._id}/feedbacks`}
@@ -42,11 +44,14 @@ export default function ProjectCard({ project, onPreview, onDelete }) {
           Preview & code
         </Button>
         <Button
-          variant="destructive-ghost"
+          variant="destructive"
+          size="icon-compact"
+          className="absolute right-4 top-4"
           onClick={() => onDelete(project)}
           aria-label={`Delete ${project.name}`}
+          title={`Delete ${project.name}`}
         >
-          Delete
+          <HugeiconsIcon icon={Delete01Icon} size={15} aria-hidden="true" />
         </Button>
       </CardFooter>
     </Card>

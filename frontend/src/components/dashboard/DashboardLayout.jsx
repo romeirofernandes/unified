@@ -15,11 +15,9 @@ import {
   SidebarHeader,
   SidebarFooter,
   SidebarInset,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { SharedLayoutBg } from "@/components/ui/shared-layout-bg";
 import { SidebarInsetTopbar } from "@/components/sidebar-app/inset-topbar";
 import { Button } from "@/components/ui/button";
 import Brand from "@/components/shared/Brand";
@@ -38,31 +36,27 @@ function WorkspaceNavigation() {
   const { setOpenMobile } = useSidebar();
   return (
     <nav aria-label="Workspace">
-      <SidebarMenu className="gap-y-2">
+      <SharedLayoutBg as="ul" className="list-none gap-y-2 px-2" inset={8} pillClassName="rounded-md bg-selected">
         {navigation.map(({ path, label, icon }) => {
           const active =
             path === "/dashboard"
               ? pathname === path || pathname.startsWith("/project/")
               : pathname.startsWith(path);
           return (
-            <SidebarMenuItem key={path}>
-              <SidebarMenuButton
-                isActive={active}
-                render={
-                  <Link
-                    to={path}
-                    aria-current={active ? "page" : undefined}
-                    onClick={() => setOpenMobile(false)}
-                  />
-                }
+            <li key={path}>
+              <Link
+                to={path}
+                aria-current={active ? "page" : undefined}
+                onClick={() => setOpenMobile(false)}
+                className={`flex min-h-10 items-center gap-3 rounded-md px-3 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring ${active ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground"}`}
               >
                 <HugeiconsIcon icon={icon} size={18} aria-hidden="true" />
                 <span>{label}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+              </Link>
+            </li>
           );
         })}
-      </SidebarMenu>
+      </SharedLayoutBg>
     </nav>
   );
 }
@@ -123,7 +117,7 @@ export default function DashboardLayout({ children }) {
           <ErrorMessage>{error}</ErrorMessage>
           <Button
             variant="destructive"
-            className="w-full justify-start"
+            className="w-full justify-start gap-2 [&>span:nth-child(2)]:w-full [&>span:nth-child(2)]:justify-start"
             onClick={handleLogout}
             loading={signingOut}
           >
@@ -133,18 +127,20 @@ export default function DashboardLayout({ children }) {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className="min-w-0">
-        <SidebarInsetTopbar className="sticky top-0 z-20 h-16 border-b border-border bg-background/95 px-4 backdrop-blur-xl sm:px-6">
-          <span className={`${typeClass("body")} text-muted-foreground`}>
-            Workspace / <span className="text-foreground">{title}</span>
-          </span>
-          <div className="ml-auto">
-            <ThemeToggle />
+        <SidebarInsetTopbar className="sticky top-0 z-20 h-16 border-b border-border bg-background/95 backdrop-blur-xl">
+          <div className="mx-auto flex w-full max-w-[1400px] items-center gap-2 px-5 sm:px-8 lg:px-10">
+            <span className={`${typeClass("body")} text-muted-foreground`}>
+              Workspace / <span className="text-foreground">{title}</span>
+            </span>
+            <div className="ml-auto">
+              <ThemeToggle />
+            </div>
           </div>
         </SidebarInsetTopbar>
         <div
           id="workspace-content"
           tabIndex={-1}
-          className="mx-auto w-full max-w-[1400px] space-y-7 p-5 outline-none sm:p-8 lg:p-10"
+          className="mx-auto w-full max-w-[1400px] space-y-7 px-5 py-7 outline-none sm:px-8 sm:py-8 lg:px-10 lg:py-10"
         >
           {children}
         </div>
