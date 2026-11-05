@@ -8,7 +8,6 @@ import {
   logout,
   syncUser,
 } from "@/lib/auth-service";
-import { LoadingState } from "@/components/shared/PageState";
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState({ user: null, loading: true });
@@ -41,13 +40,7 @@ export function AuthProvider({ children }) {
   );
   return (
     <AuthContext.Provider value={value}>
-      {session.loading ? (
-        <div className="min-h-svh bg-background p-8 text-foreground">
-          <LoadingState />
-        </div>
-      ) : (
-        children
-      )}
+      {children}
     </AuthContext.Provider>
   );
 }
