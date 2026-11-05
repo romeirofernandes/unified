@@ -132,7 +132,7 @@ export default function DashboardLayout({ children }) {
       </Sidebar>
       <SidebarInset className="min-w-0">
         <SidebarInsetTopbar className="sticky top-0 z-20 h-16 border-b border-border bg-background/95 backdrop-blur-xl">
-          <div className="flex w-full items-center gap-2 px-5 sm:px-8 lg:px-10">
+          <div className="flex w-full items-center gap-2 px-0">
             <span className={`${typeClass("body")} text-muted-foreground`}>
               Workspace / <span className="text-foreground">{title}</span>
             </span>
