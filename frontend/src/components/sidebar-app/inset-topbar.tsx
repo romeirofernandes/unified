@@ -24,7 +24,7 @@ export function SidebarInsetTopbar({
       className={cn("flex h-12 shrink-0 items-center gap-2 px-1.5", className)}
     >
       <SidebarTrigger
-        className={`transition-opacity delay-200 duration-160 ${
+        className={`shrink-0 border-0 bg-transparent shadow-none inset-shadow-none [text-shadow:none] hover:bg-hover [&>span:first-child]:hidden transition-opacity delay-200 duration-160 ${
           isPeeking ? "opacity-0" : "opacity-100"
         }`}
       />

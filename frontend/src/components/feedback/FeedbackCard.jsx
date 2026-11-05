@@ -1,36 +1,74 @@
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { typeClass } from "@/lib/type-scale";
-import { raisedCardSurface } from "@/components/ui/cardStyles";
+import { useIcons } from "@/lib/icon-context";
 
-export default function FeedbackCard({ feedback, labels }) {
+const dateFormat = new Intl.DateTimeFormat(undefined, {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
+
+export default function FeedbackCard({ response }) {
+  const { feedback, sender, preview, answers, timestamp } = response;
+  const Chevron = useIcons()["chevron-down"];
+  const date = timestamp ? new Date(timestamp) : null;
   return (
-    <Card className={`${raisedCardSurface} min-w-0`}>
-      <CardHeader>
+    <details className="group min-w-0 border-b border-border last:border-0 open:bg-hover/50">
+      <summary className="grid cursor-pointer list-none grid-cols-[minmax(0,1fr)_16px] items-center gap-3 px-4 py-4 outline-none transition-colors hover:bg-hover focus-visible:bg-hover focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:px-5 lg:grid-cols-[minmax(160px,0.9fr)_minmax(0,1.5fr)_120px_16px] lg:gap-5 [&::-webkit-details-marker]:hidden">
+        <span className="min-w-0 space-y-1">
+          <span className="block truncate text-sm font-medium" title={sender}>
+            {sender}
+          </span>
+          <span className="block text-xs text-muted-foreground lg:hidden">
+            {date ? dateFormat.format(date) : "Date unavailable"}
+          </span>
+          <span className="block truncate text-sm text-muted-foreground lg:hidden">
+            {preview}
+          </span>
+        </span>
+        <span className="hidden truncate text-sm text-muted-foreground lg:block">
+          {preview}
+        </span>
         <time
-          className={`${typeClass("caption")} text-muted-foreground`}
-          dateTime={feedback.timestamp}
+          className="hidden text-xs tabular-nums text-muted-foreground lg:block"
+          dateTime={date?.toISOString()}
+          title={date?.toLocaleString()}
         >
-          {new Date(feedback.timestamp).toLocaleString()}
+          {date ? dateFormat.format(date) : "Date unavailable"}
         </time>
-      </CardHeader>
-      <CardContent>
-        <dl className="space-y-4">
-          {Object.entries(feedback.formAnswers || {}).map(([key, value]) => (
-            <div key={key} className="space-y-1">
-              <dt className={`${typeClass("caption")} text-muted-foreground`}>
-                {labels.get(key) || "Removed question"}
-              </dt>
-              <dd
-                className={`${typeClass("body")} whitespace-pre-wrap break-words text-foreground`}
-              >
-                {Array.isArray(value)
-                  ? value.join(", ")
-                  : String(value ?? "No answer")}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </CardContent>
-    </Card>
+        <Chevron
+          size={16}
+          aria-hidden="true"
+          className="text-muted-foreground transition-transform group-open:rotate-180 motion-reduce:transition-none"
+        />
+      </summary>
+      <div className="px-4 pb-5 pt-1 sm:px-5">
+        <div className="rounded-md border border-border bg-background p-4 sm:p-5">
+          <p className="mb-5 text-xs text-muted-foreground">
+            {date ? `Received ${date.toLocaleString()}` : "Response details"}
+          </p>
+          {answers.length ? (
+            <dl className="grid gap-x-10 gap-y-5 sm:grid-cols-2">
+              {answers.map((answer) => (
+                <div
+                  key={answer.id}
+                  className={`min-w-0 space-y-1.5 ${answer.type === "textarea" ? "sm:col-span-2" : ""}`}
+                >
+                  <dt className="text-xs leading-5 text-muted-foreground">
+                    {answer.label}
+                  </dt>
+                  <dd className="whitespace-pre-wrap break-words text-sm leading-6">
+                    {answer.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              This response has no answers.
+            </p>
+          )}
+          <span className="sr-only">Response {feedback._id}</span>
+        </div>
+      </div>
+    </details>
   );
 }

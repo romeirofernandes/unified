@@ -17,12 +17,30 @@ import {
   serializeFields,
 } from "@/lib/project-fields";
 
-export default function ProjectModal({ isOpen, onClose, onSubmit }) {
+export default function ProjectModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  project,
+  onPreview,
+}) {
   const [step, setStep] = useState(1);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [theme, setTheme] = useState("light");
-  const [fields, setFields] = useState(() => [createField("email")]);
+  const [name, setName] = useState(project?.name || "");
+  const [description, setDescription] = useState(project?.description || "");
+  const [theme, setTheme] = useState(project?.theme || "light");
+  const [fields, setFields] = useState(() =>
+    project?.fields?.length
+      ? project.fields.map((field) => ({
+          ...createField(field.type),
+          ...field,
+          id: field._id || crypto.randomUUID(),
+          options: (field.options || []).map((option) => ({
+            ...option,
+            id: option._id || crypto.randomUUID(),
+          })),
+        }))
+      : [createField("email")],
+  );
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
 
@@ -68,11 +86,17 @@ export default function ProjectModal({ isOpen, onClose, onSubmit }) {
       >
         <DialogHeader>
           <DialogTitle>
-            {step === 1 ? "Create a project" : "Choose your questions"}
+            {step === 1
+              ? project
+                ? "Edit project"
+                : "Create a project"
+              : "Choose your questions"}
           </DialogTitle>
           <DialogDescription>
             {step === 1
-              ? "Give your feedback a home. You can configure the questions next."
+              ? project
+                ? "Update your project details, then review its questions."
+                : "Give your feedback a home. You can configure the questions next."
               : "Email is included. Add the questions that help you decide what to build."}
           </DialogDescription>
         </DialogHeader>
@@ -143,6 +167,15 @@ export default function ProjectModal({ isOpen, onClose, onSubmit }) {
           </fieldset>
           <ErrorMessage>{error}</ErrorMessage>
           <DialogFooter>
+            {onPreview && (
+              <Button
+                variant="secondary"
+                onClick={onPreview}
+                disabled={pending}
+              >
+                Preview & code
+              </Button>
+            )}
             {step === 2 && (
               <Button
                 variant="ghost"
@@ -163,7 +196,11 @@ export default function ProjectModal({ isOpen, onClose, onSubmit }) {
               disabled={!name.trim() || pending}
               loading={pending}
             >
-              {step === 1 ? "Next: questions" : "Create project"}
+              {step === 1
+                ? "Next: questions"
+                : project
+                  ? "Save changes"
+                  : "Create project"}
             </Button>
           </DialogFooter>
         </form>

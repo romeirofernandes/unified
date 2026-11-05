@@ -1,5 +1,4 @@
 import { useState } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import ProjectModal from "@/components/dashboard/ProjectModal";
 import ProjectPreview from "@/components/dashboard/ProjectPreview";
 import ProjectCard from "@/components/dashboard/ProjectCard";
@@ -21,6 +20,7 @@ export default function Dashboard() {
     "/projects",
     user?.uid,
   );
+  const [editing, setEditing] = useState(null);
   const [creating, setCreating] = useState(false);
   const [creationKey, setCreationKey] = useState(0);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -31,6 +31,7 @@ export default function Dashboard() {
   const projects = data || [];
 
   function openCreate() {
+    setEditing(null);
     setCreationKey((previous) => previous + 1);
     setCreating(true);
   }
@@ -45,7 +46,22 @@ export default function Dashboard() {
       ...(previous || []),
       { ...project, feedbackCount: 0 },
     ]);
-    reload();
+  }
+
+  async function saveProject(body) {
+    if (!editing) return createProject(body);
+    const updated = await apiRequest(`/projects/${editing._id}`, {
+      method: "PUT",
+      uid: user.uid,
+      body,
+    });
+    setData((previous) =>
+      previous.map((project) =>
+        project._id === updated._id
+          ? { ...updated, feedbackCount: project.feedbackCount ?? 0 }
+          : project,
+      ),
+    );
   }
 
   async function deleteProject() {
@@ -68,7 +84,7 @@ export default function Dashboard() {
   }
 
   return (
-    <DashboardLayout>
+    <>
       <PageHeader
         title="Your projects"
         description="Collect feedback, follow the conversation, and make the next release clearer."
@@ -96,9 +112,10 @@ export default function Dashboard() {
               <ProjectCard
                 key={project._id}
                 project={project}
-                onPreview={(project) => {
-                  setPreview(project);
-                  setPreviewOpen(true);
+                onEdit={(project) => {
+                  setEditing(project);
+                  setCreationKey((previous) => previous + 1);
+                  setCreating(true);
                 }}
                 onDelete={(project) => {
                   setDeleteError("");
@@ -120,7 +137,17 @@ export default function Dashboard() {
         key={creationKey}
         isOpen={creating}
         onClose={() => setCreating(false)}
-        onSubmit={createProject}
+        onSubmit={saveProject}
+        project={editing}
+        onPreview={
+          editing
+            ? () => {
+                setPreview(editing);
+                setPreviewOpen(true);
+                setCreating(false);
+              }
+            : undefined
+        }
       />
       <ProjectPreview
         isOpen={previewOpen}
@@ -137,6 +164,6 @@ export default function Dashboard() {
         error={deleteError}
         confirmLabel="Delete project"
       />
-    </DashboardLayout>
+    </>
   );
 }

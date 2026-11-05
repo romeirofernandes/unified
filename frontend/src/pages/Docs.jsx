@@ -1,17 +1,11 @@
 import { useLocation } from "react-router-dom";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import Quickstart from "@/components/docs/Quickstart";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 
 export default function Docs() {
   const { pathname } = useLocation();
-  if (pathname.startsWith("/dashboard"))
-    return (
-      <DashboardLayout>
-        <Quickstart />
-      </DashboardLayout>
-    );
+  if (pathname.startsWith("/dashboard")) return <Quickstart />;
   return (
     <div className="min-h-svh bg-background text-foreground">
       <Navbar />

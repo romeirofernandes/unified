@@ -1,59 +1,54 @@
 import { Link } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Delete01Icon } from "@hugeicons/core-free-icons";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Delete01Icon, PencilEdit01Icon } from "@hugeicons/core-free-icons";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { typeClass } from "@/lib/type-scale";
 import { raisedCardSurface } from "@/components/ui/cardStyles";
 
-export default function ProjectCard({ project, onPreview, onDelete }) {
+export default function ProjectCard({ project, onEdit, onDelete }) {
+  const count = project.feedbackCount ?? 0;
   return (
-    <Card className={`${raisedCardSurface} relative flex h-full min-w-0 flex-col`}>
-      <Button
-        variant="destructive"
-        size="icon-compact"
-        className="absolute right-4 top-4"
-        onClick={() => onDelete(project)}
-        aria-label={`Delete ${project.name}`}
-        title={`Delete ${project.name}`}
-      >
-        <HugeiconsIcon icon={Delete01Icon} size={15} aria-hidden="true" />
-      </Button>
-      <CardHeader className="pr-12">
-        <CardTitle>
-          <Link
-            to={`/project/${project._id}/feedbacks`}
-            className="break-words text-foreground underline-offset-4 hover:underline"
-          >
-            {project.name}
-          </Link>
-        </CardTitle>
-        <CardDescription className="line-clamp-2">
-          {project.description ||
-            "Your next customer conversation starts here."}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex-1">
-        <div
-          className={`${typeClass("caption")} flex flex-wrap gap-x-4 gap-y-2 text-muted-foreground`}
+    <Card
+      className={`${raisedCardSurface} relative flex h-full min-h-36 min-w-0 flex-col p-4 transition-colors hover:border-fluid-accent/50 focus-within:ring-2 focus-within:ring-ring`}
+    >
+      <div className="absolute end-3 top-3 z-10 flex gap-2">
+        <Button
+          variant="secondary"
+          size="icon-compact"
+          onClick={() => onEdit(project)}
+          aria-label={`Edit ${project.name}`}
+          title="Edit project"
         >
-          <span>{project.fields?.length || 0} fields</span>
-          <span>{project.feedbackCount ?? 0} responses</span>
-          <span>{project.theme === "dark" ? "Dark" : "Light"} widget</span>
-        </div>
-      </CardContent>
-      <CardFooter className="flex flex-wrap gap-3">
-        <Button variant="secondary" onClick={() => onPreview(project)}>
-          Preview & code
+          <HugeiconsIcon icon={PencilEdit01Icon} size={15} aria-hidden="true" />
         </Button>
-      </CardFooter>
+        <Button
+          variant="destructive"
+          size="icon-compact"
+          onClick={() => onDelete(project)}
+          aria-label={`Delete ${project.name}`}
+          title="Delete project"
+        >
+          <HugeiconsIcon icon={Delete01Icon} size={15} aria-hidden="true" />
+        </Button>
+      </div>
+      <h2 className="pe-20 text-lg leading-7">
+        <Link
+          to={`/project/${project._id}/feedbacks`}
+          className="break-words outline-none after:absolute after:inset-0 after:rounded-md"
+        >
+          {project.name}
+        </Link>
+      </h2>
+      {project.description && (
+        <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">
+          {project.description}
+        </p>
+      )}
+      <div className="mt-auto flex justify-end pt-3">
+        <span className="rounded-full border border-[#30456d]/40 bg-[#5575b4] px-2.5 py-1 text-xs font-medium tabular-nums text-white">
+          {count} {count === 1 ? "response" : "responses"}
+        </span>
+      </div>
     </Card>
   );
 }

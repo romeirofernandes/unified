@@ -1,8 +1,7 @@
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { useApiResource } from "@/hooks/use-api-resource";
 import { useFeedbackSummary } from "@/hooks/use-feedback-summary";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import { ErrorMessage, LoadingState } from "@/components/shared/PageState";
 import FeedbackList from "@/components/feedback/FeedbackList";
@@ -23,15 +22,12 @@ function ProjectFeedback({ projectId }) {
   return (
     <>
       <div className="space-y-4">
-        <Button variant="ghost" asChild>
-          <Link to="/dashboard">← All projects</Link>
-        </Button>
         <PageHeader
           title={project.data?.name || "Customer feedback"}
           description={
             loading
               ? "Loading your customer conversations…"
-              : `${responses.length} responses. Find the thread and decide what comes next.`
+              : `${responses.length} ${responses.length === 1 ? "response" : "responses"}. Select a response to read all answers.`
           }
           action={
             <Button
@@ -77,11 +73,11 @@ export default function Feedbacks() {
   const { projectId } = useParams();
   const { user } = useAuth();
   return (
-    <DashboardLayout>
+    <>
       <ProjectFeedback
         key={`${user?.uid}:${projectId}`}
         projectId={projectId}
       />
-    </DashboardLayout>
+    </>
   );
 }

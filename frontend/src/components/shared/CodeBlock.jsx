@@ -1,48 +1,27 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { ErrorMessage } from "./PageState";
-import { typeClass } from "@/lib/type-scale";
+import { Highlight, themes } from "prism-react-renderer";
+import { useTheme } from "next-themes";
+import CopyButton from "./CopyButton";
 
-export default function CodeBlock({ code, label = "Code" }) {
-  const [status, setStatus] = useState("");
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(code);
-      setStatus("Copied");
-    } catch {
-      setStatus("Couldn’t copy. Select the code and copy it manually.");
-    }
-  }
+export default function CodeBlock({ code, label = "Code", language }) {
+  const { resolvedTheme } = useTheme();
+  const syntax = language || (code.trimStart().startsWith("npm ") ? "bash" : "jsx");
   return (
-    <div className="min-w-0 overflow-hidden rounded-xl border border-border bg-muted/40">
-      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-2">
-        <span className={`${typeClass("caption")} text-muted-foreground`}>
-          {label}
-        </span>
-        <Button
-          variant="ghost"
-          size="compact"
-          onClick={copy}
-          aria-label={`Copy ${label}`}
-        >
-          Copy
-        </Button>
-      </div>
-      <pre
-        className="max-w-full overflow-x-auto p-4 text-xs leading-6 sm:text-sm"
-        tabIndex={0}
-      >
-        <code>{code}</code>
-      </pre>
-      <div role="status" className="px-4">
-        {status === "Copied" ? (
-          <p className={`${typeClass("caption")} pb-3 text-muted-foreground`}>
-            Copied to clipboard
-          </p>
-        ) : (
-          <ErrorMessage>{status}</ErrorMessage>
+    <figure className="min-w-0 overflow-hidden rounded-xl border border-border bg-card">
+      <figcaption className="flex min-h-14 flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-2">
+        <span className="font-mono text-xs text-muted-foreground">{label}</span>
+        <CopyButton value={code} label={label} />
+      </figcaption>
+      <Highlight code={code} language={syntax} theme={resolvedTheme === "dark" ? themes.vsDark : themes.github}>
+        {({ tokens, getLineProps, getTokenProps }) => (
+          <pre aria-label={`${label} code example`} className="max-w-full overflow-x-auto p-5 font-mono text-[13px] leading-7 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring" tabIndex={0}>
+            <code>{tokens.map((line, index) => (
+              <span key={index} {...getLineProps({ line })} className="block min-h-7">
+                {line.map((token, tokenIndex) => <span key={tokenIndex} {...getTokenProps({ token })} />)}
+              </span>
+            ))}</code>
+          </pre>
         )}
-      </div>
-    </div>
+      </Highlight>
+    </figure>
   );
 }

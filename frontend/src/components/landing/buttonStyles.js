@@ -2,4 +2,4 @@ export const tactileButtonBase = "cursor-pointer inline-flex items-center justif
 
 export const tactilePrimaryButton = "bg-linear-to-b from-[#5674ad] to-[#4b699f] text-white [text-shadow:0_1px_0_#405783] border-[#30456d]/50 shadow-[#26385b]/20 dark:bg-linear-to-t dark:from-[#5674ad] dark:to-[#4b699f] dark:border-[#30456d]/60";
 
-export const tactileSecondaryButton = "bg-linear-to-b from-[#fffefa]/85 to-[#e4e1d9] text-[#383631] [text-shadow:0_1px_0_#ffffff] border-[#b9b6ad] shadow-[#4e4b43]/20 dark:bg-linear-to-t dark:from-[#484640] dark:to-[#302e2a] dark:text-[#f4f1e9] dark:border-white/10 dark:[text-shadow:0_1px_0_#171716]";
+export const tactileSecondaryButton = "bg-linear-to-b from-[#fffefa]/85 to-[#e4e1d9] text-[#383631] [text-shadow:0_1px_0_#ffffff] border-[#b9b6ad] shadow-[#4e4b43]/20 dark:bg-linear-to-t dark:from-[#484848] dark:to-[#303030] dark:text-[#fafafa] dark:border-white/10 dark:[text-shadow:0_1px_0_#171716]";

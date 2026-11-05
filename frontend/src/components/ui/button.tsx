@@ -13,7 +13,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import type { IconComponent } from "@/lib/icon-context";
 import { cn } from "@/lib/utils";
 import { omit } from "@/lib/omit";
-import { useShape } from "@/lib/shape-context";
+import { tactileButtonBase, tactilePrimaryButton, tactileSecondaryButton } from "@/components/landing/buttonStyles";
 import { useSizeVariant } from "@/lib/size-context";
 
 const buttonVariants = cva(
@@ -22,26 +22,26 @@ const buttonVariants = cva(
     // the label the button's narrowest width, so a tight row moves the
     // button (or overflows) instead of squeezing it.
     "group relative isolate inline-flex items-center justify-center outline-none cursor-pointer select-none whitespace-nowrap",
-    "transition-colors duration-80",
+    tactileButtonBase,
     "disabled:opacity-50 disabled:pointer-events-none",
     "focus-visible:ring-1 focus-visible:ring-[color:var(--focus-ring,#6B97FF)]",
   ],
   {
     variants: {
       variant: {
-        primary: "text-white [text-shadow:0_1px_0_#405783]",
-        secondary: "text-foreground [text-shadow:0_1px_0_#ffffff] dark:[text-shadow:0_1px_0_#171716]",
+        primary: tactilePrimaryButton,
+        secondary: tactileSecondaryButton,
         tertiary: "text-foreground",
         ghost: "text-muted-foreground hover:text-foreground",
-        destructive: "text-white",
+        destructive: "bg-linear-to-b from-[#bf4b46] to-[#a83f3b] border-[#963b38] text-white shadow-black/20",
         "destructive-ghost": "text-destructive hover:text-destructive",
       },
       // The two-step size ladder shared by every control — see /docs/sizes.
       // default = 36px control height, compact = 28px for dense surfaces.
       size: {
         default: "h-10 px-4 text-[length:var(--fs-body,13px)] leading-[var(--lh-body,20px)] gap-2",
-        compact: "h-7 px-3 text-[length:var(--fs-body-compact,12px)] leading-[var(--lh-body-compact,18px)] gap-1",
-        icon: "h-9 w-9 p-0 [&_svg]:h-4 [&_svg]:w-4",
+        compact: "h-10 px-4 text-[13px] leading-5 gap-2",
+        icon: "h-10 w-10 p-0 [&_svg]:h-4 [&_svg]:w-4",
         "icon-compact": "h-7 w-7 p-0 [&_svg]:h-3.5 [&_svg]:w-3.5",
       },
       iconLeft: { true: "" },
@@ -215,7 +215,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     // Spinner box tracks the button height so the loading glyph stays
     // proportionate across sizes.
     const spinnerSizeClass = isCompact ? "h-7 w-7" : "h-9 w-9";
-    const shape = useShape();
+
     const bgClass = active
       ? activeBgVariants[variant ?? "primary"]
       : bgVariants[variant ?? "primary"];
@@ -226,7 +226,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           aria-hidden
           className={cn(
             "absolute inset-px rounded-[inherit] transition-[box-shadow,background-color,filter] [transition-duration:180ms,80ms,200ms] [transition-timing-function:cubic-bezier(0.23,1,0.32,1),ease,ease] group-active:[transition-duration:80ms,80ms,80ms]",
-            bgClass
+            ["primary", "secondary", "destructive"].includes(variant ?? "primary") ? "hidden" : bgClass
           )}
         />
         <span className="relative inline-flex flex-row flex-nowrap items-center justify-center gap-[inherit] whitespace-nowrap">
@@ -299,7 +299,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         iconLeft: !isIconOnly && !!LeadingIcon,
         iconRight: !isIconOnly && !!TrailingIcon,
       }),
-      shape.button,
+
       className
     );
 

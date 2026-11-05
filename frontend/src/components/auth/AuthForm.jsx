@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import FormField from "@/components/shared/FormField";
 import Brand from "@/components/shared/Brand";
 import ThemeToggle from "@/components/landing/ThemeToggle";
+import HeroChecker from "@/components/landing/HeroChecker";
 import {
   tactileButtonBase,
   tactilePrimaryButton,
@@ -57,7 +58,8 @@ export default function AuthForm({ mode }) {
         <ThemeToggle />
       </header>
 
-      <main className="grid min-h-[calc(100svh-5rem)] place-items-center px-5 pb-12 pt-6 sm:px-8 sm:pb-16">
+      <main className="relative isolate grid min-h-[calc(100svh-5rem)] place-items-center overflow-hidden px-5 pb-12 pt-6 sm:px-8 sm:pb-16">
+        <HeroChecker className="absolute inset-x-0 bottom-0 -z-10 h-3/4 opacity-30 [mask-image:linear-gradient(to_bottom,transparent,black_80%)] dark:opacity-20" />
         <section
           aria-labelledby="auth-title"
           className="w-full max-w-[420px] rounded-2xl border border-[#c9c6bd] bg-linear-to-b from-[#fffefa] to-[#f1efe8] p-5 shadow-[0_3px_0_#e3e0d8,0_10px_24px_rgb(43_41_35_/_8%),inset_0_1px_0_rgb(255_255_255_/_90%),inset_0_-1px_0_rgb(217_214_205_/_70%)] sm:p-8 dark:border-[#393834] dark:from-[#242321] dark:to-[#1a1917] dark:shadow-[0_3px_0_#151514,0_10px_24px_rgb(0_0_0_/_24%),inset_0_1px_0_rgb(255_255_255_/_6%),inset_0_-1px_0_rgb(0_0_0_/_24%)]"
@@ -147,7 +149,7 @@ export default function AuthForm({ mode }) {
 
               <button
                 type="submit"
-                className={`${tactileButtonBase} ${tactilePrimaryButton} min-h-[46px] w-full px-5 text-[14px] focus-visible:ring-offset-2 focus-visible:ring-offset-[#fbfaf7] dark:focus-visible:ring-offset-[#1d1c1a]`}
+                className={`${tactileButtonBase} ${tactilePrimaryButton} h-10 w-full px-5 text-[14px] focus-visible:ring-offset-2 focus-visible:ring-offset-[#fbfaf7] dark:focus-visible:ring-offset-[#1d1c1a]`}
                 disabled={!!pending}
               >
                 {pending === "email"
@@ -171,7 +173,7 @@ export default function AuthForm({ mode }) {
 
             <button
               type="button"
-              className={`${tactileButtonBase} ${tactileSecondaryButton} min-h-[46px] w-full px-5 text-[14px] focus-visible:ring-offset-2 focus-visible:ring-offset-[#fbfaf7] dark:focus-visible:ring-offset-[#1d1c1a]`}
+              className={`${tactileButtonBase} ${tactileSecondaryButton} h-10 w-full px-5 text-[14px] focus-visible:ring-offset-2 focus-visible:ring-offset-[#fbfaf7] dark:focus-visible:ring-offset-[#1d1c1a]`}
               onClick={() => authenticate("google")}
               disabled={!!pending}
             >

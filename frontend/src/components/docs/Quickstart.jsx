@@ -1,11 +1,7 @@
 import { Link } from "react-router-dom";
-import PageHeader from "@/components/shared/PageHeader";
 import CodeBlock from "@/components/shared/CodeBlock";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { integrationCode } from "@/lib/integration-code";
-import { typeClass } from "@/lib/type-scale";
-import { raisedCardSurface } from "@/components/ui/cardStyles";
 
 const steps = [
   {
@@ -50,63 +46,87 @@ const steps = [
 
 export default function Quickstart() {
   return (
-    <div className="space-y-10">
-      <PageHeader
-        title="From setup to your first response."
-        description="A small React component. A direct line to your customers. Here’s how to get started."
-      />
-      <div className="grid items-start gap-8 lg:grid-cols-[180px_minmax(0,1fr)]">
-        <nav
-          aria-label="On this page"
-          className="flex flex-wrap gap-2 lg:sticky lg:top-24 lg:flex-col"
-        >
+    <div className="pb-8">
+      <div className="grid min-w-0 items-start gap-10 xl:grid-cols-[minmax(0,1fr)_220px] xl:gap-16">
+        <div className="min-w-0 max-w-4xl space-y-12">
           {steps.map((step, index) => (
-            <Button
-              key={step.id}
-              variant="ghost"
-              className="justify-start"
-              asChild
-            >
-              <a href={`#${step.id}`}>
-                {index + 1}. {step.title}
-              </a>
-            </Button>
-          ))}
-        </nav>
-        <div className="min-w-0 space-y-6">
-          {steps.map((step, index) => (
-            <Card
+            <section
               key={step.id}
               id={step.id}
-              className={`${raisedCardSurface} scroll-mt-24 space-y-5 p-5 sm:p-7`}
+              aria-labelledby={`${step.id}-title`}
+              className="min-w-0 scroll-mt-24 space-y-6 border-b border-border pb-12 last:border-0 last:pb-0"
             >
-              <div className="space-y-2">
-                <p className={`${typeClass("caption")} text-muted-foreground`}>
-                  Step {index + 1} of {steps.length}
-                </p>
-                <h2 className={typeClass("title")}>{step.title}</h2>
-                <p className={`${typeClass("body")} text-muted-foreground`}>
-                  {step.description}
-                </p>
-              </div>
-              {step.items && (
-                <ul
-                  className={`${typeClass("body")} list-disc space-y-2 pl-5 text-muted-foreground`}
+              <div className="flex items-baseline gap-4">
+                <span className="font-mono text-xs text-muted-foreground">
+                  0{index + 1}
+                </span>
+                <h2
+                  id={`${step.id}-title`}
+                  className="text-2xl tracking-tight sm:text-3xl"
                 >
+                  {step.title}
+                </h2>
+              </div>
+              <p className="max-w-2xl text-sm leading-7 text-muted-foreground">
+                {step.description}
+              </p>
+              {step.items && (
+                <ul className="space-y-3 text-sm leading-6 text-muted-foreground">
                   {step.items.map((item) => (
-                    <li key={item}>{item}</li>
+                    <li key={item} className="flex gap-3">
+                      <span
+                        aria-hidden="true"
+                        className="mt-2.5 size-1 shrink-0 rounded-full bg-fluid-accent"
+                      />
+                      <span>{item}</span>
+                    </li>
                   ))}
                 </ul>
               )}
               {step.code && <CodeBlock code={step.code} label={step.label} />}
+              {step.id === "integrate" && (
+                <div className="rounded-lg border border-border bg-card px-5 py-4 text-sm leading-6 text-muted-foreground">
+                  Replace{" "}
+                  <code className="font-mono text-xs text-foreground">
+                    YOUR_PROJECT_ID
+                  </code>{" "}
+                  and{" "}
+                  <code className="font-mono text-xs text-foreground">
+                    YOUR_FIREBASE_UID
+                  </code>{" "}
+                  with the values in your project’s{" "}
+                  <span className="text-foreground">Preview & code</span> panel.
+                </div>
+              )}
               {step.action && (
                 <Button variant="secondary" asChild>
                   <Link to="/dashboard">Open your workspace</Link>
                 </Button>
               )}
-            </Card>
+            </section>
           ))}
         </div>
+        <aside className="hidden space-y-6 xl:sticky xl:top-24 xl:block">
+          <nav
+            aria-label="On this page"
+            className="space-y-4 border-s border-border ps-5"
+          >
+            <p className="text-xs font-medium text-foreground">On this page</p>
+            {steps.map((step, index) => (
+              <a
+                key={step.id}
+                href={`#${step.id}`}
+                className="block text-xs leading-6 text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:text-foreground"
+              >
+                0{index + 1} <span className="ms-2">{step.title}</span>
+              </a>
+            ))}
+          </nav>
+          <p className="ps-5 text-xs leading-6 text-muted-foreground">
+            Already set up? Open a project to view responses and generate a
+            feedback summary.
+          </p>
+        </aside>
       </div>
     </div>
   );

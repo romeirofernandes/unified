@@ -40,7 +40,12 @@ function WorkspaceNavigation() {
   const { setOpenMobile } = useSidebar();
   return (
     <nav aria-label="Workspace">
-      <SharedLayoutBg as="ul" className="list-none gap-y-2 px-2" inset={8} pillClassName="rounded-md bg-[color-mix(in_oklab,var(--fluid-accent)_14%,transparent)] dark:bg-white/5">
+      <SharedLayoutBg
+        as="ul"
+        className="list-none gap-y-2 px-2"
+        inset={8}
+        pillClassName="rounded-md bg-[color-mix(in_oklab,var(--fluid-accent)_14%,transparent)] dark:bg-white/5"
+      >
         {navigation.map(({ path, label, icon }) => {
           const active =
             path === "/dashboard"
@@ -131,11 +136,41 @@ export default function DashboardLayout({ children }) {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className="min-w-0">
-        <SidebarInsetTopbar className="sticky top-0 z-20 h-16 border-b border-border bg-background/95 backdrop-blur-xl">
+        <SidebarInsetTopbar className="sticky top-0 z-20 h-16 border-b border-border bg-background/95 px-5 backdrop-blur-xl sm:px-8">
           <div className="flex w-full items-center gap-2 px-0">
-            <span className={`${typeClass("body")} text-muted-foreground`}>
-              Workspace / <span className="text-foreground">{title}</span>
-            </span>
+            <nav aria-label="Breadcrumb" className="min-w-0">
+              <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                <li>
+                  <Link
+                    to="/dashboard"
+                    className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                  >
+                    Workspace
+                  </Link>
+                </li>
+                <li aria-hidden="true" className="text-muted-foreground/60">
+                  /
+                </li>
+                {pathname.startsWith("/project/") && (
+                  <>
+                    <li>
+                      <Link
+                        to="/dashboard"
+                        className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                      >
+                        Projects
+                      </Link>
+                    </li>
+                    <li aria-hidden="true" className="text-muted-foreground/60">
+                      /
+                    </li>
+                  </>
+                )}
+                <li aria-current="page" className="text-foreground">
+                  {pathname.startsWith("/project/") ? "Responses" : title}
+                </li>
+              </ol>
+            </nav>
             <div className="ml-auto">
               <ThemeToggle />
             </div>
@@ -144,7 +179,7 @@ export default function DashboardLayout({ children }) {
         <div
           id="workspace-content"
           tabIndex={-1}
-          className="w-full space-y-7 px-7 py-7 outline-none sm:px-8 sm:py-8 lg:px-8 lg:py-10"
+          className="w-full space-y-7 px-5 py-7 outline-none sm:px-8 sm:py-8 lg:py-10"
         >
           {children}
         </div>

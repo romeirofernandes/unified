@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { typeClass } from "@/lib/type-scale";
 import { Skeleton as Skullet } from "skullet/react";
 import "skullet/styles.css";
@@ -17,21 +16,23 @@ export function ErrorMessage({ children }) {
 
 export function LoadingState() {
   return (
-    <Skullet
-      loading
-      label="Loading content"
-      skeleton={
-        <div className="space-y-4 py-2">
-          <Skeleton className="h-8 w-48" />
-          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-            {[1, 2, 3].map((id) => (
-              <Skeleton key={id} className="h-48 rounded-xl" />
-            ))}
-          </div>
-        </div>
-      }
-    >
-      <div className="sr-only">Content is loading</div>
+    <Skullet loading label="Loading content">
+      <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
+        {[1, 2, 3].map((id) => (
+          <article
+            key={id}
+            className="flex min-h-36 flex-col gap-2 rounded-md border border-border bg-card p-4"
+          >
+            <p className="text-sm font-medium">Project name</p>
+            <p className="text-sm text-muted-foreground">
+              Collect feedback and follow your customers’ conversations.
+            </p>
+            <p className="mt-auto self-end rounded-full bg-fluid-accent px-3 py-1 text-xs">
+              24 responses
+            </p>
+          </article>
+        ))}
+      </div>
     </Skullet>
   );
 }

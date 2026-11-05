@@ -41,7 +41,8 @@ export function validateFields(fields) {
 }
 
 export function serializeFields(fields) {
-  return fields.map(({ type, label, required, options, config }) => ({
+  return fields.map(({ _id, type, label, required, options, config }) => ({
+    ...(_id ? { _id } : {}),
     type,
     label: label.trim(),
     required,

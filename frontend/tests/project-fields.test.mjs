@@ -64,3 +64,11 @@ test("integration snippets keep the project settings and SDK stylesheet", () => 
   assert.match(code, /theme="dark"/);
   assert.match(code, /unified-sdk\/dist\/unified-sdk.css/);
 });
+
+test("editing a project preserves field IDs used by existing feedback", () => {
+  const field = { ...createField("email"), _id: "existing-email-field", label: "Contact email" };
+  const [saved] = serializeFields([field]);
+  assert.equal(saved._id, "existing-email-field");
+  assert.equal(saved.label, "Contact email");
+  assert.equal("id" in saved, false);
+});

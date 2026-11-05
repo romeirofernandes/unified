@@ -22,12 +22,12 @@ export default function Hero() {
         </p>
         <div className="mt-6 flex w-full flex-col items-stretch justify-center gap-3 sm:mt-6 sm:w-auto sm:flex-row sm:items-center sm:gap-3">
           <Link
-            className={`${tactileButtonBase} ${tactilePrimaryButton} min-h-[46px] px-5 text-[14px] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3ee] dark:focus-visible:ring-offset-[#141413]`}
+            className={`${tactileButtonBase} ${tactilePrimaryButton} h-10 px-5 text-[14px] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3ee] dark:focus-visible:ring-offset-[#141413]`}
             to={user ? "/dashboard" : "/signup"}
           >
             Create your project <HugeiconsIcon icon={ArrowRight01Icon} size={18} aria-hidden="true" />
           </Link>
-          <Link className={`${tactileButtonBase} ${tactileSecondaryButton} min-h-[46px] px-5 text-[14px] no-underline`} to="/docs">
+          <Link className={`${tactileButtonBase} ${tactileSecondaryButton} h-10 px-5 text-[14px] no-underline`} to="/docs">
             Read the documentation
           </Link>
         </div>

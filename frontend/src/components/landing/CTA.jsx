@@ -20,7 +20,7 @@ export default function CTA() {
         </div>
         <div className="flex flex-col items-start gap-3 md:items-end">
           <Link
-            className={`${tactileButtonBase} ${tactilePrimaryButton} min-h-[46px] px-5 text-[14px] focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4e9f2] dark:focus-visible:ring-offset-[#141413]`}
+            className={`${tactileButtonBase} ${tactilePrimaryButton} h-10 px-5 text-[14px] focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4e9f2] dark:focus-visible:ring-offset-[#141413]`}
             to={user ? "/dashboard" : "/signup"}
           >
             Create your project <HugeiconsIcon icon={ArrowRight01Icon} size={18} aria-hidden="true" />

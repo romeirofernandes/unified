@@ -10,20 +10,11 @@ import {
 import { auth } from "@/firebaseConfig";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/api";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DeleteAccountDialog from "@/components/settings/DeleteAccountDialog";
 import PageHeader from "@/components/shared/PageHeader";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import ThemeToggle from "@/components/landing/ThemeToggle";
-import { typeClass } from "@/lib/type-scale";
-import { raisedCardSurface } from "@/components/ui/cardStyles";
+import SettingsSection from "@/components/settings/SettingsSection";
+import AppearanceSettings from "@/components/settings/AppearanceSettings";
 
 export default function Settings() {
   const { user, logout } = useAuth();
@@ -72,71 +63,87 @@ export default function Settings() {
   }
 
   return (
-    <DashboardLayout>
+    <>
       <PageHeader
         title="Settings"
-        description="Your account, your workspace, and how it feels."
+        description="Manage your account and make the workspace feel like yours."
       />
-      <div className="max-w-3xl space-y-6">
-        <Card className={raisedCardSurface}>
-          <CardHeader>
-            <CardTitle>Account</CardTitle>
-            <CardDescription>
-              The details behind your workspace.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <dl className="grid gap-6 lg:grid-cols-2">
-              {[
-                ["Email", user?.email],
-                [
-                  "Member since",
-                  user?.metadata?.creationTime
-                    ? new Date(user.metadata.creationTime).toLocaleDateString()
-                    : "Unavailable",
-                ],
-                [
-                  "Sign-in method",
-                  isGoogleUser ? "Google" : "Email and password",
-                ],
-              ].map(([label, value]) => (
-                <div key={label} className="space-y-1">
-                  <dt
-                    className={`${typeClass("caption")} text-muted-foreground`}
-                  >
-                    {label}
-                  </dt>
-                  <dd className={`${typeClass("body")} break-words`}>
-                    {value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </CardContent>
-        </Card>
-        <Card className={raisedCardSurface}>
-          <CardHeader>
-            <CardTitle>Appearance</CardTitle>
-            <CardDescription>
-              Choose a light or dark workspace. You can also press D when you’re
-              not typing.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ThemeToggle />
-          </CardContent>
-        </Card>
-        <Card className={`${raisedCardSurface} border-destructive/25`}>
-          <CardHeader>
-            <CardTitle>Delete account</CardTitle>
-            <CardDescription>
-              Permanently remove your account and its data. This can’t be
-              undone.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+      <div className="space-y-5">
+        <SettingsSection
+          id="account"
+          title="Account"
+          description="Your sign-in details and account information."
+        >
+          <div className="mb-3 flex items-center gap-3">
+            <span
+              aria-hidden="true"
+              className="grid size-10 shrink-0 place-items-center rounded-full border border-border bg-fluid-accent/15 text-lg text-foreground"
+            >
+              {(user?.displayName || user?.email || "U")
+                .slice(0, 1)
+                .toUpperCase()}
+            </span>
+            <div className="min-w-0 space-y-1">
+              <p className="break-words text-sm font-medium">
+                {user?.displayName || "Your account"}
+              </p>
+              <p className="break-all text-xs text-muted-foreground">
+                {user?.email}
+              </p>
+            </div>
+          </div>
+          <dl className="space-y-2">
+            {[
+              ["Email address", user?.email || "Unavailable"],
+              [
+                "Sign-in method",
+                isGoogleUser ? "Google" : "Email and password",
+              ],
+              [
+                "Member since",
+                user?.metadata?.creationTime
+                  ? new Date(user.metadata.creationTime).toLocaleDateString(
+                      undefined,
+                      { year: "numeric", month: "long", day: "numeric" },
+                    )
+                  : "Unavailable",
+              ],
+            ].map(([label, value]) => (
+              <div
+                key={label}
+                className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)]"
+              >
+                <dt className="text-sm text-muted-foreground">{label}</dt>
+                <dd className="break-words text-sm">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </SettingsSection>
+        <SettingsSection
+          id="appearance"
+          title="Appearance"
+          description="Choose how the workspace looks on this device."
+        >
+          <AppearanceSettings />
+        </SettingsSection>
+        <SettingsSection
+          id="delete-account"
+          title="Delete account"
+          description="Permanently remove your account, projects and collected feedback."
+          destructive
+        >
+          <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+            <div className="max-w-sm space-y-2">
+              <p className="text-sm font-medium">
+                This action can’t be undone.
+              </p>
+              <p className="text-sm leading-5 text-muted-foreground">
+                You’ll confirm your identity before anything is deleted.
+              </p>
+            </div>
             <Button
               variant="destructive"
+              className="shrink-0"
               onClick={() => {
                 setError("");
                 setDeletionKey((previous) => previous + 1);
@@ -145,8 +152,8 @@ export default function Settings() {
             >
               Delete account
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </SettingsSection>
       </div>
       <DeleteAccountDialog
         key={deletionKey}
@@ -157,6 +164,6 @@ export default function Settings() {
         pending={pending}
         error={error}
       />
-    </DashboardLayout>
+    </>
   );
 }
