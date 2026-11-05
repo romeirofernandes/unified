@@ -3,11 +3,13 @@ import { motion as Motion, useInView, useReducedMotion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Cursor01Icon, DashboardSquare01Icon, File01Icon, PauseIcon, PlayIcon, Settings01Icon, SidebarLeft01Icon } from "@hugeicons/core-free-icons";
 import Brand from "@/components/shared/Brand";
+import FeedbackCard from "@/components/feedback/FeedbackCard";
+import { SharedLayoutBg } from "@/components/ui/shared-layout-bg";
 import SummaryCard from "@/components/feedback/SummaryCard";
 import CopyButton from "@/components/shared/CopyButton";
 import { feedbackPrompt } from "@/lib/feedback-prompt";
 import { Button } from "@/components/ui/button";
-import { demoSummary } from "./demo/data";
+import { demoResponses, demoSummary } from "./demo/data";
 import { useDemoLoop } from "./demo/use-demo-loop";
 
 const navigation = [
@@ -69,6 +71,18 @@ export default function ProductPreview() {
                     </Motion.div>
                   </Motion.div>
                 } />
+              </div>
+              <div className="overflow-hidden rounded-md border border-border bg-card">
+                <div aria-hidden="true" className="hidden grid-cols-[minmax(160px,0.9fr)_minmax(0,1.5fr)_120px_16px] gap-5 border-b border-border px-5 py-3 text-xs text-muted-foreground lg:grid">
+                  <span>From</span><span>Response preview</span><span>Received</span><span />
+                </div>
+                <SharedLayoutBg inset={0} pillClassName="rounded-none bg-hover">
+                  {demoResponses.map((response) => (
+                    <div key={response.feedback._id} className="border-b border-border last:border-0">
+                      <FeedbackCard response={response} />
+                    </div>
+                  ))}
+                </SharedLayoutBg>
               </div>
             </div>
           </div>
