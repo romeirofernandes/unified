@@ -274,11 +274,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                   className="transition-[stroke-width] duration-80 group-hover:stroke-[2]"
                 />
               )}
-              {/* text-box only applies to block containers, so the trim lives
-                  on the label span (a blockified flex item), not the flex root.
-                  The button's height is fixed (h-*), so this doesn't change
-                  layout — it just centers the cap-to-baseline box optically. */}
-              <span className="[text-box:trim-both_cap_alphabetic]">{label}</span>
+              {/* Trim plain text only; composed icon/text content needs its own flex alignment. */}
+              <span className={typeof label === "string" || typeof label === "number" ? "[text-box:trim-both_cap_alphabetic]" : "inline-flex items-center justify-center"}>{label}</span>
               {TrailingIcon && (
                 <TrailingIcon
                   size={iconSize}

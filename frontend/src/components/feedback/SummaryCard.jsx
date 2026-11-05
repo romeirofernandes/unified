@@ -1,7 +1,7 @@
 import CopyButton from "@/components/shared/CopyButton";
 import { feedbackPrompt } from "@/lib/feedback-prompt";
 
-export default function SummaryCard({ summary, current }) {
+export default function SummaryCard({ summary, current, copyAction }) {
   return (
     <section aria-labelledby="feedback-summary-title" className="overflow-hidden rounded-md border border-border bg-card">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-5 py-4 sm:px-6">
@@ -12,7 +12,7 @@ export default function SummaryCard({ summary, current }) {
           </div>
           <p className="text-xs leading-5 text-muted-foreground">Saved to your project · {summary.responseCount ?? summary.responseIds?.length ?? 0} responses · {new Date(summary.timestamp).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</p>
         </div>
-        <CopyButton value={feedbackPrompt(summary)} label="prompt" showLabel />
+        {copyAction || <CopyButton value={feedbackPrompt(summary)} label="prompt" showLabel />}
       </div>
       <div className="grid gap-6 p-5 sm:p-6 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] xl:gap-10">
         <div className="space-y-3">
