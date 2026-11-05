@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { useApiResource } from "@/hooks/use-api-resource";
@@ -5,6 +6,7 @@ import { useFeedbackSummary } from "@/hooks/use-feedback-summary";
 import PageHeader from "@/components/shared/PageHeader";
 import { ErrorMessage, LoadingState } from "@/components/shared/PageState";
 import FeedbackList from "@/components/feedback/FeedbackList";
+import SummaryLoading from "@/components/feedback/SummaryLoading";
 import SummaryCard from "@/components/feedback/SummaryCard";
 import { Button } from "@/components/ui/button";
 
@@ -12,10 +14,15 @@ function ProjectFeedback({ projectId }) {
   const { user } = useAuth();
   const project = useApiResource(`/projects/${projectId}`, user.uid);
   const feedback = useApiResource(`/feedback/project/${projectId}`, user.uid);
-  const analysis = useFeedbackSummary(
-    `feedback-summary-${user.uid}-${projectId}`,
-  );
   const responses = feedback.data || [];
+  const analysis = useFeedbackSummary(project.data, responses, !project.loading && !feedback.loading && !project.error && !feedback.error);
+  const refreshResponses = feedback.refresh;
+  useEffect(() => {
+    const refresh = () => { if (document.visibilityState === "visible") refreshResponses(); };
+    const timer = window.setInterval(refresh, 30000);
+    window.addEventListener("focus", refresh);
+    return () => { clearInterval(timer); window.removeEventListener("focus", refresh); };
+  }, [refreshResponses]);
   const error = project.error || feedback.error;
   const loading = project.loading || feedback.loading;
 
@@ -29,15 +36,7 @@ function ProjectFeedback({ projectId }) {
               ? "Loading your customer conversations…"
               : `${responses.length} ${responses.length === 1 ? "response" : "responses"}. Select a response to read all answers.`
           }
-          action={
-            <Button
-              onClick={() => analysis.generate(project.data, responses)}
-              loading={analysis.pending}
-              disabled={loading || !!error || !responses.length}
-            >
-              Generate summary
-            </Button>
-          }
+
         />
       </div>
       {error && (
@@ -54,11 +53,11 @@ function ProjectFeedback({ projectId }) {
           </Button>
         </div>
       )}
-      <ErrorMessage>{analysis.error}</ErrorMessage>
+      {analysis.error && <div className="space-y-3"><ErrorMessage>{analysis.error}</ErrorMessage><Button variant="secondary" onClick={analysis.generate} disabled={analysis.pending}>Retry summary</Button></div>}
       {loading && <LoadingState />}
       {!loading && !error && (
         <>
-          {analysis.summary && <SummaryCard summary={analysis.summary} />}
+          {analysis.pending || (!analysis.summary && responses.length > 0 && !analysis.error) ? <SummaryLoading updating={!!analysis.summary} /> : analysis.summary && <SummaryCard summary={analysis.summary} current={analysis.current} />}
           <FeedbackList
             responses={responses}
             fields={project.data?.fields || []}

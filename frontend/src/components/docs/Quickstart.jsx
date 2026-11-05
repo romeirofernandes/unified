@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+import { BounceSidebar } from "@/components/motion/bounce-sidebar";
 import { Link } from "react-router-dom";
 import CodeBlock from "@/components/shared/CodeBlock";
 import { Button } from "@/components/ui/button";
@@ -45,8 +47,32 @@ const steps = [
 ];
 
 export default function Quickstart() {
+  const contentRef = useRef(null);
+  const [active, setActive] = useState(steps[0].id);
+  useEffect(() => {
+    let frame;
+    const root = contentRef.current;
+    let scroller = root?.parentElement;
+    while (scroller && !/(auto|scroll)/.test(getComputedStyle(scroller).overflowY)) scroller = scroller.parentElement;
+    const update = () => {
+      const viewport = scroller && scroller !== document.body && scroller !== document.documentElement
+        ? scroller.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
+      const last = document.getElementById(steps.at(-1).id)?.getBoundingClientRect();
+      const endVisible = last && last.top < viewport.bottom && last.bottom <= viewport.bottom + 16;
+      const current = endVisible ? steps.at(-1) : [...steps].reverse().find(({ id }) => document.getElementById(id)?.getBoundingClientRect().top <= viewport.top + 130) || steps[0];
+      setActive(current.id);
+    };
+    const onScroll = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); };
+    // Capture scroll from nested containers as well as the document.
+    document.addEventListener("scroll", onScroll, { passive: true, capture: true });
+    window.addEventListener("resize", onScroll);
+    const observer = new ResizeObserver(onScroll);
+    if (root) observer.observe(root);
+    update();
+    return () => { cancelAnimationFrame(frame); observer.disconnect(); document.removeEventListener("scroll", onScroll, true); window.removeEventListener("resize", onScroll); };
+  }, []);
   return (
-    <div className="pb-8">
+    <div ref={contentRef} className="pb-8">
       <div className="grid min-w-0 items-start gap-10 xl:grid-cols-[minmax(0,1fr)_220px] xl:gap-16">
         <div className="min-w-0 max-w-4xl space-y-12">
           {steps.map((step, index) => (
@@ -106,22 +132,16 @@ export default function Quickstart() {
             </section>
           ))}
         </div>
-        <aside className="hidden space-y-6 xl:sticky xl:top-24 xl:block">
-          <nav
-            aria-label="On this page"
-            className="space-y-4 border-s border-border ps-5"
-          >
-            <p className="text-xs font-medium text-foreground">On this page</p>
-            {steps.map((step, index) => (
-              <a
-                key={step.id}
-                href={`#${step.id}`}
-                className="block text-xs leading-6 text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:text-foreground"
-              >
-                0{index + 1} <span className="ms-2">{step.title}</span>
-              </a>
-            ))}
-          </nav>
+        <aside onClick={(event) => {
+          const link = event.target.closest('a[href^="#"]');
+          if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          const section = document.getElementById(link.hash.slice(1));
+          if (!section) return;
+          event.preventDefault();
+          history.replaceState(null, "", link.hash);
+          section.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
+        }} className="hidden space-y-6 xl:sticky xl:top-24 xl:block">
+          <BounceSidebar items={steps.map((step) => ({ id: step.id, label: step.title, href: `#${step.id}` }))} value={active} onValueChange={setActive} ariaLabel="On this page" itemClassName="text-sm" indicatorClassName="bg-fluid-accent" />
           <p className="ps-5 text-xs leading-6 text-muted-foreground">
             Already set up? Open a project to view responses and generate a
             feedback summary.

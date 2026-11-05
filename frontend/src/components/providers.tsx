@@ -1,3 +1,4 @@
+import { changeTheme } from "@/lib/theme-transition";
 import { useEffect, type ReactNode } from "react";
 import { ThemeProvider, useTheme } from "next-themes";
 import { FluidRoot } from "@/components/fluid-root";
@@ -16,6 +17,7 @@ function ThemeShortcut() {
 
       if (
         event.key.toLowerCase() !== "d" ||
+        event.repeat ||
         event.altKey ||
         event.ctrlKey ||
         event.metaKey ||
@@ -25,7 +27,8 @@ function ThemeShortcut() {
         return;
       }
 
-      setTheme(resolvedTheme === "dark" ? "light" : "dark");
+      event.preventDefault();
+      changeTheme(setTheme, resolvedTheme === "dark" ? "light" : "dark");
     }
 
     window.addEventListener("keydown", handleKeyDown);

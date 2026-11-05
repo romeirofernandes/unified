@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api";
 
 // Each request owns its result; route changes and unmounts abort stale work.
@@ -33,11 +33,13 @@ export function useApiResource(path, uid) {
     return () => controller.abort();
   }, [path, uid, revision]);
 
+  const refresh = useCallback(() => setRevision((value) => value + 1), []);
   const current = resource.path === path && resource.uid === uid;
   return {
     data: current ? resource.data : null,
     error: current ? resource.error : "",
     loading: !current || resource.loading,
+    refresh,
     reload: () => {
       setResource((previous) => ({ ...previous, loading: true }));
       setRevision((value) => value + 1);

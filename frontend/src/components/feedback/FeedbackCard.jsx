@@ -1,4 +1,4 @@
-import { useIcons } from "@/lib/icon-context";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent, CollapsibleIndicator } from "@/components/motion/collapsible";
 
 const dateFormat = new Intl.DateTimeFormat(undefined, {
   month: "short",
@@ -8,11 +8,10 @@ const dateFormat = new Intl.DateTimeFormat(undefined, {
 
 export default function FeedbackCard({ response }) {
   const { feedback, sender, preview, answers, timestamp } = response;
-  const Chevron = useIcons()["chevron-down"];
   const date = timestamp ? new Date(timestamp) : null;
   return (
-    <details className="group min-w-0 border-b border-border last:border-0 open:bg-hover/50">
-      <summary className="grid cursor-pointer list-none grid-cols-[minmax(0,1fr)_16px] items-center gap-3 px-4 py-4 outline-none transition-colors hover:bg-hover focus-visible:bg-hover focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:px-5 lg:grid-cols-[minmax(160px,0.9fr)_minmax(0,1.5fr)_120px_16px] lg:gap-5 [&::-webkit-details-marker]:hidden">
+    <Collapsible className="group min-w-0 ">
+      <CollapsibleTrigger className="rounded-none hover:bg-transparent focus-visible:bg-transparent w-full text-left grid cursor-pointer list-none grid-cols-[minmax(0,1fr)_16px] items-center gap-3 px-4 py-4 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:px-5 lg:grid-cols-[minmax(160px,0.9fr)_minmax(0,1.5fr)_120px_16px] lg:gap-5 [&::-webkit-details-marker]:hidden">
         <span className="min-w-0 space-y-1">
           <span className="block truncate text-sm font-medium" title={sender}>
             {sender}
@@ -34,13 +33,9 @@ export default function FeedbackCard({ response }) {
         >
           {date ? dateFormat.format(date) : "Date unavailable"}
         </time>
-        <Chevron
-          size={16}
-          aria-hidden="true"
-          className="text-muted-foreground transition-transform group-open:rotate-180 motion-reduce:transition-none"
-        />
-      </summary>
-      <div className="px-4 pb-5 pt-1 sm:px-5">
+        <CollapsibleIndicator className="text-muted-foreground" />
+      </CollapsibleTrigger>
+      <CollapsibleContent contentClassName="px-4 pb-5 pt-1 sm:px-5">
         <div className="rounded-md border border-border bg-background p-4 sm:p-5">
           <p className="mb-5 text-xs text-muted-foreground">
             {date ? `Received ${date.toLocaleString()}` : "Response details"}
@@ -68,7 +63,7 @@ export default function FeedbackCard({ response }) {
           )}
           <span className="sr-only">Response {feedback._id}</span>
         </div>
-      </div>
-    </details>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }

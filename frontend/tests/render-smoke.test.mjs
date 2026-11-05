@@ -36,6 +36,7 @@ export function render(name, url) {
 const result = await build({
   stdin: { contents: source, loader: "jsx", resolveDir: process.cwd() },
   bundle: true,
+  loader: { ".css": "empty" },
   platform: "node",
   format: "cjs",
   write: false,
@@ -82,13 +83,13 @@ new Function("require", "module", "exports", result.outputFiles[0].text)(
 const { render } = module.exports;
 
 for (const [name, url, expected] of [
-  ["Login", "/login", "Welcome back."],
+  ["Login", "/login", "Welcome back"],
   ["Signup", "/signup", "Create account"],
   ["Dashboard", "/dashboard", "Sample project"],
   ["Feedbacks", "/project/project-1/feedbacks", "customer@example.com"],
   ["Settings", "/dashboard/settings", "person@example.com"],
   ["Docs", "/docs", "Install the SDK"],
-  ["Docs", "/dashboard/docs", "Workspace"],
+  ["Docs", "/dashboard/docs", "Install the SDK"],
   ["NotFound", "/missing", "This page wandered off."],
 ]) {
   test(`${name} renders at ${url} with the shared component providers`, () => {

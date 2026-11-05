@@ -1,3 +1,5 @@
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/motion/select";
+import { SharedLayoutBg } from "@/components/ui/shared-layout-bg";
 import { useMemo, useState } from "react";
 import { EmptyState } from "@/components/shared/PageState";
 import { responseDetails } from "@/lib/feedback-presentation";
@@ -60,18 +62,10 @@ export default function FeedbackList({ responses, fields }) {
           >
             {visible.length} of {responses.length}
           </p>
-          <label htmlFor="response-order" className="sr-only">
-            Response order
-          </label>
-          <select
-            id="response-order"
-            value={order}
-            onChange={(event) => setOrder(event.target.value)}
-            className="h-10 rounded-md border border-input bg-card px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <option value="newest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-          </select>
+          <Select value={order} onValueChange={setOrder} className="w-40">
+            <SelectTrigger className="h-10 rounded-md"><span className="sr-only">Response order: </span><SelectValue /></SelectTrigger>
+            <SelectContent><SelectItem value="newest">Newest first</SelectItem><SelectItem value="oldest">Oldest first</SelectItem></SelectContent>
+          </Select>
         </div>
       </div>
       <div className="overflow-hidden rounded-md border border-border bg-card">
@@ -84,9 +78,13 @@ export default function FeedbackList({ responses, fields }) {
           <span>Received</span>
           <span />
         </div>
-        {visible.map((response) => (
-          <FeedbackCard key={response.feedback._id} response={response} />
-        ))}
+        <SharedLayoutBg inset={0} pillClassName="rounded-none bg-hover" >
+          {visible.map((response) => (
+            <div key={response.feedback._id} className="border-b border-border last:border-0">
+              <FeedbackCard response={response} />
+            </div>
+          ))}
+        </SharedLayoutBg>
         {!visible.length && (
           <div className="space-y-2 px-5 py-10 text-center">
             <p className="text-sm font-medium">No matching responses</p>
@@ -96,6 +94,7 @@ export default function FeedbackList({ responses, fields }) {
           </div>
         )}
       </div>
+
     </section>
   );
 }

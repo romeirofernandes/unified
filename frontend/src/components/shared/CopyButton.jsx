@@ -3,7 +3,7 @@ import { AnimatePresence, motion as Motion, useReducedMotion } from "motion/reac
 import { Button } from "@/components/ui/button";
 import { useIcons } from "@/lib/icon-context";
 
-export default function CopyButton({ value, label = "code" }) {
+export default function CopyButton({ value, label = "code", showLabel = false }) {
   const [status, setStatus] = useState("idle");
   const timer = useRef(null);
   const reduce = useReducedMotion();
@@ -24,17 +24,19 @@ export default function CopyButton({ value, label = "code" }) {
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <span role="status" className="text-xs text-muted-foreground">
-        {status === "copied" ? "Copied" : status === "error" ? "Select and copy manually" : ""}
-      </span>
-      <Button variant="secondary" size="icon" onClick={copy} aria-label={status === "copied" ? `Copied ${label}` : `Copy ${label}`} title={`Copy ${label}`}>
-        <AnimatePresence initial={false} mode="wait">
-          <Motion.span key={status === "copied" ? "check" : "copy"} className="flex items-center justify-center" initial={{ opacity: 0, scale: reduce ? 1 : 0.6, rotate: reduce ? 0 : -35 }} animate={{ opacity: 1, scale: 1, rotate: 0 }} exit={{ opacity: 0, scale: reduce ? 1 : 0.6 }} transition={{ duration: reduce ? 0 : 0.15 }}>
-            <Icon size={16} aria-hidden="true" />
-          </Motion.span>
-        </AnimatePresence>
+    <div className="relative inline-flex shrink-0 items-center">
+      <span role="status" className="sr-only">{status === "copied" ? `Copied ${label}` : status === "error" ? "Copy failed. Please try again." : ""}</span>
+      <Button variant="secondary" size={showLabel ? "default" : "icon"} onClick={copy} aria-label={status === "copied" ? `Copied ${label}` : `Copy ${label}`} title={`Copy ${label}`}>
+        <span className="inline-flex items-center justify-center gap-2 whitespace-nowrap">
+          <AnimatePresence initial={false} mode="wait">
+            <Motion.span key={status === "copied" ? "check" : "copy"} className="inline-flex size-4 shrink-0 items-center justify-center" initial={{ opacity: 0, scale: reduce ? 1 : 0.6 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: reduce ? 1 : 0.6 }} transition={{ duration: reduce ? 0 : 0.15 }}>
+              <Icon size={16} aria-hidden="true" />
+            </Motion.span>
+          </AnimatePresence>
+          {showLabel && <span>{status === "copied" ? "Copied" : `Copy ${label}`}</span>}
+        </span>
       </Button>
+      {status === "error" && <span className="absolute end-0 top-full mt-1 whitespace-nowrap text-xs text-destructive">Copy failed. Try again.</span>}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { Checkbox } from "@/components/motion/checkbox";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import FormField from "@/components/shared/FormField";
@@ -49,18 +50,7 @@ export default function FieldEditor({ field, index, onChange, onRemove }) {
           placeholder="What could we improve?"
         />
       </div>
-      <label
-        className={`${typeClass("body")} flex min-h-9 w-fit items-center gap-2 text-muted-foreground`}
-      >
-        <input
-          type="checkbox"
-          className="size-4 accent-[var(--fluid-accent)]"
-          checked={field.required}
-          disabled={index === 0}
-          onChange={(event) => onChange({ required: event.target.checked })}
-        />
-        Required answer
-      </label>
+      <Checkbox label="Required answer" checked={field.required} disabled={index === 0} onCheckedChange={(required) => onChange({ required })} />
       {field.type === "mcq" && (
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-2">

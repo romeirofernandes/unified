@@ -1,31 +1,33 @@
-import { useState } from "react";
-import { generateFeedbackSummary, readSummary } from "@/lib/feedback-summary";
+import { useAuth } from "@/hooks/use-auth";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { generateFeedbackSummary } from "@/lib/feedback-summary";
 
-export function useFeedbackSummary(storageKey) {
-  const [summary, setSummary] = useState(() => readSummary(storageKey));
+export function useFeedbackSummary(project, responses, ready) {
+  const { user } = useAuth();
+  const [generated, setGenerated] = useState(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
-
-  async function generate(project, responses) {
-    if (pending) return;
+  const running = useRef(false);
+  const attempted = useRef(new Set());
+  const summary = generated || project?.feedbackSummary;
+  const snapshot = useMemo(() => responses.map((response) => response._id).sort().join(","), [responses]);
+  const current = useMemo(() => {
+    if (!summary?.responseIds) return false;
+    const ids = new Set(summary.responseIds);
+    return responses.every((response) => ids.has(response._id));
+  }, [summary, responses]);
+  const generate = useCallback(async () => {
+    if (running.current || current || !ready || !project || !responses.length) return;
+    running.current = true;
+    attempted.current.add(snapshot);
     setPending(true);
     setError("");
-    try {
-      const result = await generateFeedbackSummary(project, responses);
-      setSummary(result);
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(result));
-      } catch {
-        setError(
-          "Summary generated, but this browser couldn’t save it for next time.",
-        );
-      }
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setPending(false);
-    }
-  }
-
-  return { summary, pending, error, generate };
+    try { setGenerated(await generateFeedbackSummary(project, user?.uid)); }
+    catch (error) { setError(error.message); }
+    finally { running.current = false; setPending(false); }
+  }, [current, ready, project, responses.length, snapshot, user?.uid]);
+  useEffect(() => {
+    if (ready && !current && responses.length && !attempted.current.has(snapshot)) void generate();
+  }, [ready, current, responses.length, snapshot, generate, pending]);
+  return { summary, current, pending, error, generate };
 }

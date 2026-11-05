@@ -18,7 +18,7 @@ function loadRoutes(file, models) {
   );
   vm.runInNewContext(source, {
     require: (name) =>
-      name === "express" ? { Router: () => router } : models[name],
+      name === "express" ? { Router: () => router } : models[name] || require(name.startsWith(".") ? path.join(__dirname, "../routes", name) : name),
     module: { exports: {} },
     console,
   });
@@ -160,3 +160,35 @@ test("feedback reads refuse a project that the caller does not own", async () =>
   assert.equal(res.statusCode, 404);
   assert.equal(queried, false);
 });
+
+for (const scenario of ["save", "reuse", "new", "locked"]) {
+  test(`summary persistence: ${scenario}`, async () => {
+    let generations = 0;
+    let stored;
+    const saved = scenario === "reuse" ? { responseIds: ["r1"], tldr: "Saved" } : scenario === "new" ? { responseIds: ["old"] } : null;
+    const project = { _id: "project", fields: [], feedbackSummary: saved };
+    const routes = loadRoutes("feedback.js", {
+      "../models/Project": {
+        findOne: () => ({ lean: async () => project }),
+        findOneAndUpdate: (filter, update) => {
+          if (update.$set?.summaryLock) return { lean: async () => scenario === "locked" ? null : project };
+          stored = update.$set.feedbackSummary;
+          return Promise.resolve({ feedbackSummary: stored });
+        },
+        updateOne: async () => {},
+      },
+      "../models/Feedback": { find: () => ({ sort: () => ({ lean: async () => [{ _id: "r1" }] }) }) },
+      "../services/feedback-summary": { summarizeFeedback: async () => { generations++; return { tldr: "Overview", features: ["Fix search"] }; } },
+    });
+    const res = response();
+    await routes.get("post /project/:projectId/summary")({ user: { id: "owner" }, params: { projectId: "project" } }, res);
+    assert.equal(generations, ["save", "new"].includes(scenario) ? 1 : 0);
+    assert.equal(res.statusCode, scenario === "locked" ? 409 : 200);
+    if (stored) {
+      assert.deepEqual(Array.from(stored.responseIds), ["r1"]);
+      assert.equal(stored.responseCount, 1);
+      assert.equal(res.data, stored);
+    }
+    if (scenario === "reuse") assert.equal(res.data, saved);
+  });
+}
