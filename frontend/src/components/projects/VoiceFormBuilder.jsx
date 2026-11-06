@@ -1,9 +1,4 @@
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
+import SpeakingWaveform from "./SpeakingWaveform";
 import { useEffect, useRef, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Mic01Icon, StopIcon } from "@hugeicons/core-free-icons";
@@ -20,10 +15,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/api";
 
 export default function VoiceFormBuilder({ active, onApply }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const { user } = useAuth();
   const speech = useSpeechInput(active && open, user?.uid);
-  const [language, setLanguage] = useState("auto");
   const [draft, setDraft] = useState(null);
   const [pending, setPending] = useState(false);
   const request = useRef(null);
@@ -86,69 +80,7 @@ export default function VoiceFormBuilder({ active, onApply }) {
         <CollapsibleIndicator />
       </CollapsibleTrigger>
       <CollapsibleContent contentClassName="space-y-4 border-t border-border p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Button
-            variant={speech.listening ? "destructive" : "secondary"}
-            onClick={() =>
-              speech.listening ? speech.stop() : speech.start(language)
-            }
-            disabled={
-              !speech.supported ||
-              pending ||
-              speech.requesting ||
-              speech.transcribing
-            }
-            loading={speech.requesting || speech.transcribing}
-            aria-pressed={speech.listening}
-          >
-            <HugeiconsIcon
-              icon={speech.listening ? StopIcon : Mic01Icon}
-              size={16}
-              aria-hidden="true"
-            />
-            {speech.transcribing
-              ? "Transcribing…"
-              : speech.requesting
-                ? "Opening microphone…"
-                : speech.listening
-                  ? "Stop recording"
-                  : "Start recording"}
-          </Button>
-          <div className="w-44">
-            <Select
-              value={language}
-              disabled={
-                speech.listening ||
-                speech.requesting ||
-                speech.transcribing ||
-                pending
-              }
-              onValueChange={setLanguage}
-            >
-              <SelectTrigger
-                aria-label="Speech language"
-                className="h-10 w-full rounded-md"
-              />
-              <SelectContent>
-                {[
-                  ["auto", "Auto-detect"],
-                  ["en", "English"],
-                  ["hi", "Hindi"],
-                  ["es", "Spanish"],
-                  ["fr", "French"],
-                  ["de", "German"],
-                  ["pt", "Portuguese"],
-                  ["ja", "Japanese"],
-                ].map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div className="space-y-2">
+        <div className="relative space-y-2">
           <label
             htmlFor="form-description"
             className="text-xs text-muted-foreground"
@@ -169,8 +101,36 @@ export default function VoiceFormBuilder({ active, onApply }) {
             rows={4}
             maxLength={12000}
             placeholder="Ask for a name, a 1–10 rating, and what we could improve. Add a choice between design, speed, and features."
-            className="w-full resize-y rounded-md border border-input bg-background p-3 text-base leading-6 outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
+            className="w-full resize-y rounded-md border border-input bg-background p-3 pb-16 text-base leading-6 outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
           />
+          <div className="absolute bottom-3 left-3 right-3 flex items-center gap-3">
+            {speech.listening && <SpeakingWaveform stream={speech.stream} />}
+            <Button
+              size="icon"
+              variant={speech.listening ? "destructive" : "secondary"}
+              className="ml-auto shrink-0"
+              aria-label={
+                speech.listening ? "Stop recording" : "Record description"
+              }
+              aria-pressed={speech.listening}
+              onClick={() =>
+                speech.listening ? speech.stop() : speech.start()
+              }
+              disabled={
+                !speech.supported ||
+                pending ||
+                speech.requesting ||
+                speech.transcribing
+              }
+              loading={speech.requesting || speech.transcribing}
+            >
+              <HugeiconsIcon
+                icon={speech.listening ? StopIcon : Mic01Icon}
+                size={18}
+                aria-hidden="true"
+              />
+            </Button>
+          </div>
         </div>
         <p role="status" className="text-xs leading-5 text-muted-foreground">
           {speech.listening
@@ -178,24 +138,25 @@ export default function VoiceFormBuilder({ active, onApply }) {
             : speech.transcribing
               ? "Transcribing your recording… Your words will appear when it is ready."
               : speech.supported
-                ? "Record up to two minutes. Audio is sent to Groq after you stop. Review the transcript before generating."
+                ? ""
                 : "Recording is not available in this browser. Use HTTPS and allow microphone access, or type your description."}
         </p>
         <ErrorMessage>{speech.error || error}</ErrorMessage>
-        <Button
-          variant="secondary"
-          onClick={generate}
-          disabled={
-            pending ||
-            speech.listening ||
-            speech.requesting ||
-            speech.transcribing ||
-            !speech.transcript.trim()
-          }
-          loading={pending}
-        >
-          Generate draft
-        </Button>
+        <div className="flex justify-end">
+          <Button
+            onClick={generate}
+            disabled={
+              pending ||
+              speech.listening ||
+              speech.requesting ||
+              speech.transcribing ||
+              !speech.transcript.trim()
+            }
+            loading={pending}
+          >
+            Generate draft
+          </Button>
+        </div>
         {draft && (
           <div className="space-y-3 rounded-md border border-border bg-background p-3">
             <p className="text-sm font-medium">

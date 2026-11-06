@@ -52,7 +52,7 @@ router.post(
         await require("../services/transcription").transcribeAudio(
           req.body,
           req.headers["content-type"],
-          req.query.language || "auto",
+          "en",
         ),
       );
     } catch (error) {

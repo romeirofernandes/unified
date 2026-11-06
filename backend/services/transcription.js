@@ -9,7 +9,7 @@ const formats = {
   "audio/mpeg": "mp3",
 };
 const languages = new Set(["auto", "en", "hi", "es", "fr", "de", "pt", "ja"]);
-async function transcribeAudio(buffer, contentType, language = "auto") {
+async function transcribeAudio(buffer, contentType, language = "en") {
   const mime = contentType?.split(";")[0].trim().toLowerCase();
   if (
     !Buffer.isBuffer(buffer) ||

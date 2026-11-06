@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api";
 
 export function useSpeechInput(active = true, uid) {
+  const [audioStream, setAudioStream] = useState(null);
   const [transcript, setTranscript] = useState("");
   const [listening, setListening] = useState(false);
   const [requesting, setRequesting] = useState(false);
@@ -19,7 +20,7 @@ export function useSpeechInput(active = true, uid) {
     const current = session.current;
     if (current?.recorder?.state === "recording") current.recorder.stop();
   }
-  async function start(language) {
+  async function start() {
     if (!supported || !active || session.current) return;
     const id = ++revision.current;
     session.current = { id };
@@ -65,6 +66,7 @@ export function useSpeechInput(active = true, uid) {
         stream.getTracks().forEach((track) => track.stop());
         if (id !== revision.current) return;
         setListening(false);
+        setAudioStream(null);
         if (current.failed) {
           session.current = null;
           return;
@@ -78,19 +80,16 @@ export function useSpeechInput(active = true, uid) {
             throw new Error(
               "The recording is empty or too large. Please record again.",
             );
-          const result = await apiRequest(
-            `/projects/transcribe?language=${encodeURIComponent(language)}`,
-            {
-              method: "POST",
-              uid,
-              rawBody: audio,
-              headers: { "Content-Type": audio.type },
-              signal: AbortSignal.any([
-                controller.signal,
-                AbortSignal.timeout(60000),
-              ]),
-            },
-          );
+          const result = await apiRequest("/projects/transcribe?language=en", {
+            method: "POST",
+            uid,
+            rawBody: audio,
+            headers: { "Content-Type": audio.type },
+            signal: AbortSignal.any([
+              controller.signal,
+              AbortSignal.timeout(60000),
+            ]),
+          });
           if (id === revision.current)
             setTranscript((previous) =>
               [previous.trim(), result.text].filter(Boolean).join(" "),
@@ -109,6 +108,7 @@ export function useSpeechInput(active = true, uid) {
         setSeconds(++elapsed);
         if (elapsed >= 120) stop();
       }, 1000);
+      setAudioStream(stream);
       recorder.start();
       setListening(true);
     } catch (error) {
@@ -141,6 +141,7 @@ export function useSpeechInput(active = true, uid) {
       current.stream?.getTracks().forEach((track) => track.stop());
     }
     session.current = null;
+    setAudioStream(null);
   }, []);
   useEffect(() => {
     if (!active) {
@@ -151,6 +152,7 @@ export function useSpeechInput(active = true, uid) {
     return cancelRecording;
   }, [active, cancelRecording]);
   return {
+    stream: audioStream,
     transcript,
     setTranscript,
     listening,
