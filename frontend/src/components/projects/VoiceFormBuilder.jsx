@@ -80,56 +80,58 @@ export default function VoiceFormBuilder({ active, onApply }) {
         <CollapsibleIndicator />
       </CollapsibleTrigger>
       <CollapsibleContent contentClassName="space-y-4 border-t border-border p-4">
-        <div className="relative space-y-2">
+        <div className="space-y-2">
           <label
             htmlFor="form-description"
             className="text-xs text-muted-foreground"
           >
             Your description
           </label>
-          <textarea
-            id="form-description"
-            value={speech.transcript}
-            readOnly={
-              speech.listening || speech.requesting || speech.transcribing
-            }
-            disabled={pending}
-            onChange={(event) => {
-              speech.setTranscript(event.target.value);
-              setDraft(null);
-            }}
-            rows={4}
-            maxLength={12000}
-            placeholder="Ask for a name, a 1–10 rating, and what we could improve. Add a choice between design, speed, and features."
-            className="w-full resize-y rounded-md border border-input bg-background p-3 pb-16 text-base leading-6 outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
-          />
-          <div className="absolute bottom-3 left-3 right-3 flex items-center gap-3">
-            {speech.listening && <SpeakingWaveform stream={speech.stream} />}
-            <Button
-              size="icon"
-              variant={speech.listening ? "destructive" : "secondary"}
-              className="ml-auto shrink-0"
-              aria-label={
-                speech.listening ? "Stop recording" : "Record description"
+          <div className="flex flex-col gap-3 rounded-md border border-input bg-background p-3 shadow-sm transition-[border-color,box-shadow] duration-150 focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/30">
+            <textarea
+              id="form-description"
+              value={speech.transcript}
+              readOnly={
+                speech.listening || speech.requesting || speech.transcribing
               }
-              aria-pressed={speech.listening}
-              onClick={() =>
-                speech.listening ? speech.stop() : speech.start()
-              }
-              disabled={
-                !speech.supported ||
-                pending ||
-                speech.requesting ||
-                speech.transcribing
-              }
-              loading={speech.requesting || speech.transcribing}
-            >
-              <HugeiconsIcon
-                icon={speech.listening ? StopIcon : Mic01Icon}
-                size={18}
-                aria-hidden="true"
-              />
-            </Button>
+              disabled={pending}
+              onChange={(event) => {
+                speech.setTranscript(event.target.value);
+                setDraft(null);
+              }}
+              rows={3}
+              maxLength={12000}
+              placeholder="Ask for a name, a 1–10 rating, and what we could improve. Add a choice between design, speed, and features."
+              className="block min-h-20 w-full resize-none border-0 bg-transparent p-0 text-base leading-6 outline-none placeholder:text-muted-foreground sm:text-sm"
+            />
+            <div className="flex min-h-9 items-center justify-end gap-3">
+              {speech.listening && <SpeakingWaveform stream={speech.stream} />}
+              <Button
+                size="icon"
+                variant={speech.listening ? "destructive" : "secondary"}
+                className="ml-auto size-9 min-h-9 shrink-0 rounded-md p-0"
+                aria-label={
+                  speech.listening ? "Stop recording" : "Record description"
+                }
+                aria-pressed={speech.listening}
+                onClick={() =>
+                  speech.listening ? speech.stop() : speech.start()
+                }
+                disabled={
+                  !speech.supported ||
+                  pending ||
+                  speech.requesting ||
+                  speech.transcribing
+                }
+                loading={speech.requesting || speech.transcribing}
+              >
+                <HugeiconsIcon
+                  icon={speech.listening ? StopIcon : Mic01Icon}
+                  size={18}
+                  aria-hidden="true"
+                />
+              </Button>
+            </div>
           </div>
         </div>
         <p role="status" className="text-xs leading-5 text-muted-foreground">
