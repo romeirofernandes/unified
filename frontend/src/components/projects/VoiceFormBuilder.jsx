@@ -71,25 +71,15 @@ export default function VoiceFormBuilder({ active, onApply }) {
     >
       <CollapsibleTrigger className="rounded-md px-4 py-3 hover:bg-transparent">
         <HugeiconsIcon icon={Mic01Icon} size={18} aria-hidden="true" />
-        <span className="flex-1 text-left">
-          Describe your form{" "}
-          <span className="block text-xs font-normal text-muted-foreground">
-            Speak or type the questions you need.
-          </span>
-        </span>
+        <span className="flex-1 text-left">Describe your form </span>
         <CollapsibleIndicator />
       </CollapsibleTrigger>
       <CollapsibleContent contentClassName="space-y-4 border-t border-border p-4">
         <div className="space-y-2">
-          <label
-            htmlFor="form-description"
-            className="text-xs text-muted-foreground"
-          >
-            Your description
-          </label>
-          <div className="flex flex-col gap-3 rounded-md border border-input bg-background p-3 shadow-sm transition-[border-color,box-shadow] duration-150 focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/30">
+          <div className="relative flex flex-col gap-3 rounded-md border border-input bg-background p-3 shadow-sm transition-[border-color,box-shadow] duration-150 focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/30">
             <textarea
               id="form-description"
+              aria-label="Describe your form"
               value={speech.transcript}
               readOnly={
                 speech.listening || speech.requesting || speech.transcribing
@@ -101,11 +91,19 @@ export default function VoiceFormBuilder({ active, onApply }) {
               }}
               rows={3}
               maxLength={12000}
-              placeholder="Ask for a name, a 1–10 rating, and what we could improve. Add a choice between design, speed, and features."
-              className="block min-h-20 w-full resize-none border-0 bg-transparent p-0 text-base leading-6 outline-none placeholder:text-muted-foreground sm:text-sm"
+              placeholder={
+                speech.listening
+                  ? ""
+                  : "Ask for a name, a 1–10 rating, and what we could improve. Add a choice between design, speed, and features."
+              }
+              className={`${speech.listening ? "text-transparent caret-transparent" : ""} block min-h-20 w-full resize-none border-0 bg-transparent p-0 text-base leading-6 outline-none placeholder:text-muted-foreground sm:text-sm`}
             />
+            {speech.listening && (
+              <div className="pointer-events-none absolute inset-x-6 top-3 flex h-20 items-center justify-center">
+                <SpeakingWaveform stream={speech.stream} />
+              </div>
+            )}
             <div className="flex min-h-9 items-center justify-end gap-3">
-              {speech.listening && <SpeakingWaveform stream={speech.stream} />}
               <Button
                 size="icon"
                 variant={speech.listening ? "destructive" : "secondary"}

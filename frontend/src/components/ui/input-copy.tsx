@@ -25,6 +25,7 @@ type InputCopyAlign = "right" | "left";
 interface InputCopyProps extends Omit<HTMLAttributes<HTMLDivElement>, "children"> {
   /** The value to display and copy to clipboard. */
   value: string;
+  copyOnly?: boolean;
   /** Optional label displayed above the input. */
   label?: string;
   /** Callback fired after the value is copied. */
@@ -41,7 +42,7 @@ interface InputCopyProps extends Omit<HTMLAttributes<HTMLDivElement>, "children"
 }
 
 const InputCopy = forwardRef<HTMLDivElement, InputCopyProps>(
-  ({ value, label, onCopy, disabled, variant = "icon", align = "right", size, className, ...props }, ref) => {
+  ({ value, label, copyOnly = false, onCopy, disabled, variant = "icon", align = "right", size, className, ...props }, ref) => {
     const icons = useIcons();
     const CopyIcon = icons.copy;
     // "copied" and "error" both occupy the same animation slot on the button
@@ -354,7 +355,7 @@ const InputCopy = forwardRef<HTMLDivElement, InputCopyProps>(
       </span>
     );
 
-    const buttonContent = align === "left" ? (
+    const buttonContent = copyOnly ? actionElement : align === "left" ? (
       <>{actionElement}{valueElement}</>
     ) : (
       <>{valueElement}{actionElement}</>
@@ -405,6 +406,7 @@ const InputCopy = forwardRef<HTMLDivElement, InputCopyProps>(
             id={labelId}
             className={cn(
               "text-muted-foreground",
+              copyOnly && "sr-only",
               sizeClasses.text,
               align === "left" ? "pl-1" : "pl-0"
             )}
