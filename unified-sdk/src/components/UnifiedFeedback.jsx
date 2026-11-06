@@ -1,10 +1,7 @@
 import { formThemeStyle } from "../../../shared/form-theme.mjs";
 import React, { useState, useEffect, useCallback, memo } from "react";
-import { motion, AnimatePresence, useMotionValue } from "motion/react";
-import { RiChat3Line } from "react-icons/ri";
+import FeedbackShell from "./FeedbackShell";
 import FeedbackModal from "./FeedbackModal";
-import Toast from "./Toast";
-import DeleteZone from "./DeleteZone";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -17,13 +14,10 @@ const UnifiedFeedback = memo(({ projectId, theme, firebaseUid }) => {
   const [submissionError, setSubmissionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showToast, setShowToast] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
+
   const [isVisible, setIsVisible] = useState(true);
 
   const widgetTheme = theme || formData?.theme || "light";
-
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -91,7 +85,6 @@ const UnifiedFeedback = memo(({ projectId, theme, firebaseUid }) => {
         });
         if (!response.ok)
           throw new Error("Could not send feedback. Please try again.");
-        setIsOpen(false);
         setShowToast(true);
         localStorage.setItem(`unified-feedback-${projectId}`, "submitted");
       } catch (error) {
@@ -113,154 +106,36 @@ const UnifiedFeedback = memo(({ projectId, theme, firebaseUid }) => {
   }, [projectId]);
 
   const handleClose = useCallback(() => {
-    if (!submitting) setIsOpen(false);
-  }, [submitting]);
+    if (!submitting) {
+      setIsOpen(false);
+      if (showToast) setAnswers({});
+    }
+  }, [submitting, showToast]);
 
   if (loading || error || !formData || !isVisible) return null;
 
   return (
-    <>
-      <AnimatePresence mode="wait">
-        {!showToast && isVisible && (
-          <FeedbackButton
-            isDragging={isDragging}
-            setIsDragging={setIsDragging}
-            setIsVisible={setIsVisible}
-            setIsOpen={setIsOpen}
-            theme={widgetTheme}
-            projectId={projectId}
-            appearance={formData.appearance}
-            x={x}
-            y={y}
-          />
-        )}
-        {showToast && (
-          <Toast
-            key={`feedback-toast-${projectId}`}
-            onComplete={() => {
-              setShowToast(false);
-              setIsVisible(false);
-            }}
-            theme={widgetTheme}
-          />
-        )}
-      </AnimatePresence>
-      <DeleteZone isVisible={isDragging} isDragging={isDragging} />
-
-      <AnimatePresence>
-        {isOpen && (
-          <FeedbackModal
-            key={`feedback-modal-${projectId}`}
-            isOpen={isOpen}
-            onClose={handleClose}
-            formData={formData}
-            theme={widgetTheme}
-            answers={answers}
-            onSubmit={handleSubmit}
-            pending={submitting}
-            error={submissionError}
-            onChange={handleInputChange}
-          />
-        )}
-      </AnimatePresence>
-    </>
+    <FeedbackShell
+      open={isOpen}
+      onOpen={() => setIsOpen(true)}
+      onClose={handleClose}
+      pending={submitting}
+      success={showToast}
+      style={formThemeStyle(formData.appearance, widgetTheme)}
+    >
+      <FeedbackModal
+        isOpen={isOpen}
+        onClose={handleClose}
+        formData={formData}
+        theme={widgetTheme}
+        answers={answers}
+        onSubmit={handleSubmit}
+        pending={submitting}
+        error={submissionError}
+        onChange={handleInputChange}
+      />
+    </FeedbackShell>
   );
 });
 
-export default memo(UnifiedFeedback);
-
-const FeedbackButton = ({
-  isDragging,
-  setIsDragging,
-  setIsVisible,
-  setIsOpen,
-  theme,
-  projectId,
-  appearance,
-  x,
-  y,
-}) => {
-  const isOverDeleteZone = (point) => {
-    const deleteZone = document.querySelector("[data-delete-zone]");
-    if (!deleteZone) return false;
-
-    const rect = deleteZone.getBoundingClientRect();
-    return (
-      point.x >= rect.left &&
-      point.x <= rect.right &&
-      point.y >= rect.top &&
-      point.y <= rect.bottom
-    );
-  };
-
-  return (
-    <motion.div
-      drag
-      dragMomentum={false}
-      dragElastic={0}
-      dragTransition={{
-        power: 0.2,
-        timeConstant: 200,
-        modifyTarget: (target) => target,
-      }}
-      initial={false}
-      animate={{ x: 0, y: 0 }}
-      transition={{
-        type: "spring",
-        stiffness: 800,
-        damping: 35,
-        mass: 0.5,
-        restDelta: 0.001,
-      }}
-      style={{ x, y, ...formThemeStyle(appearance, theme) }}
-      onDragStart={(event, info) => {
-        event.stopPropagation();
-        setIsDragging(true);
-      }}
-      onDrag={(event, info) => {
-        event.stopPropagation();
-        x.set(info.offset.x);
-        y.set(info.offset.y);
-      }}
-      onDragEnd={(event, info) => {
-        event.stopPropagation();
-        setIsDragging(false);
-        if (isOverDeleteZone(info.point)) {
-          setIsVisible(false);
-          localStorage.setItem(`unified-feedback-${projectId}`, "removed");
-        } else {
-          x.set(0);
-          y.set(0);
-        }
-      }}
-      className="fixed bottom-6 right-6 z-50 touch-none select-none will-change-transform"
-    >
-      <motion.button
-        whileHover={{
-          scale: 1.05,
-          boxShadow: "0 20px 25px -5px rgba(0,0,0,0.12)",
-        }}
-        whileTap={{ scale: 0.95 }}
-        transition={{
-          type: "spring",
-          stiffness: 400,
-          damping: 17,
-          mass: 0.5,
-        }}
-        aria-label="Open feedback form"
-        onClick={() => !isDragging && setIsOpen(true)}
-        className={`
-          rounded-full 
-          w-14 h-14
-          flex items-center justify-center
-          shadow-[0_8px_30px_rgb(0,0,0,0.12)]
-          cursor-pointer
-          backdrop-blur-sm
-          border border-[var(--uf-border)] bg-[var(--uf-surface)]
-        `}
-      >
-        <RiChat3Line size={24} className="text-[var(--uf-accent)]" />
-      </motion.button>
-    </motion.div>
-  );
-};
+export default UnifiedFeedback;
