@@ -13,8 +13,8 @@ const steps = [
       "Open your workspace and create a project for the app you want to hear from.",
     items: [
       "Add a project name and description.",
-      "Choose a light or dark widget.",
-      "Add your questions. Email is included by default.",
+      "Add questions by hand, or describe them with voice or text. Email is included by default.",
+      "Choose a theme preset, its default mode, and any custom colors.",
     ],
     action: true,
   },
@@ -29,7 +29,7 @@ const steps = [
     id: "integrate",
     title: "Add the feedback widget",
     description:
-      "Open Preview & code on your project card for a snippet with your own project ID, Firebase UID, and theme. Import the SDK stylesheet once.",
+      "Open the project editor and select Preview & code for a snippet with your own project ID, Firebase UID, and theme. Import the SDK stylesheet once.",
     code: integrationCode(),
     label: "App.jsx",
   },
@@ -41,7 +41,7 @@ const steps = [
     items: [
       "Try the widget in your app and send a response.",
       "Review answers on the project’s feedback page.",
-      "Generate a summary to identify common requests.",
+      "Read the automatic summary to identify common requests.",
     ],
   },
 ];

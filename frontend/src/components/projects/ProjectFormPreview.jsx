@@ -25,6 +25,13 @@ export default function ProjectFormPreview({
             theme={theme}
           />
         ))}
+        <button
+          type="button"
+          disabled
+          className="h-10 w-full rounded-md bg-[var(--uf-accent)] px-4 text-sm font-medium text-[var(--uf-accentText)]"
+        >
+          Submit feedback
+        </button>
       </div>
     </aside>
   );

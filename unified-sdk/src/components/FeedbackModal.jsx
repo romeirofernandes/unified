@@ -50,7 +50,7 @@ const FeedbackModal = memo(
           exit={{ scale: 0.95, opacity: 0 }}
           className="relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-md border border-[var(--uf-border)] bg-[var(--uf-background)] p-6 text-[var(--uf-text)]"
         >
-          <div className="absolute top-0 left-0 right-0 flex justify-center -translate-y-1/2">
+          <div className="mb-5 flex justify-center">
             <div className="flex items-center gap-2 px-4 py-1 rounded-full bg-[var(--uf-surface)] backdrop-blur-sm border border-[var(--uf-border)] shadow-sm">
               {[...Array(totalSteps)].map((_, index) => (
                 <motion.div
@@ -87,7 +87,11 @@ const FeedbackModal = memo(
               exit={{ opacity: 0, x: -20 }}
               className="space-y-4"
             >
-              <label className="block text-lg font-medium mb-2">
+              <label
+                id={`uf-label-${currentField?._id}`}
+                htmlFor={`uf-field-${currentField?._id}`}
+                className="mb-2 block text-lg font-medium"
+              >
                 {currentField?.label}
                 {currentField?.required && (
                   <span className="text-red-500 ml-1">*</span>

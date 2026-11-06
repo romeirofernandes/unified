@@ -55,6 +55,7 @@ export function previewThemeStyle(appearance, mode) {
     "--card": palette.surface,
     "--foreground": palette.text,
     "--muted-foreground": palette.muted,
+    "--muted": palette.border,
     "--border": palette.border,
     "--input": palette.border,
     "--primary": palette.accent,

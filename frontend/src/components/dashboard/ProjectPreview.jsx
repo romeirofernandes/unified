@@ -47,6 +47,13 @@ export default function ProjectPreview({ isOpen, onClose, project }) {
                   theme={project.theme}
                 />
               ))}
+              <button
+                type="button"
+                disabled
+                className="h-10 w-full rounded-md bg-[var(--uf-accent)] px-4 text-sm font-medium text-[var(--uf-accentText)]"
+              >
+                Submit feedback
+              </button>
             </div>
             <p className={`${typeClass("caption")} text-muted-foreground`}>
               This preview doesn’t submit feedback.

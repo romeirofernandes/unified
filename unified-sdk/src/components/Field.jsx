@@ -9,6 +9,7 @@ const Field = memo(({ field, value, onChange }) => {
     case "email":
       return (
         <input
+          id={`uf-field-${field._id}`}
           type={field.type}
           className={baseInputClass}
           placeholder={field.label}
@@ -20,6 +21,7 @@ const Field = memo(({ field, value, onChange }) => {
     case "textarea":
       return (
         <textarea
+          id={`uf-field-${field._id}`}
           className={`${baseInputClass} h-24 resize-none`}
           placeholder={field.label}
           value={value || ""}
@@ -29,7 +31,11 @@ const Field = memo(({ field, value, onChange }) => {
       );
     case "mcq":
       return (
-        <div className="space-y-2">
+        <div
+          role="radiogroup"
+          aria-labelledby={`uf-label-${field._id}`}
+          className="space-y-2"
+        >
           {field.options?.map((option, idx) => (
             <label key={idx} className="flex items-center space-x-2">
               <input
@@ -50,6 +56,7 @@ const Field = memo(({ field, value, onChange }) => {
       return (
         <div className="space-y-2">
           <input
+            id={`uf-field-${field._id}`}
             type="range"
             min={field.config?.min ?? 0}
             max={field.config?.max ?? 100}

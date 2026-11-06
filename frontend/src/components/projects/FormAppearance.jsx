@@ -140,7 +140,7 @@ export default function FormAppearance({
               }
               alpha={false}
               aria-label={`${tokenLabels[token]} color for ${mode} mode`}
-              className="space-y-3 rounded-md border border-border bg-background p-3"
+              className="max-w-none space-y-3 rounded-md border border-border bg-background p-3"
             >
               <p className="text-xs text-muted-foreground">
                 {tokenLabels[token]} · {mode} mode
