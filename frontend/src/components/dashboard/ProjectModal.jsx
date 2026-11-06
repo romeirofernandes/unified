@@ -10,6 +10,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { ErrorMessage } from "@/components/shared/PageState";
 import FormField from "@/components/shared/FormField";
+import ProjectFormPreview from "@/components/projects/ProjectFormPreview";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Add01Icon } from "@hugeicons/core-free-icons";
 import FieldEditor from "@/components/projects/FieldEditor";
 import {
   createField,
@@ -41,6 +44,7 @@ export default function ProjectModal({
         }))
       : [createField("email")],
   );
+  const [expanded, setExpanded] = useState(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
 
@@ -79,129 +83,34 @@ export default function ProjectModal({
         if (!open && !pending) onClose();
       }}
     >
-      <DialogContent
-        className="max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain"
-        size="xl"
-        showCloseButton={!pending}
-      >
-        <DialogHeader>
-          <DialogTitle>
-            {step === 1
-              ? project
-                ? "Edit project"
-                : "Create a project"
-              : "Choose your questions"}
-          </DialogTitle>
-          <DialogDescription>
-            {step === 1
-              ? project
-                ? "Update your project details, then review its questions."
-                : "Give your feedback a home. You can configure the questions next."
-              : "Email is included. Add the questions that help you decide what to build."}
-          </DialogDescription>
+      <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-md border border-border bg-background p-0 text-foreground sm:max-w-[1060px]" size="xl" showCloseButton={!pending}>
+        <DialogHeader className="shrink-0 border-b border-border px-5 py-5 pe-14 sm:px-6">
+          <DialogTitle>{project ? "Edit project" : "Create a project"}</DialogTitle>
+          <DialogDescription>{step === 1 ? "Set up your project, then choose what to ask." : "Keep the form focused. Email is included by default."}</DialogDescription>
+          <ol className="flex gap-5 pt-3 text-xs" aria-label="Project setup steps">{["Project details", "Questions"].map((label, index) => <li key={label} aria-current={step === index + 1 ? "step" : undefined} className={step === index + 1 ? "font-medium text-foreground" : "text-muted-foreground"}><span className="me-2 font-mono">0{index + 1}</span>{label}</li>)}</ol>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="min-w-0 space-y-5">
-          <fieldset disabled={pending} className="min-w-0 space-y-4">
-            {step === 1 ? (
-              <>
-                <FormField
-                  label="Project name"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  required
-                  maxLength={120}
-                  autoFocus
-                  placeholder="My product"
-                />
-                <FormField
-                  as="textarea"
-                  label="Description"
-                  value={description}
-                  onChange={(event) => setDescription(event.target.value)}
-                  rows={3}
-                  placeholder="What are you collecting feedback on?"
-                />
-                <FormField
-                  as="select"
-                  label="Widget theme"
-                  value={theme}
-                  onChange={(event) => setTheme(event.target.value)}
-                >
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
-                </FormField>
-              </>
-            ) : (
-              <>
-                <div className="space-y-4">
-                  {fields.map((field, index) => (
-                    <FieldEditor
-                      key={field.id}
-                      field={field}
-                      index={index}
-                      onChange={(patch) =>
-                        setFields((previous) =>
-                          previous.map((item) =>
-                            item.id === field.id ? { ...item, ...patch } : item,
-                          ),
-                        )
-                      }
-                      onRemove={() =>
-                        setFields((previous) =>
-                          previous.filter((item) => item.id !== field.id),
-                        )
-                      }
-                    />
-                  ))}
-                </div>
-                <Button
-                  variant="secondary"
-                  onClick={() =>
-                    setFields((previous) => [...previous, createField()])
-                  }
-                >
-                  Add question
-                </Button>
-              </>
-            )}
-          </fieldset>
-          <ErrorMessage>{error}</ErrorMessage>
-          <DialogFooter>
-            {onPreview && (
-              <Button
-                variant="secondary"
-                onClick={onPreview}
-                disabled={pending}
-              >
-                Preview & code
-              </Button>
-            )}
-            {step === 2 && (
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setStep(1);
-                  setError("");
-                }}
-                disabled={pending}
-              >
-                Back
-              </Button>
-            )}
-            <Button variant="ghost" onClick={onClose} disabled={pending}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={!name.trim() || pending}
-              loading={pending}
-            >
-              {step === 1
-                ? "Next: questions"
-                : project
-                  ? "Save changes"
-                  : "Create project"}
-            </Button>
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 sm:p-6">
+            <div className="grid min-w-0 items-start gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+              <fieldset disabled={pending} className="min-w-0 space-y-5">
+                {step === 1 ? <>
+                  <FormField label="Project name" value={name} onChange={(event) => setName(event.target.value)} required maxLength={120} autoFocus placeholder="My product" />
+                  <FormField as="textarea" label="Description" value={description} onChange={(event) => setDescription(event.target.value)} rows={3} maxLength={1000} placeholder="What are you collecting feedback on?" />
+                  <fieldset className="space-y-3"><legend className="text-sm text-muted-foreground">Widget mode</legend><div className="grid grid-cols-2 gap-3">{["light", "dark"].map((mode) => <label key={mode} className="cursor-pointer"><input type="radio" name="widget-mode" className="peer sr-only" checked={theme === mode} onChange={() => setTheme(mode)} /><span className="flex h-10 items-center justify-center rounded-md border border-border text-sm capitalize peer-checked:border-fluid-accent peer-checked:bg-fluid-accent/10 peer-focus-visible:ring-2 peer-focus-visible:ring-ring">{mode}</span></label>)}</div></fieldset>
+                </> : <>
+                  <div className="space-y-3">{fields.map((field, index) => <FieldEditor key={field.id} field={field} index={index} open={expanded === field.id} onOpenChange={(open) => setExpanded(open ? field.id : null)} onChange={(patch) => setFields((previous) => previous.map((item) => item.id === field.id ? { ...item, ...patch } : item))} onRemove={() => setFields((previous) => previous.filter((item) => item.id !== field.id))} />)}</div>
+                  <Button variant="secondary" className="w-full" onClick={() => { const field = createField(); setFields((previous) => [...previous, field]); setExpanded(field.id); }}><HugeiconsIcon icon={Add01Icon} size={16} aria-hidden="true" /> Add question</Button>
+                </>}
+                <ErrorMessage>{error}</ErrorMessage>
+              </fieldset>
+              <div className="min-w-0 lg:sticky lg:top-0"><ProjectFormPreview name={name} fields={fields} theme={theme} /></div>
+            </div>
+          </div>
+          <DialogFooter className="shrink-0 border-t border-border bg-background px-5 py-4 sm:px-6">
+            {onPreview && <Button variant="secondary" onClick={onPreview} disabled={pending}>Preview & code</Button>}
+            {step === 2 && <Button variant="secondary" onClick={() => { setStep(1); setError(""); }} disabled={pending}>Back</Button>}
+            <Button variant="ghost" onClick={onClose} disabled={pending}>Cancel</Button>
+            <Button type="submit" disabled={!name.trim() || pending} loading={pending}>{step === 1 ? "Next: questions" : project ? "Save changes" : "Create project"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
