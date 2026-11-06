@@ -5,6 +5,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { previewThemeStyle } from "../../../../shared/form-theme.mjs";
 import { InputCopy } from "@/components/ui/input-copy";
 import { useAuth } from "@/hooks/use-auth";
 import PreviewField from "@/components/projects/PreviewField";
@@ -36,7 +37,8 @@ export default function ProjectPreview({ isOpen, onClose, project }) {
           <section className="min-w-0 space-y-4">
             <h3 className={typeClass("title")}>Widget preview</h3>
             <div
-              className={`space-y-5 rounded-xl border p-5 ${project.theme === "dark" ? "border-[#45433e] bg-[#1d1c1a] text-[#f4f1e9]" : "border-[#d6d3ca] bg-[#f4f3ee] text-[#24231f]"}`}
+              style={previewThemeStyle(project.appearance, project.theme)}
+              className="space-y-5 rounded-md border border-[var(--uf-border)] bg-[var(--uf-background)] p-5 text-[var(--uf-text)]"
             >
               {project.fields?.map((field) => (
                 <PreviewField

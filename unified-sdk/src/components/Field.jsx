@@ -1,11 +1,8 @@
 import React, { memo } from "react";
 
-const Field = memo(({ field, theme, value, onChange }) => {
-  const baseInputClass = `w-full p-3 rounded-lg transition-colors ${
-    theme === "dark"
-      ? "bg-[#262626] border border-[#383838] text-[#fafafa] placeholder-[#a1a1a1] focus:border-[#525252]"
-      : "bg-white border border-gray-200 text-[#171717] placeholder-[#737373] focus:border-[#525252]"
-  }`;
+const Field = memo(({ field, value, onChange }) => {
+  const baseInputClass =
+    "w-full rounded-md border border-[var(--uf-border)] bg-[var(--uf-surface)] p-3 text-[var(--uf-text)] placeholder:text-[var(--uf-muted)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--uf-accent)]";
 
   switch (field.type) {
     case "text":
@@ -42,7 +39,7 @@ const Field = memo(({ field, theme, value, onChange }) => {
                 checked={value === option.value}
                 onChange={(e) => onChange(field._id, e.target.value)}
                 required={field.required}
-                className="text-[#e5e5e5]"
+                className="accent-[var(--uf-accent)]"
               />
               <span>{option.label}</span>
             </label>
@@ -54,17 +51,17 @@ const Field = memo(({ field, theme, value, onChange }) => {
         <div className="space-y-2">
           <input
             type="range"
-            min={field.config?.min || 0}
-            max={field.config?.max || 100}
-            step={field.config?.step || 1}
-            value={value || field.config?.min || 0}
+            min={field.config?.min ?? 0}
+            max={field.config?.max ?? 100}
+            step={field.config?.step ?? 1}
+            value={value ?? field.config?.min ?? 0}
             onChange={(e) => onChange(field._id, Number(e.target.value))}
             required={field.required}
-            className="w-full"
+            className="w-full accent-[var(--uf-accent)]"
           />
           <div className="flex justify-between text-sm opacity-70">
-            <span>{field.config?.min || 0}</span>
-            <span>{field.config?.max || 100}</span>
+            <span>{field.config?.min ?? 0}</span>
+            <span>{field.config?.max ?? 100}</span>
           </div>
         </div>
       );

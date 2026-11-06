@@ -1,3 +1,4 @@
+import { formThemeStyle } from "../../../shared/form-theme.mjs";
 import React, { useState, useEffect, useCallback, memo } from "react";
 import { motion, AnimatePresence, useMotionValue } from "framer-motion";
 import { RiChat3Line } from "react-icons/ri";
@@ -7,7 +8,7 @@ import DeleteZone from "./DeleteZone";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-const UnifiedFeedback = memo(({ projectId, theme = "light", firebaseUid }) => {
+const UnifiedFeedback = memo(({ projectId, theme, firebaseUid }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState(null);
   const [error, setError] = useState(null);
@@ -16,6 +17,8 @@ const UnifiedFeedback = memo(({ projectId, theme = "light", firebaseUid }) => {
   const [showToast, setShowToast] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+
+  const widgetTheme = theme || formData?.theme || "light";
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -81,7 +84,7 @@ const UnifiedFeedback = memo(({ projectId, theme = "light", firebaseUid }) => {
         console.error("Failed to submit feedback:", error);
       }
     },
-    [answers, projectId, firebaseUid]
+    [answers, projectId, firebaseUid],
   );
 
   useEffect(() => {
@@ -104,8 +107,9 @@ const UnifiedFeedback = memo(({ projectId, theme = "light", firebaseUid }) => {
             setIsDragging={setIsDragging}
             setIsVisible={setIsVisible}
             setIsOpen={setIsOpen}
-            theme={theme}
+            theme={widgetTheme}
             projectId={projectId}
+            appearance={formData.appearance}
             x={x}
             y={y}
           />
@@ -117,7 +121,7 @@ const UnifiedFeedback = memo(({ projectId, theme = "light", firebaseUid }) => {
               setShowToast(false);
               setIsVisible(false);
             }}
-            theme={theme}
+            theme={widgetTheme}
           />
         )}
       </AnimatePresence>
@@ -130,7 +134,7 @@ const UnifiedFeedback = memo(({ projectId, theme = "light", firebaseUid }) => {
             isOpen={isOpen}
             onClose={handleClose}
             formData={formData}
-            theme={theme}
+            theme={widgetTheme}
             answers={answers}
             onSubmit={handleSubmit}
             onChange={handleInputChange}
@@ -150,6 +154,7 @@ const FeedbackButton = ({
   setIsOpen,
   theme,
   projectId,
+  appearance,
   x,
   y,
 }) => {
@@ -170,22 +175,22 @@ const FeedbackButton = ({
     <motion.div
       drag
       dragMomentum={false}
-      dragElastic={0} 
+      dragElastic={0}
       dragTransition={{
         power: 0.2,
-        timeConstant: 200, 
+        timeConstant: 200,
         modifyTarget: (target) => target,
       }}
       initial={false}
       animate={{ x: 0, y: 0 }}
       transition={{
         type: "spring",
-        stiffness: 800, 
-        damping: 35, 
+        stiffness: 800,
+        damping: 35,
         mass: 0.5,
         restDelta: 0.001,
       }}
-      style={{ x, y }}
+      style={{ x, y, ...formThemeStyle(appearance, theme) }}
       onDragStart={(event, info) => {
         event.stopPropagation();
         setIsDragging(true);
@@ -220,6 +225,7 @@ const FeedbackButton = ({
           damping: 17,
           mass: 0.5,
         }}
+        aria-label="Open feedback form"
         onClick={() => !isDragging && setIsOpen(true)}
         className={`
           rounded-full 
@@ -228,17 +234,10 @@ const FeedbackButton = ({
           shadow-[0_8px_30px_rgb(0,0,0,0.12)]
           cursor-pointer
           backdrop-blur-sm
-          ${
-            theme === "dark"
-              ? "bg-[#333333] hover:bg-[#404040] border border-[#444444]"
-              : "bg-white hover:bg-gray-50 border border-gray-200"
-          }
+          border border-[var(--uf-border)] bg-[var(--uf-surface)]
         `}
       >
-        <RiChat3Line
-          size={24}
-          className={`${theme === "dark" ? "text-white" : "text-gray-700"}`}
-        />
+        <RiChat3Line size={24} className="text-[var(--uf-accent)]" />
       </motion.button>
     </motion.div>
   );
