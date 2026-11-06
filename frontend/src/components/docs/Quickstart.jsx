@@ -3,7 +3,7 @@ import { BounceSidebar } from "@/components/motion/bounce-sidebar";
 import { Link } from "react-router-dom";
 import CodeBlock from "@/components/shared/CodeBlock";
 import { Button } from "@/components/ui/button";
-import { integrationCode } from "@/lib/integration-code";
+import { integrationCode, setupCommand } from "@/lib/integration-code";
 
 const steps = [
   {
@@ -13,23 +13,23 @@ const steps = [
       "Open your workspace and create a project for the app you want to hear from.",
     items: [
       "Add a project name and description.",
-      "Choose a light or dark widget.",
-      "Add your questions. Email is included by default.",
+      "Add questions by hand, or describe them with voice or text. Email is included by default.",
+      "Choose a theme preset, its default mode, and any custom colors.",
     ],
     action: true,
   },
   {
     id: "install",
-    title: "Install the SDK",
-    description: "Run this command in your React app’s directory.",
-    code: "npm install unified-sdk",
+    title: "Set up the SDK",
+    description: "From SDK 2.2.0 (after its npm release), run this in your Vite or Next.js app. The CLI checks your React entry, installs the SDK, adds its stylesheet, and mounts the widget. Add --dry-run to inspect the changes first.",
+    code: setupCommand(),
     label: "Terminal",
   },
   {
     id: "integrate",
-    title: "Add the feedback widget",
+    title: "Or set it up manually",
     description:
-      "Open Preview & code on your project card for a snippet with your own project ID, Firebase UID, and theme. Import the SDK stylesheet once.",
+      "If you used the CLI, skip this step. Otherwise, run npm install unified-sdk. Select Preview in the project editor, then add the snippet and stylesheet once.",
     code: integrationCode(),
     label: "App.jsx",
   },
@@ -41,7 +41,7 @@ const steps = [
     items: [
       "Try the widget in your app and send a response.",
       "Review answers on the project’s feedback page.",
-      "Generate a summary to identify common requests.",
+      "Read the automatic summary to identify common requests.",
     ],
   },
 ];
@@ -121,7 +121,7 @@ export default function Quickstart() {
                     YOUR_FIREBASE_UID
                   </code>{" "}
                   with the values in your project’s{" "}
-                  <span className="text-foreground">Preview & code</span> panel.
+                  <span className="text-foreground">Preview</span> panel.
                 </div>
               )}
               {step.action && (

@@ -4,6 +4,7 @@ export const fieldTypes = [
   { value: "textarea", label: "Long text" },
   { value: "mcq", label: "Multiple choice" },
   { value: "slider", label: "Slider" },
+  { value: "date", label: "Date" },
 ];
 
 export function createField(type = "text") {

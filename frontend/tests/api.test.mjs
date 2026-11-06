@@ -53,3 +53,33 @@ test("HTTP errors retain the status needed for auth recovery", async () => {
     globalThis.fetch = original;
   }
 });
+
+test("recordings are uploaded as binary audio without JSON conversion", async () => {
+  const original = globalThis.fetch;
+  const audio = new Blob(["recording"], { type: "audio/ogg" });
+  try {
+    globalThis.fetch = async (_, options) => {
+      assert.equal(options.body, audio);
+      assert.equal(options.headers["Content-Type"], "audio/ogg");
+      assert.equal(options.headers["firebase-uid"], "user");
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ text: "Transcript" }),
+      };
+    };
+    assert.equal(
+      (
+        await apiRequest("/projects/transcribe", {
+          method: "POST",
+          uid: "user",
+          rawBody: audio,
+          headers: { "Content-Type": "audio/ogg" },
+        })
+      ).text,
+      "Transcript",
+    );
+  } finally {
+    globalThis.fetch = original;
+  }
+});

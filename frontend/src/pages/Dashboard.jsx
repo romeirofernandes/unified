@@ -150,6 +150,7 @@ export default function Dashboard() {
         }
       />
       <ProjectPreview
+        key={`${preview?._id || "preview"}-${previewOpen}`}
         isOpen={previewOpen}
         onClose={() => setPreviewOpen(false)}
         project={preview}

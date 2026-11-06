@@ -16,3 +16,11 @@ export default function App() {
   );
 }`;
 }
+
+export function setupCommand({
+  projectId = "YOUR_PROJECT_ID",
+  uid = "YOUR_FIREBASE_UID",
+} = {}) {
+  const quote = (value) => "'" + String(value).replaceAll("'", "'\\''") + "'";
+  return `npx unified-sdk@2.2.0 init --project ${quote(projectId)} --uid ${quote(uid)}`;
+}

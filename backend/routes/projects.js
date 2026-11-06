@@ -2,11 +2,88 @@ const express = require("express");
 const router = express.Router();
 const Project = require("../models/Project");
 const Feedback = require("../models/Feedback");
+const { generateForm } = require("../services/form-generation");
+const { validateAppearance } = require("../services/project-appearance");
+const generationInFlight = new Set();
+
+router.post("/generate-form", async (req, res) => {
+  const transcript = req.body?.transcript;
+  if (
+    typeof transcript !== "string" ||
+    !transcript.trim() ||
+    transcript.length > 12000
+  )
+    return res.status(400).json({
+      message: "Describe the questions you need in 12,000 characters or fewer.",
+    });
+  const owner = String(req.user.id);
+  if (generationInFlight.has(owner))
+    return res
+      .status(409)
+      .json({ message: "A form is already being generated. Please wait." });
+  generationInFlight.add(owner);
+  try {
+    res.json(await generateForm(transcript.trim()));
+  } catch (error) {
+    res.status(error.status || 502).json({
+      message: error.status
+        ? error.message
+        : "Could not create the draft. Please try again.",
+    });
+  } finally {
+    generationInFlight.delete(owner);
+  }
+});
+
+router.post(
+  "/transcribe",
+  express.raw({ type: ["audio/*", "video/webm", "video/mp4"], limit: "12mb" }),
+  async (req, res) => {
+    const owner = String(req.user.id);
+    if (generationInFlight.has(owner))
+      return res
+        .status(409)
+        .json({
+          message: "An AI request is already in progress. Please wait.",
+        });
+    generationInFlight.add(owner);
+    try {
+      res.json(
+        await require("../services/transcription").transcribeAudio(
+          req.body,
+          req.headers["content-type"],
+          "en",
+        ),
+      );
+    } catch (error) {
+      res
+        .status(error.status || 502)
+        .json({
+          message: error.status
+            ? error.message
+            : "Could not transcribe this recording. Please try again or type your description.",
+        });
+    } finally {
+      generationInFlight.delete(owner);
+    }
+  },
+);
+router.use((error, req, res, next) => {
+  if (error.type === "entity.too.large")
+    return res
+      .status(413)
+      .json({
+        message:
+          "This recording is too large. Please record a shorter description.",
+      });
+  next(error);
+});
 
 // Create project
 router.post("/", async (req, res) => {
   try {
     const { name, description, fields, theme } = req.body;
+    const appearance = validateAppearance(req.body.appearance);
     const userId = req.user.id; // Will add auth middleware later
 
     const project = new Project({
@@ -14,15 +91,16 @@ router.post("/", async (req, res) => {
       description,
       fields,
       theme,
+      appearance,
       userId,
     });
 
     await project.save();
     res.status(201).json(project);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error creating project", error: error.message });
+    res.status(error.status || 500).json({
+      message: error.status ? error.message : "Error creating project",
+    });
   }
 });
 
@@ -80,17 +158,24 @@ router.get("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { name, description, fields, theme } = req.body;
+    const appearance = validateAppearance(req.body.appearance);
     const project = await Project.findOneAndUpdate(
       { _id: req.params.id, userId: req.user.id },
-      { name, description, fields, theme },
+      {
+        name,
+        description,
+        fields,
+        theme,
+        ...(appearance ? { appearance } : {}),
+      },
       { new: true, runValidators: true },
     );
     if (!project) return res.status(404).json({ message: "Project not found" });
     res.json(project);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error updating project", error: error.message });
+    res.status(error.status || 500).json({
+      message: error.status ? error.message : "Error updating project",
+    });
   }
 });
 

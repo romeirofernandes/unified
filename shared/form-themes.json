@@ -1,0 +1,102 @@
+[
+  {
+    "id": "unified",
+    "label": "Unified",
+    "light": {
+      "background": "#fafafa",
+      "surface": "#ffffff",
+      "text": "#171717",
+      "muted": "#626262",
+      "border": "#d4d4d4",
+      "accent": "#5575b4"
+    },
+    "dark": {
+      "background": "#171717",
+      "surface": "#232323",
+      "text": "#fafafa",
+      "muted": "#b3b3b3",
+      "border": "#454545",
+      "accent": "#9bb3e3"
+    }
+  },
+  {
+    "id": "ocean",
+    "label": "Ocean",
+    "light": {
+      "background": "#fafafa",
+      "surface": "#ffffff",
+      "text": "#171717",
+      "muted": "#626262",
+      "border": "#d4d4d4",
+      "accent": "#087e9a"
+    },
+    "dark": {
+      "background": "#171717",
+      "surface": "#232323",
+      "text": "#fafafa",
+      "muted": "#b3b3b3",
+      "border": "#454545",
+      "accent": "#67d4ed"
+    }
+  },
+  {
+    "id": "forest",
+    "label": "Forest",
+    "light": {
+      "background": "#fafafa",
+      "surface": "#ffffff",
+      "text": "#171717",
+      "muted": "#626262",
+      "border": "#d4d4d4",
+      "accent": "#28734d"
+    },
+    "dark": {
+      "background": "#171717",
+      "surface": "#232323",
+      "text": "#fafafa",
+      "muted": "#b3b3b3",
+      "border": "#454545",
+      "accent": "#86d6a8"
+    }
+  },
+  {
+    "id": "iris",
+    "label": "Iris",
+    "light": {
+      "background": "#fafafa",
+      "surface": "#ffffff",
+      "text": "#171717",
+      "muted": "#626262",
+      "border": "#d4d4d4",
+      "accent": "#7650bc"
+    },
+    "dark": {
+      "background": "#171717",
+      "surface": "#232323",
+      "text": "#fafafa",
+      "muted": "#b3b3b3",
+      "border": "#454545",
+      "accent": "#c4a5fa"
+    }
+  },
+  {
+    "id": "rose",
+    "label": "Rose",
+    "light": {
+      "background": "#fafafa",
+      "surface": "#ffffff",
+      "text": "#171717",
+      "muted": "#626262",
+      "border": "#d4d4d4",
+      "accent": "#ad426d"
+    },
+    "dark": {
+      "background": "#171717",
+      "surface": "#232323",
+      "text": "#fafafa",
+      "muted": "#b3b3b3",
+      "border": "#454545",
+      "accent": "#f3a9c8"
+    }
+  }
+]

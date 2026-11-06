@@ -1,20 +1,21 @@
+import { RangeField } from "../../../shared/controls/range-field";
+import { DateInput } from "../../../shared/controls/date-input";
+import { answerPlaceholder } from "../../../shared/form-fields.mjs";
 import React, { memo } from "react";
 
-const Field = memo(({ field, theme, value, onChange }) => {
-  const baseInputClass = `w-full p-3 rounded-lg transition-colors ${
-    theme === "dark"
-      ? "bg-[#262626] border border-[#383838] text-[#fafafa] placeholder-[#a1a1a1] focus:border-[#525252]"
-      : "bg-white border border-gray-200 text-[#171717] placeholder-[#737373] focus:border-[#525252]"
-  }`;
+const Field = memo(({ field, value, onChange }) => {
+  const baseInputClass =
+    "w-full rounded-md border border-[var(--uf-border)] bg-[var(--uf-surface)] p-3 text-[var(--uf-text)] placeholder:text-[var(--uf-muted)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--uf-accent)]";
 
   switch (field.type) {
     case "text":
     case "email":
       return (
         <input
+          id={`uf-field-${field._id}`}
           type={field.type}
           className={baseInputClass}
-          placeholder={field.label}
+          placeholder={answerPlaceholder(field.type)}
           value={value || ""}
           onChange={(e) => onChange(field._id, e.target.value)}
           required={field.required}
@@ -23,8 +24,9 @@ const Field = memo(({ field, theme, value, onChange }) => {
     case "textarea":
       return (
         <textarea
+          id={`uf-field-${field._id}`}
           className={`${baseInputClass} h-24 resize-none`}
-          placeholder={field.label}
+          placeholder={answerPlaceholder(field.type)}
           value={value || ""}
           onChange={(e) => onChange(field._id, e.target.value)}
           required={field.required}
@@ -32,7 +34,11 @@ const Field = memo(({ field, theme, value, onChange }) => {
       );
     case "mcq":
       return (
-        <div className="space-y-2">
+        <div
+          role="radiogroup"
+          aria-labelledby={`uf-label-${field._id}`}
+          className="space-y-2"
+        >
           {field.options?.map((option, idx) => (
             <label key={idx} className="flex items-center space-x-2">
               <input
@@ -42,31 +48,33 @@ const Field = memo(({ field, theme, value, onChange }) => {
                 checked={value === option.value}
                 onChange={(e) => onChange(field._id, e.target.value)}
                 required={field.required}
-                className="text-[#e5e5e5]"
+                className="accent-[var(--uf-accent)]"
               />
               <span>{option.label}</span>
             </label>
           ))}
         </div>
       );
+    case "date":
+      return (
+        <DateInput
+          id={`uf-field-${field._id}`}
+          label={field.label}
+          required={field.required}
+          value={value ?? ""}
+          onValueChange={(next) => onChange(field._id, next)}
+        />
+      );
     case "slider":
       return (
-        <div className="space-y-2">
-          <input
-            type="range"
-            min={field.config?.min || 0}
-            max={field.config?.max || 100}
-            step={field.config?.step || 1}
-            value={value || field.config?.min || 0}
-            onChange={(e) => onChange(field._id, Number(e.target.value))}
-            required={field.required}
-            className="w-full"
-          />
-          <div className="flex justify-between text-sm opacity-70">
-            <span>{field.config?.min || 0}</span>
-            <span>{field.config?.max || 100}</span>
-          </div>
-        </div>
+        <RangeField
+          min={field.config?.min ?? 0}
+          max={field.config?.max ?? 100}
+          step={field.config?.step ?? 1}
+          value={value}
+          onValueChange={(next) => onChange(field._id, next)}
+          label={field.label}
+        />
       );
     default:
       return null;
