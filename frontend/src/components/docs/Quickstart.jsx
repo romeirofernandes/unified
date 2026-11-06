@@ -3,7 +3,7 @@ import { BounceSidebar } from "@/components/motion/bounce-sidebar";
 import { Link } from "react-router-dom";
 import CodeBlock from "@/components/shared/CodeBlock";
 import { Button } from "@/components/ui/button";
-import { integrationCode } from "@/lib/integration-code";
+import { integrationCode, setupCommand } from "@/lib/integration-code";
 
 const steps = [
   {
@@ -20,16 +20,16 @@ const steps = [
   },
   {
     id: "install",
-    title: "Install the SDK",
-    description: "Run this command in your React app’s directory.",
-    code: "npm install unified-sdk",
+    title: "Set up the SDK",
+    description: "From SDK 2.2.0 (after its npm release), run this in your Vite or Next.js app. The CLI checks your React entry, installs the SDK, adds its stylesheet, and mounts the widget. Add --dry-run to inspect the changes first.",
+    code: setupCommand(),
     label: "Terminal",
   },
   {
     id: "integrate",
-    title: "Add the feedback widget",
+    title: "Or set it up manually",
     description:
-      "Open the project editor and select Preview & code for a snippet with your own project ID, Firebase UID, and theme. Import the SDK stylesheet once.",
+      "If you used the CLI, skip this step. Otherwise, run npm install unified-sdk. Select Preview & code in the project editor, then add the snippet and stylesheet once.",
     code: integrationCode(),
     label: "App.jsx",
   },

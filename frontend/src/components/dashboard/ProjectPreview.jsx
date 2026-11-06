@@ -10,7 +10,7 @@ import { InputCopy } from "@/components/ui/input-copy";
 import { useAuth } from "@/hooks/use-auth";
 import PreviewField from "@/components/projects/PreviewField";
 import CodeBlock from "@/components/shared/CodeBlock";
-import { integrationCode } from "@/lib/integration-code";
+import { integrationCode, setupCommand } from "@/lib/integration-code";
 import { typeClass } from "@/lib/type-scale";
 
 export default function ProjectPreview({ isOpen, onClose, project }) {
@@ -61,7 +61,9 @@ export default function ProjectPreview({ isOpen, onClose, project }) {
           </section>
           <section className="min-w-0 space-y-4">
             <h3 className={typeClass("title")}>Integration</h3>
-            <CodeBlock code="npm install unified-sdk" label="Install SDK" />
+            <p className="text-sm text-muted-foreground">Automatic setup is available with SDK 2.2.0 after its npm release. It installs the SDK and mounts the widget for you.</p>
+            <CodeBlock code={setupCommand({ projectId: project._id, uid: user?.uid })} label="Automatic setup · SDK 2.2.0" />
+            <p className="text-sm text-muted-foreground">For manual setup, install unified-sdk and add this component once.</p>
             <CodeBlock
               code={integrationCode({
                 projectId: project._id,
