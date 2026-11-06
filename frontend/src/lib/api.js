@@ -4,7 +4,7 @@ const API_URL = (
 
 export async function apiRequest(
   path,
-  { uid, body, headers, ...options } = {},
+  { uid, body, rawBody, headers, ...options } = {},
 ) {
   const response = await fetch(`${API_URL}/api${path}`, {
     ...options,
@@ -14,7 +14,11 @@ export async function apiRequest(
       ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
       ...headers,
     },
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+    ...(rawBody !== undefined
+      ? { body: rawBody }
+      : body !== undefined
+        ? { body: JSON.stringify(body) }
+        : {}),
   });
   if (!response.ok) {
     const data = await response.json().catch(() => null);

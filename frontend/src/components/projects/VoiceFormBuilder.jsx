@@ -1,3 +1,9 @@
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { useEffect, useRef, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Mic01Icon, StopIcon } from "@hugeicons/core-free-icons";
@@ -15,9 +21,9 @@ import { apiRequest } from "@/lib/api";
 
 export default function VoiceFormBuilder({ active, onApply }) {
   const [open, setOpen] = useState(true);
-  const speech = useSpeechInput(active && open);
   const { user } = useAuth();
-  const [language, setLanguage] = useState("en-IN");
+  const speech = useSpeechInput(active && open, user?.uid);
+  const [language, setLanguage] = useState("auto");
   const [draft, setDraft] = useState(null);
   const [pending, setPending] = useState(false);
   const request = useRef(null);
@@ -32,7 +38,14 @@ export default function VoiceFormBuilder({ active, onApply }) {
   }, [active]);
 
   async function generate() {
-    if (pending || speech.listening || !speech.transcript.trim()) return;
+    if (
+      pending ||
+      speech.listening ||
+      speech.transcribing ||
+      speech.requesting ||
+      !speech.transcript.trim()
+    )
+      return;
     const controller = new AbortController();
     request.current = controller;
     setPending(true);
@@ -79,7 +92,13 @@ export default function VoiceFormBuilder({ active, onApply }) {
             onClick={() =>
               speech.listening ? speech.stop() : speech.start(language)
             }
-            disabled={!speech.supported || pending}
+            disabled={
+              !speech.supported ||
+              pending ||
+              speech.requesting ||
+              speech.transcribing
+            }
+            loading={speech.requesting || speech.transcribing}
             aria-pressed={speech.listening}
           >
             <HugeiconsIcon
@@ -87,21 +106,47 @@ export default function VoiceFormBuilder({ active, onApply }) {
               size={16}
               aria-hidden="true"
             />
-            {speech.listening ? "Stop recording" : "Start recording"}
+            {speech.transcribing
+              ? "Transcribing…"
+              : speech.requesting
+                ? "Opening microphone…"
+                : speech.listening
+                  ? "Stop recording"
+                  : "Start recording"}
           </Button>
-          <label className="text-xs text-muted-foreground">
-            <span className="sr-only">Speech language</span>
-            <select
+          <div className="w-44">
+            <Select
               value={language}
-              disabled={speech.listening || pending}
-              onChange={(event) => setLanguage(event.target.value)}
-              className="h-10 rounded-md border border-input bg-background px-2 text-sm text-foreground"
+              disabled={
+                speech.listening ||
+                speech.requesting ||
+                speech.transcribing ||
+                pending
+              }
+              onValueChange={setLanguage}
             >
-              <option value="en-IN">English (India)</option>
-              <option value="en-US">English (US)</option>
-              <option value="hi-IN">Hindi</option>
-            </select>
-          </label>
+              <SelectTrigger
+                aria-label="Speech language"
+                className="h-10 w-full rounded-md"
+              />
+              <SelectContent>
+                {[
+                  ["auto", "Auto-detect"],
+                  ["en", "English"],
+                  ["hi", "Hindi"],
+                  ["es", "Spanish"],
+                  ["fr", "French"],
+                  ["de", "German"],
+                  ["pt", "Portuguese"],
+                  ["ja", "Japanese"],
+                ].map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className="space-y-2">
           <label
@@ -112,10 +157,10 @@ export default function VoiceFormBuilder({ active, onApply }) {
           </label>
           <textarea
             id="form-description"
-            value={[speech.transcript, speech.interim]
-              .filter(Boolean)
-              .join(" ")}
-            readOnly={speech.listening}
+            value={speech.transcript}
+            readOnly={
+              speech.listening || speech.requesting || speech.transcribing
+            }
             disabled={pending}
             onChange={(event) => {
               speech.setTranscript(event.target.value);
@@ -129,16 +174,24 @@ export default function VoiceFormBuilder({ active, onApply }) {
         </div>
         <p role="status" className="text-xs leading-5 text-muted-foreground">
           {speech.listening
-            ? "Listening… Your words appear above."
-            : speech.supported
-              ? "Review the transcript before generating. Your browser may use an online speech service."
-              : "Voice input is not supported in this browser. Type your description to generate the same draft."}
+            ? `Recording ${Math.floor(speech.seconds / 60)}:${String(speech.seconds % 60).padStart(2, "0")}. Stop when you are finished.`
+            : speech.transcribing
+              ? "Transcribing your recording… Your words will appear when it is ready."
+              : speech.supported
+                ? "Record up to two minutes. Audio is sent to Groq after you stop. Review the transcript before generating."
+                : "Recording is not available in this browser. Use HTTPS and allow microphone access, or type your description."}
         </p>
         <ErrorMessage>{speech.error || error}</ErrorMessage>
         <Button
           variant="secondary"
           onClick={generate}
-          disabled={pending || speech.listening || !speech.transcript.trim()}
+          disabled={
+            pending ||
+            speech.listening ||
+            speech.requesting ||
+            speech.transcribing ||
+            !speech.transcript.trim()
+          }
           loading={pending}
         >
           Generate draft

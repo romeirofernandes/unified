@@ -9,16 +9,17 @@ function loadRoutes(file, models) {
   const router = Object.fromEntries(
     ["get", "post", "put", "delete"].map((method) => [
       method,
-      (url, handler) => routes.set(`${method} ${url}`, handler),
+      (url, ...handlers) => routes.set(`${method} ${url}`, handlers.at(-1)),
     ]),
   );
+  router.use = () => {};
   const source = fs.readFileSync(
     path.join(__dirname, "../routes", file),
     "utf8",
   );
   vm.runInNewContext(source, {
     require: (name) =>
-      name === "express" ? { Router: () => router } : models[name] || require(name.startsWith(".") ? path.join(__dirname, "../routes", name) : name),
+      name === "express" ? { Router: () => router, raw: () => (req, res, next) => next() } : models[name] || require(name.startsWith(".") ? path.join(__dirname, "../routes", name) : name),
     module: { exports: {} },
     console,
   });

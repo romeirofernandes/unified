@@ -1,3 +1,9 @@
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/motion/tabs";
 import { lazy, Suspense, useState } from "react";
 import {
   Dialog,
@@ -114,91 +120,99 @@ export default function ProjectModal({
         size="xl"
         showCloseButton={!pending}
       >
-        <DialogHeader className="shrink-0 border-b border-border px-5 py-5 pe-14 sm:px-6">
-          <DialogTitle>
-            {project ? "Edit project" : "Create a project"}
-          </DialogTitle>
-          <DialogDescription>
-            {step === 1
-              ? "Set up your project, then choose what to ask."
-              : step === 2
-                ? "Keep the form focused. Email is included by default."
-                : "Choose a preset or make the form your own."}
-          </DialogDescription>
-          <ol
-            className="flex flex-wrap gap-x-4 gap-y-2 pt-3 text-xs"
-            aria-label="Project setup steps"
-          >
-            {["Project details", "Questions", "Appearance"].map(
-              (label, index) => (
-                <li
-                  key={label}
-                  aria-current={step === index + 1 ? "step" : undefined}
-                  className={
-                    step === index + 1
-                      ? "font-medium text-foreground"
-                      : "text-muted-foreground"
-                  }
-                >
-                  <span className="me-2 font-mono">0{index + 1}</span>
-                  {label}
-                </li>
-              ),
-            )}
-          </ol>
-        </DialogHeader>
-        <form
-          noValidate
-          onSubmit={handleSubmit}
+        <Tabs
+          value={String(step)}
+          onValueChange={(value) => {
+            if (!pending) {
+              setStep(Number(value));
+              setError("");
+            }
+          }}
+          variant="segment"
           className="flex min-h-0 flex-1 flex-col"
         >
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 sm:p-6">
-            <div className="grid min-w-0 items-start gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-              <fieldset disabled={pending} className="min-w-0 space-y-5">
-                {step !== 3 &&
-                  (voiceOpen ? (
-                    <Suspense
-                      fallback={
-                        <p className="text-sm text-muted-foreground">
-                          Opening voice input…
-                        </p>
-                      }
-                    >
-                      <VoiceFormBuilder
-                        active={isOpen && !pending}
-                        onApply={(draft) => {
-                          if (fields.length + draft.fields.length > 50) {
-                            setError("A form can contain up to 50 questions.");
-                            return;
-                          }
-                          const added = draft.fields.map((field) => ({
-                            ...createField(field.type),
-                            ...field,
-                            options: (field.options || []).map((option) => ({
-                              ...option,
-                              id: crypto.randomUUID(),
-                            })),
-                          }));
-                          setFields((previous) => [...previous, ...added]);
-                          if (!name.trim()) setName(draft.name);
-                          if (!description.trim())
-                            setDescription(draft.description);
-                          setExpanded(added[0]?.id || null);
-                          setStep(2);
-                        }}
-                      />
-                    </Suspense>
-                  ) : (
-                    <Button
-                      variant="secondary"
-                      className="w-full"
-                      onClick={() => setVoiceOpen(true)}
-                    >
-                      Create questions with voice or text
-                    </Button>
-                  ))}
-                {step === 1 ? (
-                  <>
+          <DialogHeader className="shrink-0 border-b border-border px-5 py-5 pe-14 sm:px-6">
+            <DialogTitle>
+              {project ? "Edit project" : "Create a project"}
+            </DialogTitle>
+            <DialogDescription>
+              {step === 1
+                ? "Set up your project, then choose what to ask."
+                : step === 2
+                  ? "Keep the form focused. Email is included by default."
+                  : "Choose a preset or make the form your own."}
+            </DialogDescription>
+            <TabsList
+              className="mt-3 w-full rounded-md"
+              aria-label="Project editor"
+            >
+              {["Project details", "Questions", "Appearance"].map(
+                (label, index) => (
+                  <TabsTrigger
+                    key={label}
+                    value={String(index + 1)}
+                    disabled={pending}
+                    className="flex-1 rounded-md px-3 text-xs sm:text-sm"
+                  >
+                    {label}
+                  </TabsTrigger>
+                ),
+              )}
+            </TabsList>
+          </DialogHeader>
+          <form
+            noValidate
+            onSubmit={handleSubmit}
+            className="flex min-h-0 flex-1 flex-col"
+          >
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 sm:p-6">
+              <div className="grid min-w-0 items-start gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+                <fieldset disabled={pending} className="min-w-0 space-y-5">
+                  {step !== 3 &&
+                    (voiceOpen ? (
+                      <Suspense
+                        fallback={
+                          <p className="text-sm text-muted-foreground">
+                            Opening voice input…
+                          </p>
+                        }
+                      >
+                        <VoiceFormBuilder
+                          active={isOpen && !pending}
+                          onApply={(draft) => {
+                            if (fields.length + draft.fields.length > 50) {
+                              setError(
+                                "A form can contain up to 50 questions.",
+                              );
+                              return;
+                            }
+                            const added = draft.fields.map((field) => ({
+                              ...createField(field.type),
+                              ...field,
+                              options: (field.options || []).map((option) => ({
+                                ...option,
+                                id: crypto.randomUUID(),
+                              })),
+                            }));
+                            setFields((previous) => [...previous, ...added]);
+                            if (!name.trim()) setName(draft.name);
+                            if (!description.trim())
+                              setDescription(draft.description);
+                            setExpanded(added[0]?.id || null);
+                            setStep(2);
+                          }}
+                        />
+                      </Suspense>
+                    ) : (
+                      <Button
+                        variant="secondary"
+                        className="w-full"
+                        onClick={() => setVoiceOpen(true)}
+                      >
+                        Create questions with voice or text
+                      </Button>
+                    ))}
+                  <TabsContent value="1" className="mt-0 space-y-5">
                     <FormField
                       label="Project name"
                       value={name}
@@ -238,9 +252,8 @@ export default function ProjectModal({
                         ))}
                       </div>
                     </fieldset>
-                  </>
-                ) : step === 2 ? (
-                  <>
+                  </TabsContent>
+                  <TabsContent value="2" className="mt-0 space-y-4">
                     <div className="space-y-3">
                       {fields.map((field, index) => (
                         <FieldEditor
@@ -285,75 +298,78 @@ export default function ProjectModal({
                       />{" "}
                       Add question
                     </Button>
-                  </>
-                ) : (
-                  <Suspense
-                    fallback={
-                      <p className="text-sm text-muted-foreground">
-                        Opening theme controls…
-                      </p>
-                    }
-                  >
-                    <FormAppearance
-                      appearance={appearance}
-                      onChange={setAppearance}
-                      mode={theme}
-                      onModeChange={setTheme}
-                    />
-                  </Suspense>
-                )}
-                <ErrorMessage>{error}</ErrorMessage>
-              </fieldset>
-              <div className="min-w-0 lg:sticky lg:top-0">
-                <ProjectFormPreview
-                  name={name}
-                  fields={fields}
-                  theme={theme}
-                  appearance={appearance}
-                />
+                  </TabsContent>
+                  <TabsContent value="3" className="mt-0">
+                    {step === 3 && (
+                      <Suspense
+                        fallback={
+                          <p className="text-sm text-muted-foreground">
+                            Opening theme controls…
+                          </p>
+                        }
+                      >
+                        <FormAppearance
+                          appearance={appearance}
+                          onChange={setAppearance}
+                          mode={theme}
+                          onModeChange={setTheme}
+                        />
+                      </Suspense>
+                    )}
+                  </TabsContent>
+                  <ErrorMessage>{error}</ErrorMessage>
+                </fieldset>
+                <div className="min-w-0 lg:sticky lg:top-0">
+                  <ProjectFormPreview
+                    name={name}
+                    fields={fields}
+                    theme={theme}
+                    appearance={appearance}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-          <DialogFooter className="mt-0 flex-wrap shrink-0 border-t border-border bg-background px-5 py-4 sm:px-6">
-            {onPreview && (
-              <Button
-                variant="secondary"
-                onClick={onPreview}
-                disabled={pending}
-              >
-                Preview & code
+            <DialogFooter className="mt-0 flex-wrap shrink-0 border-t border-border bg-background px-5 py-4 sm:px-6">
+              {onPreview && (
+                <Button
+                  variant="secondary"
+                  onClick={onPreview}
+                  disabled={pending}
+                >
+                  Preview & code
+                </Button>
+              )}
+              {step > 1 && (
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setStep((value) => value - 1);
+                    setError("");
+                  }}
+                  disabled={pending}
+                >
+                  Back
+                </Button>
+              )}
+              <Button variant="ghost" onClick={onClose} disabled={pending}>
+                Cancel
               </Button>
-            )}
-            {step > 1 && (
               <Button
-                variant="secondary"
-                onClick={() => {
-                  setStep((value) => value - 1);
-                  setError("");
-                }}
-                disabled={pending}
+                type="submit"
+                disabled={!name.trim() || pending}
+                loading={pending}
               >
-                Back
+                {step === 1
+                  ? "Next: questions"
+                  : step === 2
+                    ? "Next: appearance"
+                    : project
+                      ? "Save changes"
+                      : "Create project"}
               </Button>
-            )}
-            <Button variant="ghost" onClick={onClose} disabled={pending}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={!name.trim() || pending}
-              loading={pending}
-            >
-              {step === 1
-                ? "Next: questions"
-                : step === 2
-                  ? "Next: appearance"
-                  : project
-                    ? "Save changes"
-                    : "Create project"}
-            </Button>
-          </DialogFooter>
-        </form>
+            </DialogFooter>
+          </form>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
