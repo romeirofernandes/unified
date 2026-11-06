@@ -1,3 +1,4 @@
+import { projectDraftKey } from "@/lib/project-draft";
 import { useTheme } from "next-themes";
 import AnimatedEditorBody from "@/components/projects/AnimatedEditorBody";
 import {
@@ -67,12 +68,22 @@ export default function ProjectModal({
         }))
       : [createField("email")],
   );
+  const draftKey = projectDraftKey({
+    name,
+    description,
+    theme,
+    appearance,
+    fields,
+  });
+  const [initialDraftKey] = useState(() => draftKey);
+  const hasChanges = !project || draftKey !== initialDraftKey;
   const [expanded, setExpanded] = useState(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (pending || !hasChanges) return;
     if (!name.trim()) {
       setError("Add a project name.");
       setStep(1);
@@ -150,7 +161,7 @@ export default function ProjectModal({
                   <Button
                     type="submit"
                     form={formId}
-                    disabled={!name.trim() || pending}
+                    disabled={!name.trim() || pending || !hasChanges}
                     loading={pending}
                   >
                     {project ? "Save changes" : "Create project"}

@@ -9,7 +9,7 @@ export default function FormFont({ appearance }) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.dataset.formFont = font;
-    link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(font).replaceAll("%20", "+")}:wght@400;500;600;700&display=swap`;
+    link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(font).replaceAll("%20", "+")}:wght@400;700&display=swap`;
     document.head.append(link);
   }, [font]);
   return null;

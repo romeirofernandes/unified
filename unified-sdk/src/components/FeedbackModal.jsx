@@ -109,7 +109,12 @@ const FeedbackModal = memo(
         </div>
 
         {/* Rest of the modal content */}
-        <h2 className="text-2xl font-bold mb-2 mt-4">{formData?.name}</h2>
+        <h2
+          style={{ fontFamily: "var(--uf-font)" }}
+          className="text-2xl font-bold mb-2 mt-4"
+        >
+          {formData?.name}
+        </h2>
         <p className="mb-8 text-sm text-[var(--uf-muted)]">
           Step {currentStep + 1} of {totalSteps}
         </p>

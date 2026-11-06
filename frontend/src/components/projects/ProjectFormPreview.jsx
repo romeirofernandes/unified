@@ -28,7 +28,9 @@ export default function ProjectFormPreview({
         style={previewThemeStyle(appearance, theme)}
         className="space-y-5 rounded-md border border-[var(--uf-border)] bg-[var(--uf-background)] [&_h3]:font-[inherit] p-5 text-[var(--uf-text)]"
       >
-        <h3 className="text-xl">{name || "Your feedback form"}</h3>
+        <h3 style={{ fontFamily: "var(--uf-font)" }} className="text-xl">
+          {name || "Your feedback form"}
+        </h3>
         {fields.map((field) => (
           <PreviewField
             key={field.id || field._id}
