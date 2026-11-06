@@ -1,3 +1,4 @@
+import { useTheme } from "next-themes";
 import AnimatedEditorBody from "@/components/projects/AnimatedEditorBody";
 import {
   Tabs,
@@ -40,12 +41,15 @@ export default function ProjectModal({
   project,
   onPreview,
 }) {
+  const { resolvedTheme } = useTheme();
   const formId = useId();
   const headerRef = useRef(null);
   const [step, setStep] = useState(1);
   const [name, setName] = useState(project?.name || "");
   const [description, setDescription] = useState(project?.description || "");
-  const [theme, setTheme] = useState(project?.theme || "light");
+  const [theme, setTheme] = useState(() =>
+    resolvedTheme === "dark" ? "dark" : "light",
+  );
   const [appearance, setAppearance] = useState(
     project?.appearance || { preset: "unified", colors: {} },
   );
@@ -63,7 +67,6 @@ export default function ProjectModal({
         }))
       : [createField("email")],
   );
-  const [voiceOpen, setVoiceOpen] = useState(false);
   const [expanded, setExpanded] = useState(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
@@ -141,7 +144,7 @@ export default function ProjectModal({
                       onClick={onPreview}
                       disabled={pending}
                     >
-                      Preview & code
+                      Preview
                     </Button>
                   )}
                   <Button
@@ -205,7 +208,7 @@ export default function ProjectModal({
                   </TabsContent>
                   <TabsContent value="2" className="mt-0 space-y-4">
                     <div className="mb-4">
-                      {voiceOpen ? (
+                      {
                         <Suspense
                           fallback={
                             <p className="text-sm text-muted-foreground">
@@ -241,7 +244,7 @@ export default function ProjectModal({
                             }}
                           />
                         </Suspense>
-                      ) : null}
+                      }
                     </div>
 
                     <div className="space-y-3">
@@ -271,9 +274,8 @@ export default function ProjectModal({
                         />
                       ))}
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center justify-end gap-2">
                       <Button
-                        variant="secondary"
                         disabled={fields.length >= 50}
                         onClick={() => {
                           const field = createField();
@@ -287,12 +289,6 @@ export default function ProjectModal({
                           aria-hidden="true"
                         />{" "}
                         Add question
-                      </Button>
-                      <Button
-                        onClick={() => setVoiceOpen(true)}
-                        disabled={pending}
-                      >
-                        Create questions with voice or text
                       </Button>
                     </div>
                   </TabsContent>

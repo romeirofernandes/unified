@@ -67,9 +67,9 @@ function useTabs() {
 // Scale stiffness and damping together for a quicker glide with the same feel.
 const transition: Transition = {
   type: "spring",
-  stiffness: 245,
-  damping: 36,
-  mass: 1.2,
+  stiffness: 700,
+  damping: 53,
+  mass: 0.8,
 };
 
 export function Tabs({

@@ -89,8 +89,8 @@ for (const [name, url, expected] of [
   ["Dashboard", "/dashboard", "Sample project"],
   ["Feedbacks", "/project/project-1/feedbacks", "customer@example.com"],
   ["Settings", "/dashboard/settings", "person@example.com"],
-  ["Docs", "/docs", "Install the SDK"],
-  ["Docs", "/dashboard/docs", "Install the SDK"],
+  ["Docs", "/docs", "Set up the SDK"],
+  ["Docs", "/dashboard/docs", "Set up the SDK"],
   ["NotFound", "/missing", "This page wandered off."],
 ]) {
   test(`${name} renders at ${url} with the shared component providers`, () => {

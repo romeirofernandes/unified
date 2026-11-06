@@ -35,7 +35,7 @@ export default function AnimatedEditorBody({ headerRef, children }) {
     <Motion.div
       initial={false}
       animate={{ height: height ?? "auto" }}
-      transition={{ duration: reduced ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: reduced ? 0 : 0.16, ease: [0.22, 1, 0.36, 1] }}
       style={{
         "--editor-height": height ? `${Math.max(0, height - 48)}px` : "70dvh",
       }}

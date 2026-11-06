@@ -29,7 +29,7 @@ const steps = [
     id: "integrate",
     title: "Or set it up manually",
     description:
-      "If you used the CLI, skip this step. Otherwise, run npm install unified-sdk. Select Preview & code in the project editor, then add the snippet and stylesheet once.",
+      "If you used the CLI, skip this step. Otherwise, run npm install unified-sdk. Select Preview in the project editor, then add the snippet and stylesheet once.",
     code: integrationCode(),
     label: "App.jsx",
   },
@@ -121,7 +121,7 @@ export default function Quickstart() {
                     YOUR_FIREBASE_UID
                   </code>{" "}
                   with the values in your project’s{" "}
-                  <span className="text-foreground">Preview & code</span> panel.
+                  <span className="text-foreground">Preview</span> panel.
                 </div>
               )}
               {step.action && (
