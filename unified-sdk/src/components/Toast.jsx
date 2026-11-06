@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 const Toast = ({ onComplete, theme }) => {
   useEffect(() => {

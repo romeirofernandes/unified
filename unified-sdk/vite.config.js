@@ -5,6 +5,9 @@ import { resolve } from "path";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  resolve: {
+    dedupe: ["react", "react-dom", "motion", "clsx", "tailwind-merge"],
+  },
   build: {
     lib: {
       entry: resolve(__dirname, "src/index.jsx"),

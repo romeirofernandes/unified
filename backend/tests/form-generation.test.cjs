@@ -42,3 +42,14 @@ test("a generated slider preserves zero and a valid fractional step", () => {
   assert.equal(result.fields[0].config.min, 0);
   assert.equal(result.fields[0].config.step, 0.5);
 });
+
+test("date questions are accepted without invented options or range settings", () => {
+  const result = validateGeneratedForm(
+    form([{ type: "date", label: "When did you start?", required: true }]),
+  );
+  assert.deepEqual(result.fields[0], {
+    type: "date",
+    label: "When did you start?",
+    required: true,
+  });
+});

@@ -131,11 +131,11 @@ export default function ProjectModal({
           variant="segment"
           className="flex min-h-0 flex-1 flex-col"
         >
-          <DialogHeader className="shrink-0 border-b border-border px-5 py-5 pe-14 sm:px-6">
-            <DialogTitle>
+          <DialogHeader className="shrink-0 border-b border-border px-5 py-5 sm:px-6">
+            <DialogTitle className="pe-10">
               {project ? "Edit project" : "Create a project"}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="pe-10">
               {step === 1
                 ? "Set up your project, then choose what to ask."
                 : step === 2
@@ -152,7 +152,8 @@ export default function ProjectModal({
                     key={label}
                     value={String(index + 1)}
                     disabled={pending}
-                    className="flex-1 rounded-md px-3 text-xs sm:text-sm"
+                    indicatorClassName="bg-fluid-accent/15"
+                    className="min-h-10 flex-1 rounded-md px-3 text-xs sm:text-sm [&_[data-tabs-label]]:text-foreground"
                   >
                     {label}
                   </TabsTrigger>
@@ -168,8 +169,8 @@ export default function ProjectModal({
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 sm:p-6">
               <div className="grid min-w-0 items-start gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
                 <fieldset disabled={pending} className="min-w-0 space-y-5">
-                  {step !== 3 &&
-                    (voiceOpen ? (
+                  <div hidden={step === 3}>
+                    {voiceOpen ? (
                       <Suspense
                         fallback={
                           <p className="text-sm text-muted-foreground">
@@ -178,7 +179,7 @@ export default function ProjectModal({
                         }
                       >
                         <VoiceFormBuilder
-                          active={isOpen && !pending}
+                          active={isOpen && !pending && step !== 3}
                           onApply={(draft) => {
                             if (fields.length + draft.fields.length > 50) {
                               setError(
@@ -211,7 +212,8 @@ export default function ProjectModal({
                       >
                         Create questions with voice or text
                       </Button>
-                    ))}
+                    )}
+                  </div>
                   <TabsContent value="1" className="mt-0 space-y-5">
                     <FormField
                       label="Project name"

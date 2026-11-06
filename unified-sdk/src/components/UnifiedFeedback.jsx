@@ -1,6 +1,6 @@
 import { formThemeStyle } from "../../../shared/form-theme.mjs";
 import React, { useState, useEffect, useCallback, memo } from "react";
-import { motion, AnimatePresence, useMotionValue } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue } from "motion/react";
 import { RiChat3Line } from "react-icons/ri";
 import FeedbackModal from "./FeedbackModal";
 import Toast from "./Toast";
@@ -14,6 +14,8 @@ const UnifiedFeedback = memo(({ projectId, theme, firebaseUid }) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState({});
+  const [submissionError, setSubmissionError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
@@ -65,8 +67,18 @@ const UnifiedFeedback = memo(({ projectId, theme, firebaseUid }) => {
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault();
+      if (submitting) return;
+      setSubmitting(true);
+      setSubmissionError("");
+      const submittedAnswers = { ...answers };
+      for (const field of formData.fields || [])
+        if (
+          field.type === "slider" &&
+          submittedAnswers[field._id] === undefined
+        )
+          submittedAnswers[field._id] = field.config?.min ?? 0;
       try {
-        await fetch(`${API_URL}/api/feedback`, {
+        const response = await fetch(`${API_URL}/api/feedback`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -74,17 +86,23 @@ const UnifiedFeedback = memo(({ projectId, theme, firebaseUid }) => {
           },
           body: JSON.stringify({
             projectId,
-            formAnswers: answers,
+            formAnswers: submittedAnswers,
           }),
         });
+        if (!response.ok)
+          throw new Error("Could not send feedback. Please try again.");
         setIsOpen(false);
         setShowToast(true);
         localStorage.setItem(`unified-feedback-${projectId}`, "submitted");
       } catch (error) {
-        console.error("Failed to submit feedback:", error);
+        setSubmissionError(
+          error.message || "Could not send feedback. Please try again.",
+        );
+      } finally {
+        setSubmitting(false);
       }
     },
-    [answers, projectId, firebaseUid],
+    [answers, projectId, firebaseUid, formData, submitting],
   );
 
   useEffect(() => {
@@ -94,7 +112,9 @@ const UnifiedFeedback = memo(({ projectId, theme, firebaseUid }) => {
     }
   }, [projectId]);
 
-  const handleClose = useCallback(() => setIsOpen(false), []);
+  const handleClose = useCallback(() => {
+    if (!submitting) setIsOpen(false);
+  }, [submitting]);
 
   if (loading || error || !formData || !isVisible) return null;
 
@@ -137,6 +157,8 @@ const UnifiedFeedback = memo(({ projectId, theme, firebaseUid }) => {
             theme={widgetTheme}
             answers={answers}
             onSubmit={handleSubmit}
+            pending={submitting}
+            error={submissionError}
             onChange={handleInputChange}
           />
         )}

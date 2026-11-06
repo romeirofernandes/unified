@@ -36,6 +36,7 @@ export function render(name, url) {
 const result = await build({
   stdin: { contents: source, loader: "jsx", resolveDir: process.cwd() },
   bundle: true,
+  nodePaths: [path.resolve("node_modules")],
   loader: { ".css": "empty" },
   platform: "node",
   format: "cjs",

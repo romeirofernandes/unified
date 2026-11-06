@@ -1,4 +1,6 @@
-import { RangeSlider } from "@/components/motion/range-slider";
+import { RangeField } from "../../../../shared/controls/range-field";
+import { DateInput } from "../../../../shared/controls/date-input";
+import { answerPlaceholder } from "../../../../shared/form-fields.mjs";
 import { RadioGroup, RadioGroupItem } from "@/components/motion/radio";
 import { typeClass } from "@/lib/type-scale";
 
@@ -16,7 +18,7 @@ export default function PreviewField({ field }) {
           aria-label={field.label}
           type={field.type}
           className={inputClass}
-          placeholder={field.label}
+          placeholder={answerPlaceholder(field.type)}
         />
       )}
       {field.type === "textarea" && (
@@ -24,7 +26,7 @@ export default function PreviewField({ field }) {
           aria-label={field.label}
           className={inputClass}
           rows={3}
-          placeholder={field.label}
+          placeholder={answerPlaceholder(field.type)}
         />
       )}
       {field.type === "mcq" && (
@@ -38,20 +40,16 @@ export default function PreviewField({ field }) {
           ))}
         </RadioGroup>
       )}
+      {field.type === "date" && (
+        <DateInput label={field.label} required={field.required} />
+      )}
       {field.type === "slider" && (
-        <>
-          <RangeSlider
-            aria-label={field.label}
-            min={field.config?.min ?? 0}
-            max={field.config?.max ?? 100}
-            step={field.config?.step ?? 1}
-            className="w-full [&>div>div]:bg-primary/15 [&>div:last-child]:bg-primary"
-          />
-          <div className={`${typeClass("caption")} flex justify-between`}>
-            <span>{field.config?.min ?? 0}</span>
-            <span>{field.config?.max ?? 100}</span>
-          </div>
-        </>
+        <RangeField
+          min={field.config?.min ?? 0}
+          max={field.config?.max ?? 100}
+          step={field.config?.step ?? 1}
+          label={field.label}
+        />
       )}
     </fieldset>
   );

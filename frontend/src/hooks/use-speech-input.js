@@ -56,14 +56,19 @@ export function useSpeechInput(active = true, uid) {
         if (event.data.size) chunks.push(event.data);
       };
       recorder.onerror = () => {
+        current.failed = true;
         setError("Recording failed. Please try again.");
-        recorder.stop();
+        if (recorder.state !== "inactive") recorder.stop();
       };
       recorder.onstop = async () => {
         clearInterval(current.timer);
         stream.getTracks().forEach((track) => track.stop());
         if (id !== revision.current) return;
         setListening(false);
+        if (current.failed) {
+          session.current = null;
+          return;
+        }
         setTranscribing(true);
         try {
           const audio = new Blob(chunks, {

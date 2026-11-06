@@ -1,3 +1,6 @@
+import { RangeField } from "../../../shared/controls/range-field";
+import { DateInput } from "../../../shared/controls/date-input";
+import { answerPlaceholder } from "../../../shared/form-fields.mjs";
 import React, { memo } from "react";
 
 const Field = memo(({ field, value, onChange }) => {
@@ -12,7 +15,7 @@ const Field = memo(({ field, value, onChange }) => {
           id={`uf-field-${field._id}`}
           type={field.type}
           className={baseInputClass}
-          placeholder={field.label}
+          placeholder={answerPlaceholder(field.type)}
           value={value || ""}
           onChange={(e) => onChange(field._id, e.target.value)}
           required={field.required}
@@ -23,7 +26,7 @@ const Field = memo(({ field, value, onChange }) => {
         <textarea
           id={`uf-field-${field._id}`}
           className={`${baseInputClass} h-24 resize-none`}
-          placeholder={field.label}
+          placeholder={answerPlaceholder(field.type)}
           value={value || ""}
           onChange={(e) => onChange(field._id, e.target.value)}
           required={field.required}
@@ -52,25 +55,26 @@ const Field = memo(({ field, value, onChange }) => {
           ))}
         </div>
       );
+    case "date":
+      return (
+        <DateInput
+          id={`uf-field-${field._id}`}
+          label={field.label}
+          required={field.required}
+          value={value ?? ""}
+          onValueChange={(next) => onChange(field._id, next)}
+        />
+      );
     case "slider":
       return (
-        <div className="space-y-2">
-          <input
-            id={`uf-field-${field._id}`}
-            type="range"
-            min={field.config?.min ?? 0}
-            max={field.config?.max ?? 100}
-            step={field.config?.step ?? 1}
-            value={value ?? field.config?.min ?? 0}
-            onChange={(e) => onChange(field._id, Number(e.target.value))}
-            required={field.required}
-            className="w-full accent-[var(--uf-accent)]"
-          />
-          <div className="flex justify-between text-sm opacity-70">
-            <span>{field.config?.min ?? 0}</span>
-            <span>{field.config?.max ?? 100}</span>
-          </div>
-        </div>
+        <RangeField
+          min={field.config?.min ?? 0}
+          max={field.config?.max ?? 100}
+          step={field.config?.step ?? 1}
+          value={value}
+          onValueChange={(next) => onChange(field._id, next)}
+          label={field.label}
+        />
       );
     default:
       return null;

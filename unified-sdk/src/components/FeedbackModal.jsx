@@ -2,11 +2,22 @@ import { formThemeStyle } from "../../../shared/form-theme.mjs";
 import React, { memo } from "react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import Field from "./Field";
 
 const FeedbackModal = memo(
-  ({ isOpen, onClose, formData, theme, answers, onSubmit, onChange }) => {
+  ({
+    isOpen,
+    onClose,
+    formData,
+    theme,
+    answers,
+    onSubmit,
+    onChange,
+    pending = false,
+    error,
+  }) => {
+    const [fieldError, setFieldError] = useState("");
     const [currentStep, setCurrentStep] = useState(0);
 
     if (!isOpen) return null;
@@ -22,12 +33,24 @@ const FeedbackModal = memo(
 
     const handlePrevious = () => {
       if (currentStep > 0) {
+        setFieldError("");
         setCurrentStep((prev) => prev - 1);
       }
     };
 
     const handleFormSubmit = (e) => {
       e.preventDefault();
+      if (pending) return;
+      if (
+        currentField?.type === "date" &&
+        currentField.required &&
+        !answers[currentField._id]
+      ) {
+        setFieldError("Choose a date to continue.");
+        document.getElementById(`uf-field-${currentField._id}`)?.focus();
+        return;
+      }
+      setFieldError("");
       if (currentStep === totalSteps - 1) {
         onSubmit(e);
       } else {
@@ -101,23 +124,42 @@ const FeedbackModal = memo(
                 field={currentField}
                 theme={theme}
                 value={answers[currentField?._id]}
-                onChange={onChange}
+                onChange={(id, value) => {
+                  setFieldError("");
+                  onChange(id, value);
+                }}
               />
             </motion.div>
 
+            {error && (
+              <p role="alert" className="text-sm text-red-500">
+                {error}
+              </p>
+            )}
+            {fieldError && (
+              <p role="alert" className="text-sm text-red-500">
+                {fieldError}
+              </p>
+            )}
             <div className="flex justify-between items-center pt-6">
               <button
                 type="button"
                 onClick={handlePrevious}
+                disabled={pending}
                 className={`h-10 rounded-md px-4 text-[var(--uf-muted)] outline-none hover:bg-[var(--uf-surface)] focus-visible:ring-2 focus-visible:ring-[var(--uf-accent)] ${currentStep === 0 ? "invisible" : ""}`}
               >
                 Previous
               </button>
               <button
                 type="submit"
+                disabled={pending}
                 className="h-10 rounded-md border border-[var(--uf-accent)] bg-[var(--uf-accent)] px-6 text-[var(--uf-accentText)] shadow-sm outline-none hover:brightness-110 focus-visible:ring-2 focus-visible:ring-[var(--uf-accent)]"
               >
-                {currentStep === totalSteps - 1 ? "Submit" : "Next"}
+                {pending
+                  ? "Sending…"
+                  : currentStep === totalSteps - 1
+                    ? "Submit"
+                    : "Next"}
               </button>
             </div>
           </form>
