@@ -2,6 +2,19 @@ const express = require("express");
 const router = express.Router();
 const Project = require("../models/Project");
 const Feedback = require("../models/Feedback");
+const { generateForm } = require("../services/form-generation");
+const generationInFlight = new Set();
+
+router.post("/generate-form", async (req, res) => {
+  const transcript = req.body?.transcript;
+  if (typeof transcript !== "string" || !transcript.trim() || transcript.length > 12000) return res.status(400).json({ message: "Describe the questions you need in 12,000 characters or fewer." });
+  const owner = String(req.user.id);
+  if (generationInFlight.has(owner)) return res.status(409).json({ message: "A form is already being generated. Please wait." });
+  generationInFlight.add(owner);
+  try { res.json(await generateForm(transcript.trim())); }
+  catch (error) { res.status(error.status || 502).json({ message: error.status ? error.message : "Could not create the draft. Please try again." }); }
+  finally { generationInFlight.delete(owner); }
+});
 
 // Create project
 router.post("/", async (req, res) => {

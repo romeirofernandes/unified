@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,8 @@ import {
   serializeFields,
 } from "@/lib/project-fields";
 
+const VoiceFormBuilder = lazy(() => import("@/components/projects/VoiceFormBuilder"));
+
 export default function ProjectModal({
   isOpen,
   onClose,
@@ -37,6 +39,7 @@ export default function ProjectModal({
           ...createField(field.type),
           ...field,
           id: field._id || crypto.randomUUID(),
+          config: { min: 0, max: 100, step: 1, ...field.config },
           options: (field.options || []).map((option) => ({
             ...option,
             id: option._id || crypto.randomUUID(),
@@ -44,18 +47,21 @@ export default function ProjectModal({
         }))
       : [createField("email")],
   );
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const [expanded, setExpanded] = useState(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (!name.trim()) { setError("Add a project name."); setStep(1); return; }
     if (step === 1) {
       setStep(2);
       return;
     }
     const validation = validateFields(fields);
     if (validation) {
+      setExpanded(fields.find((field) => validateFields([field]))?.id || null);
       setError(validation);
       return;
     }
@@ -89,10 +95,19 @@ export default function ProjectModal({
           <DialogDescription>{step === 1 ? "Set up your project, then choose what to ask." : "Keep the form focused. Email is included by default."}</DialogDescription>
           <ol className="flex gap-5 pt-3 text-xs" aria-label="Project setup steps">{["Project details", "Questions"].map((label, index) => <li key={label} aria-current={step === index + 1 ? "step" : undefined} className={step === index + 1 ? "font-medium text-foreground" : "text-muted-foreground"}><span className="me-2 font-mono">0{index + 1}</span>{label}</li>)}</ol>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+        <form noValidate onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 sm:p-6">
             <div className="grid min-w-0 items-start gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
               <fieldset disabled={pending} className="min-w-0 space-y-5">
+                {voiceOpen ? <Suspense fallback={<p className="text-sm text-muted-foreground">Opening voice input…</p>}><VoiceFormBuilder active={isOpen} onApply={(draft) => {
+                  if (fields.length + draft.fields.length > 50) { setError("A form can contain up to 50 questions."); return; }
+                  const added = draft.fields.map((field) => ({ ...createField(field.type), ...field, options: (field.options || []).map((option) => ({ ...option, id: crypto.randomUUID() })) }));
+                  setFields((previous) => [...previous, ...added]);
+                  if (!name.trim()) setName(draft.name);
+                  if (!description.trim()) setDescription(draft.description);
+                  setExpanded(added[0]?.id || null);
+                  setStep(2);
+                }} /></Suspense> : <Button variant="secondary" className="w-full" onClick={() => setVoiceOpen(true)}>Create questions with voice or text</Button>}
                 {step === 1 ? <>
                   <FormField label="Project name" value={name} onChange={(event) => setName(event.target.value)} required maxLength={120} autoFocus placeholder="My product" />
                   <FormField as="textarea" label="Description" value={description} onChange={(event) => setDescription(event.target.value)} rows={3} maxLength={1000} placeholder="What are you collecting feedback on?" />
