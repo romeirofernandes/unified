@@ -128,22 +128,18 @@ export default function ProjectModal({
               setError("");
             }
           }}
-          variant="segment"
+          variant="underline"
           className="flex min-h-0 flex-1 flex-col"
         >
-          <DialogHeader className="shrink-0 border-b border-border px-5 py-5 sm:px-6">
+          <DialogHeader className="shrink-0 px-5 pb-0 pt-5 sm:px-6">
             <DialogTitle className="pe-10">
               {project ? "Edit project" : "Create a project"}
             </DialogTitle>
             <DialogDescription className="pe-10">
-              {step === 1
-                ? "Set up your project, then choose what to ask."
-                : step === 2
-                  ? "Keep the form focused. Email is included by default."
-                  : "Choose a preset or make the form your own."}
+              Set up your project, questions, and appearance.
             </DialogDescription>
             <TabsList
-              className="mt-3 w-full rounded-md"
+              className="mt-4 w-full gap-0 border-b border-border"
               aria-label="Project editor"
             >
               {["Project details", "Questions", "Appearance"].map(
@@ -152,8 +148,8 @@ export default function ProjectModal({
                     key={label}
                     value={String(index + 1)}
                     disabled={pending}
-                    indicatorClassName="bg-fluid-accent/15"
-                    className="min-h-10 flex-1 rounded-md px-3 text-xs sm:text-sm [&_[data-tabs-label]]:text-foreground"
+                    indicatorClassName="h-0.5 bg-fluid-accent"
+                    className="min-h-11 min-w-0 flex-1 justify-center px-2 pb-3 pt-2 text-xs outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:text-sm"
                   >
                     {label}
                   </TabsTrigger>
@@ -169,51 +165,6 @@ export default function ProjectModal({
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 sm:p-6">
               <div className="grid min-w-0 items-start gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
                 <fieldset disabled={pending} className="min-w-0 space-y-5">
-                  <div hidden={step === 3}>
-                    {voiceOpen ? (
-                      <Suspense
-                        fallback={
-                          <p className="text-sm text-muted-foreground">
-                            Opening voice input…
-                          </p>
-                        }
-                      >
-                        <VoiceFormBuilder
-                          active={isOpen && !pending && step !== 3}
-                          onApply={(draft) => {
-                            if (fields.length + draft.fields.length > 50) {
-                              setError(
-                                "A form can contain up to 50 questions.",
-                              );
-                              return;
-                            }
-                            const added = draft.fields.map((field) => ({
-                              ...createField(field.type),
-                              ...field,
-                              options: (field.options || []).map((option) => ({
-                                ...option,
-                                id: crypto.randomUUID(),
-                              })),
-                            }));
-                            setFields((previous) => [...previous, ...added]);
-                            if (!name.trim()) setName(draft.name);
-                            if (!description.trim())
-                              setDescription(draft.description);
-                            setExpanded(added[0]?.id || null);
-                            setStep(2);
-                          }}
-                        />
-                      </Suspense>
-                    ) : (
-                      <Button
-                        variant="secondary"
-                        className="w-full"
-                        onClick={() => setVoiceOpen(true)}
-                      >
-                        Create questions with voice or text
-                      </Button>
-                    )}
-                  </div>
                   <TabsContent value="1" className="mt-0 space-y-5">
                     <FormField
                       label="Project name"
@@ -256,6 +207,54 @@ export default function ProjectModal({
                     </fieldset>
                   </TabsContent>
                   <TabsContent value="2" className="mt-0 space-y-4">
+                    <div className="mb-4">
+                      {voiceOpen ? (
+                        <Suspense
+                          fallback={
+                            <p className="text-sm text-muted-foreground">
+                              Opening voice input…
+                            </p>
+                          }
+                        >
+                          <VoiceFormBuilder
+                            active={isOpen && !pending && step === 2}
+                            onApply={(draft) => {
+                              if (fields.length + draft.fields.length > 50) {
+                                setError(
+                                  "A form can contain up to 50 questions.",
+                                );
+                                return;
+                              }
+                              const added = draft.fields.map((field) => ({
+                                ...createField(field.type),
+                                ...field,
+                                options: (field.options || []).map(
+                                  (option) => ({
+                                    ...option,
+                                    id: crypto.randomUUID(),
+                                  }),
+                                ),
+                              }));
+                              setFields((previous) => [...previous, ...added]);
+                              if (!name.trim()) setName(draft.name);
+                              if (!description.trim())
+                                setDescription(draft.description);
+                              setExpanded(added[0]?.id || null);
+                              setStep(2);
+                            }}
+                          />
+                        </Suspense>
+                      ) : (
+                        <Button
+                          variant="secondary"
+                          className="w-full"
+                          onClick={() => setVoiceOpen(true)}
+                        >
+                          Create questions with voice or text
+                        </Button>
+                      )}
+                    </div>
+
                     <div className="space-y-3">
                       {fields.map((field, index) => (
                         <FieldEditor

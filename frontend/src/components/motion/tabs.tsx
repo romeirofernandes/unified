@@ -645,25 +645,15 @@ export function TabsContent({ value, children, className }: { value: string; chi
     role: "tabpanel",
     "aria-labelledby": tabId(value),
   } as const;
-  // Inactive panels stay mounted but hidden, so their content (e.g. source
-  // code) is present in the server-rendered HTML for crawlers and assistive
-  // tech, instead of being dropped from the DOM.
-  if (!active) {
-    return (
-      <div {...a11y} hidden className={className}>
-        {children}
-      </div>
-    );
-  }
+  // Keep one element type so switching tabs preserves child input state.
   return (
     <motion.div
       {...a11y}
-      // Reachable with Tab so a panel without controls can still be read.
-      tabIndex={0}
-      key={value}
-      initial={{ opacity: 0, y: reduce ? 0 : 4 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.18, ease: EASE_OUT }}
+      hidden={!active}
+      tabIndex={active ? 0 : undefined}
+      initial={false}
+      animate={{ opacity: active ? 1 : 0, y: reduce || active ? 0 : 4 }}
+      transition={{ duration: reduce ? 0 : 0.18, ease: EASE_OUT }}
       className={cn("mt-4 outline-none focus-visible:ring-2 focus-visible:ring-ring/40 rounded-md", className)}
     >
       {children}
