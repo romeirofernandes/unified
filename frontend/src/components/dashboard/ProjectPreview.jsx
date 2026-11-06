@@ -38,7 +38,7 @@ export default function ProjectPreview({ isOpen, onClose, project }) {
       }}
     >
       <DialogContent
-        className="bg-background text-foreground max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain"
+        className="max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-md border border-border bg-background text-foreground sm:max-w-[1060px]"
         size="xl"
       >
         <FormFont appearance={project.appearance} />
