@@ -43,6 +43,7 @@ const appearanceSchema = new mongoose.Schema(
       enum: presets.map((preset) => preset.id),
       default: "unified",
     },
+    font: { type: String, enum: require("../../shared/form-fonts.json") },
     colors: { light: paletteSchema, dark: paletteSchema },
   },
   { _id: false },

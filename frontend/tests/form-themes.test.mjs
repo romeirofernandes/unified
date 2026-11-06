@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   contrastRatio,
+  formThemeStyle,
+  previewThemeStyle,
   formPresets,
   resolveFormTheme,
 } from "../../shared/form-theme.mjs";
@@ -26,4 +28,13 @@ test("custom colors are isolated by mode and invalid colors fall back safely", (
   );
   assert.equal(light.accentText, "#171717");
   assert.notEqual(resolveFormTheme(appearance, "dark").accent, "#ffffff");
+});
+
+test("saved fonts apply consistently to the SDK and previews with a safe fallback", () => {
+  for (const font of ["Inter", "DM Sans", "Manrope", "Lora", "Space Grotesk"]) {
+    const appearance = { preset: "unified", font };
+    assert.equal(formThemeStyle(appearance, "dark").fontFamily, `"${font}", sans-serif`);
+    assert.equal(previewThemeStyle(appearance, "light").fontFamily, formThemeStyle(appearance, "light").fontFamily);
+  }
+  assert.equal(formThemeStyle({ font: "unknown" }, "light").fontFamily, '"Inter", sans-serif');
 });

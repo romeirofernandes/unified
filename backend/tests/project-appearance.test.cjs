@@ -43,3 +43,24 @@ test("project documents retain both palettes and reject invalid stored colors", 
   project.appearance.colors.light.accent = "invalid";
   assert.ok(project.validateSync());
 });
+
+test("form fonts are validated and saved with the project", () => {
+  const Project = require("../models/Project");
+  const appearance = validateAppearance({
+    preset: "unified",
+    font: "DM Sans",
+    colors: {},
+  });
+  const project = new Project({
+    name: "Font test",
+    userId: "507f1f77bcf86cd799439011",
+    appearance,
+  });
+  assert.equal(project.validateSync(), undefined);
+  assert.equal(project.toObject().appearance.font, "DM Sans");
+  assert.throws(() =>
+    validateAppearance({ preset: "unified", font: "url(unsafe)" }),
+  );
+  project.appearance.font = "unknown";
+  assert.ok(project.validateSync());
+});

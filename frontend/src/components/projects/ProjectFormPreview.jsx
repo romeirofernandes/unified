@@ -1,3 +1,4 @@
+import FormFont from "../../../../shared/FormFont";
 import PreviewModeToggle from "./PreviewModeToggle";
 import { previewThemeStyle } from "../../../../shared/form-theme.mjs";
 import PreviewField from "./PreviewField";
@@ -12,6 +13,7 @@ export default function ProjectFormPreview({
 }) {
   return (
     <aside className="space-y-3">
+      <FormFont appearance={appearance} />
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium">Live preview</h3>
         {onThemeChange && (
@@ -24,7 +26,7 @@ export default function ProjectFormPreview({
       </div>
       <div
         style={previewThemeStyle(appearance, theme)}
-        className="space-y-5 rounded-md border border-[var(--uf-border)] bg-[var(--uf-background)] p-5 text-[var(--uf-text)]"
+        className="space-y-5 rounded-md border border-[var(--uf-border)] bg-[var(--uf-background)] [&_h3]:font-[inherit] p-5 text-[var(--uf-text)]"
       >
         <h3 className="text-xl">{name || "Your feedback form"}</h3>
         {fields.map((field) => (

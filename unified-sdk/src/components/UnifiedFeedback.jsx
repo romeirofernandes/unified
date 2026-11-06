@@ -1,3 +1,4 @@
+import FormFont from "../../../shared/FormFont";
 import { formThemeStyle } from "../../../shared/form-theme.mjs";
 import React, { useState, useEffect, useCallback, memo } from "react";
 import FeedbackShell from "./FeedbackShell";
@@ -123,6 +124,7 @@ const UnifiedFeedback = memo(({ projectId, theme, firebaseUid }) => {
       success={showToast}
       style={formThemeStyle(formData.appearance, widgetTheme)}
     >
+      <FormFont appearance={formData.appearance} />
       <FeedbackModal
         isOpen={isOpen}
         onClose={handleClose}

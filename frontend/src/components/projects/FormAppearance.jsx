@@ -1,3 +1,10 @@
+import fonts from "../../../../shared/form-fonts.json";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +39,24 @@ export default function FormAppearance({ appearance, onChange, mode }) {
         Each preset has light and dark colors. Switch modes beside the live
         preview. You are editing {mode} mode.
       </p>
+      <div className="space-y-2">
+        <label id="form-font-label" className="text-sm font-medium">
+          Font
+        </label>
+        <Select
+          value={appearance.font || "Inter"}
+          onValueChange={(font) => onChange({ ...appearance, font })}
+        >
+          <SelectTrigger aria-labelledby="form-font-label" className="w-full" />
+          <SelectContent>
+            {fonts.map((font) => (
+              <SelectItem key={font} value={font}>
+                {font}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       <fieldset className="space-y-3">
         <legend className="text-sm font-medium">Theme preset</legend>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -41,7 +66,9 @@ export default function FormAppearance({ appearance, onChange, mode }) {
                 type="radio"
                 name="form-preset"
                 checked={appearance.preset === preset.id}
-                onChange={() => onChange({ preset: preset.id, colors: {} })}
+                onChange={() =>
+                  onChange({ ...appearance, preset: preset.id, colors: {} })
+                }
                 className="peer sr-only"
               />
               <span className="block rounded-md border border-border p-3 peer-checked:border-fluid-accent peer-checked:ring-1 peer-checked:ring-fluid-accent peer-focus-visible:ring-2 peer-focus-visible:ring-ring">

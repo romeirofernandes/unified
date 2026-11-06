@@ -10,6 +10,11 @@ function validateAppearance(value) {
     throw error;
   };
   if (!value || !presets.some((preset) => preset.id === value.preset)) fail();
+  if (
+    value.font !== undefined &&
+    !require("../../shared/form-fonts.json").includes(value.font)
+  )
+    fail();
   const colors = {};
   for (const mode of ["light", "dark"]) {
     if (value.colors?.[mode] !== undefined) {
@@ -30,6 +35,10 @@ function validateAppearance(value) {
       }
     }
   }
-  return { preset: value.preset, colors };
+  return {
+    preset: value.preset,
+    colors,
+    ...(value.font ? { font: value.font } : {}),
+  };
 }
 module.exports = { validateAppearance };

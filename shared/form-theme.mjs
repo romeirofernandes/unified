@@ -1,3 +1,4 @@
+import fonts from "./form-fonts.json" with { type: "json" };
 import presets from "./form-themes.json" with { type: "json" };
 export const formPresets = presets;
 export const colorTokens = [
@@ -43,9 +44,14 @@ export function resolveFormTheme(appearance, mode = "light") {
 }
 export function formThemeStyle(appearance, mode) {
   const palette = resolveFormTheme(appearance, mode);
-  return Object.fromEntries(
-    Object.entries(palette).map(([key, value]) => [`--uf-${key}`, value]),
-  );
+  const font = fonts.includes(appearance?.font) ? appearance.font : "Inter";
+  return {
+    ...Object.fromEntries(
+      Object.entries(palette).map(([key, value]) => [`--uf-${key}`, value]),
+    ),
+    fontFamily: `"${font}", sans-serif`,
+    "--uf-font": `"${font}", sans-serif`,
+  };
 }
 export function previewThemeStyle(appearance, mode) {
   const palette = resolveFormTheme(appearance, mode);

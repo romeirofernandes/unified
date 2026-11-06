@@ -62,7 +62,7 @@ const FeedbackModal = memo(
     return (
       <div
         style={formThemeStyle(formData?.appearance, theme)}
-        className="p-5 text-[var(--uf-text)]"
+        className="p-5 [&_h2]:font-[inherit] text-[var(--uf-text)]"
       >
         <div className="mb-3 flex justify-end">
           <button
