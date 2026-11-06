@@ -634,7 +634,6 @@ export function TabsTrigger({
 
 export function TabsContent({ value, children, className }: { value: string; children: ReactNode; className?: string }) {
   const { value: current, registerPanel, unregisterPanel, tabId, panelId } = useTabs();
-  const reduce = useReducedMotion();
   const active = current === value;
   useLayoutEffect(() => {
     registerPanel(value);
@@ -645,18 +644,7 @@ export function TabsContent({ value, children, className }: { value: string; chi
     role: "tabpanel",
     "aria-labelledby": tabId(value),
   } as const;
-  // Keep one element type so switching tabs preserves child input state.
-  return (
-    <motion.div
-      {...a11y}
-      hidden={!active}
-      tabIndex={active ? 0 : undefined}
-      initial={false}
-      animate={{ opacity: active ? 1 : 0, y: reduce || active ? 0 : 4 }}
-      transition={{ duration: reduce ? 0 : 0.18, ease: EASE_OUT }}
-      className={cn("mt-4 outline-none focus-visible:ring-2 focus-visible:ring-ring/40 rounded-md", className)}
-    >
-      {children}
-    </motion.div>
-  );
+  // Panels switch immediately; the containing editor animates its measured height.
+  // A stable element keeps input state intact across tab changes.
+  return <div {...a11y} hidden={!active} tabIndex={active ? 0 : undefined} className={cn("mt-4 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/40", className)}>{children}</div>;
 }

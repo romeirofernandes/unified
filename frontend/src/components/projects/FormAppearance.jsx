@@ -22,40 +22,16 @@ const tokenLabels = {
   muted: "Secondary text",
   border: "Borders",
 };
-export default function FormAppearance({
-  appearance,
-  onChange,
-  mode,
-  onModeChange,
-}) {
+export default function FormAppearance({ appearance, onChange, mode }) {
   const [customize, setCustomize] = useState(false);
   const [token, setToken] = useState("accent");
   const palette = resolveFormTheme(appearance, mode);
   return (
     <div className="space-y-6">
-      <fieldset className="space-y-3">
-        <legend className="text-sm font-medium">Default mode</legend>
-        <div className="grid grid-cols-2 gap-3">
-          {["light", "dark"].map((value) => (
-            <label key={value} className="cursor-pointer">
-              <input
-                type="radio"
-                name="appearance-mode"
-                checked={mode === value}
-                onChange={() => onModeChange(value)}
-                className="peer sr-only"
-              />
-              <span className="flex h-10 items-center justify-center rounded-md border border-border text-sm capitalize peer-checked:border-fluid-accent peer-checked:bg-fluid-accent/10 peer-focus-visible:ring-2 peer-focus-visible:ring-ring">
-                {value}
-              </span>
-            </label>
-          ))}
-        </div>
-        <p className="text-xs leading-5 text-muted-foreground">
-          Each preset has both modes. Custom colors are saved separately for
-          each.
-        </p>
-      </fieldset>
+      <p className="text-xs leading-5 text-muted-foreground">
+        Each preset has light and dark colors. Switch modes beside the live
+        preview. You are editing {mode} mode.
+      </p>
       <fieldset className="space-y-3">
         <legend className="text-sm font-medium">Theme preset</legend>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

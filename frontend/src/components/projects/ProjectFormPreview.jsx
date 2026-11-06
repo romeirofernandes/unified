@@ -1,3 +1,4 @@
+import PreviewModeToggle from "./PreviewModeToggle";
 import { previewThemeStyle } from "../../../../shared/form-theme.mjs";
 import PreviewField from "./PreviewField";
 
@@ -6,12 +7,20 @@ export default function ProjectFormPreview({
   fields,
   theme = "light",
   appearance,
+  onThemeChange,
+  disabled,
 }) {
   return (
     <aside className="space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium">Live preview</h3>
-        <span className="text-xs text-muted-foreground">Not submitted</span>
+        {onThemeChange && (
+          <PreviewModeToggle
+            value={theme}
+            onChange={onThemeChange}
+            disabled={disabled}
+          />
+        )}
       </div>
       <div
         style={previewThemeStyle(appearance, theme)}
@@ -33,6 +42,9 @@ export default function ProjectFormPreview({
           Submit feedback
         </button>
       </div>
+      <p className="text-xs text-muted-foreground">
+        Preview only. No feedback is sent.
+      </p>
     </aside>
   );
 }

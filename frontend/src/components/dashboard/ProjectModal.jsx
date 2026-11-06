@@ -1,17 +1,17 @@
+import AnimatedEditorBody from "@/components/projects/AnimatedEditorBody";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/motion/tabs";
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useId, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ErrorMessage } from "@/components/shared/PageState";
@@ -40,6 +40,8 @@ export default function ProjectModal({
   project,
   onPreview,
 }) {
+  const formId = useId();
+  const headerRef = useRef(null);
   const [step, setStep] = useState(1);
   const [name, setName] = useState(project?.name || "");
   const [description, setDescription] = useState(project?.description || "");
@@ -73,21 +75,11 @@ export default function ProjectModal({
       setStep(1);
       return;
     }
-    if (step === 1) {
-      setError("");
-      setStep(2);
-      return;
-    }
     const validation = validateFields(fields);
     if (validation) {
       setStep(2);
       setExpanded(fields.find((field) => validateFields([field]))?.id || null);
       setError(validation);
-      return;
-    }
-    if (step === 2) {
-      setError("");
-      setStep(3);
       return;
     }
     setPending(true);
@@ -131,38 +123,64 @@ export default function ProjectModal({
           variant="underline"
           className="flex min-h-0 flex-1 flex-col"
         >
-          <DialogHeader className="shrink-0 px-5 pb-0 pt-5 sm:px-6">
-            <DialogTitle className="pe-10">
-              {project ? "Edit project" : "Create a project"}
-            </DialogTitle>
-            <DialogDescription className="pe-10">
-              Set up your project, questions, and appearance.
-            </DialogDescription>
-            <TabsList
-              className="mt-4 w-full gap-0 border-b border-border"
-              aria-label="Project editor"
-            >
-              {["Project details", "Questions", "Appearance"].map(
-                (label, index) => (
-                  <TabsTrigger
-                    key={label}
-                    value={String(index + 1)}
-                    disabled={pending}
-                    indicatorClassName="h-0.5 bg-fluid-accent"
-                    className="min-h-11 min-w-0 flex-1 justify-center px-2 pb-3 pt-2 text-xs outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:text-sm"
+          <div ref={headerRef} className="shrink-0">
+            <DialogHeader className="mb-0 px-5 pb-0 pt-5 sm:px-6">
+              <div className="flex flex-col gap-4 pe-10 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0 space-y-1.5">
+                  <DialogTitle>
+                    {project ? "Edit project" : "Create a project"}
+                  </DialogTitle>
+                  <DialogDescription>
+                    Set up your project, questions, and appearance.
+                  </DialogDescription>
+                </div>
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  {onPreview && (
+                    <Button
+                      variant="secondary"
+                      onClick={onPreview}
+                      disabled={pending}
+                    >
+                      Preview & code
+                    </Button>
+                  )}
+                  <Button
+                    type="submit"
+                    form={formId}
+                    disabled={!name.trim() || pending}
+                    loading={pending}
                   >
-                    {label}
-                  </TabsTrigger>
-                ),
-              )}
-            </TabsList>
-          </DialogHeader>
+                    {project ? "Save changes" : "Create project"}
+                  </Button>
+                </div>
+              </div>
+              <TabsList
+                className="mt-4 w-full gap-0 border-b border-border"
+                aria-label="Project editor"
+              >
+                {["Project details", "Questions", "Appearance"].map(
+                  (label, index) => (
+                    <TabsTrigger
+                      key={label}
+                      value={String(index + 1)}
+                      disabled={pending}
+                      indicatorClassName="h-0.5 bg-fluid-accent"
+                      className="min-h-11 min-w-0 flex-1 justify-center px-2 pb-3 pt-2 text-xs outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:text-sm"
+                    >
+                      {label}
+                    </TabsTrigger>
+                  ),
+                )}
+              </TabsList>
+            </DialogHeader>
+          </div>
           <form
+            id={formId}
             noValidate
             onSubmit={handleSubmit}
             className="flex min-h-0 flex-1 flex-col"
           >
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 sm:p-6">
+            <AnimatedEditorBody headerRef={headerRef}>
               <div className="grid min-w-0 items-start gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
                 <fieldset disabled={pending} className="min-w-0 space-y-5">
                   <TabsContent value="1" className="mt-0 space-y-5">
@@ -184,27 +202,6 @@ export default function ProjectModal({
                       maxLength={1000}
                       placeholder="What are you collecting feedback on?"
                     />
-                    <fieldset className="space-y-3">
-                      <legend className="text-sm text-muted-foreground">
-                        Widget mode
-                      </legend>
-                      <div className="grid grid-cols-2 gap-3">
-                        {["light", "dark"].map((mode) => (
-                          <label key={mode} className="cursor-pointer">
-                            <input
-                              type="radio"
-                              name="widget-mode"
-                              className="peer sr-only"
-                              checked={theme === mode}
-                              onChange={() => setTheme(mode)}
-                            />
-                            <span className="flex h-10 items-center justify-center rounded-md border border-border text-sm capitalize peer-checked:border-fluid-accent peer-checked:bg-fluid-accent/10 peer-focus-visible:ring-2 peer-focus-visible:ring-ring">
-                              {mode}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </fieldset>
                   </TabsContent>
                   <TabsContent value="2" className="mt-0 space-y-4">
                     <div className="mb-4">
@@ -244,15 +241,7 @@ export default function ProjectModal({
                             }}
                           />
                         </Suspense>
-                      ) : (
-                        <Button
-                          variant="secondary"
-                          className="w-full"
-                          onClick={() => setVoiceOpen(true)}
-                        >
-                          Create questions with voice or text
-                        </Button>
-                      )}
+                      ) : null}
                     </div>
 
                     <div className="space-y-3">
@@ -282,23 +271,30 @@ export default function ProjectModal({
                         />
                       ))}
                     </div>
-                    <Button
-                      variant="secondary"
-                      className="w-full"
-                      disabled={fields.length >= 50}
-                      onClick={() => {
-                        const field = createField();
-                        setFields((previous) => [...previous, field]);
-                        setExpanded(field.id);
-                      }}
-                    >
-                      <HugeiconsIcon
-                        icon={Add01Icon}
-                        size={16}
-                        aria-hidden="true"
-                      />{" "}
-                      Add question
-                    </Button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        variant="secondary"
+                        disabled={fields.length >= 50}
+                        onClick={() => {
+                          const field = createField();
+                          setFields((previous) => [...previous, field]);
+                          setExpanded(field.id);
+                        }}
+                      >
+                        <HugeiconsIcon
+                          icon={Add01Icon}
+                          size={16}
+                          aria-hidden="true"
+                        />{" "}
+                        Add question
+                      </Button>
+                      <Button
+                        onClick={() => setVoiceOpen(true)}
+                        disabled={pending}
+                      >
+                        Create questions with voice or text
+                      </Button>
+                    </div>
                   </TabsContent>
                   <TabsContent value="3" className="mt-0">
                     {step === 3 && (
@@ -313,62 +309,24 @@ export default function ProjectModal({
                           appearance={appearance}
                           onChange={setAppearance}
                           mode={theme}
-                          onModeChange={setTheme}
                         />
                       </Suspense>
                     )}
                   </TabsContent>
                   <ErrorMessage>{error}</ErrorMessage>
                 </fieldset>
-                <div className="min-w-0 lg:sticky lg:top-0">
+                <div className="min-w-0 lg:sticky lg:top-0 lg:max-h-[var(--editor-height)] lg:overflow-y-auto lg:overscroll-contain">
                   <ProjectFormPreview
                     name={name}
                     fields={fields}
                     theme={theme}
                     appearance={appearance}
+                    onThemeChange={setTheme}
+                    disabled={pending}
                   />
                 </div>
               </div>
-            </div>
-            <DialogFooter className="mt-0 flex-wrap shrink-0 border-t border-border bg-background px-5 py-4 sm:px-6">
-              {onPreview && (
-                <Button
-                  variant="secondary"
-                  onClick={onPreview}
-                  disabled={pending}
-                >
-                  Preview & code
-                </Button>
-              )}
-              {step > 1 && (
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setStep((value) => value - 1);
-                    setError("");
-                  }}
-                  disabled={pending}
-                >
-                  Back
-                </Button>
-              )}
-              <Button variant="ghost" onClick={onClose} disabled={pending}>
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={!name.trim() || pending}
-                loading={pending}
-              >
-                {step === 1
-                  ? "Next: questions"
-                  : step === 2
-                    ? "Next: appearance"
-                    : project
-                      ? "Save changes"
-                      : "Create project"}
-              </Button>
-            </DialogFooter>
+            </AnimatedEditorBody>
           </form>
         </Tabs>
       </DialogContent>
