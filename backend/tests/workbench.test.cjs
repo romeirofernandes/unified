@@ -65,3 +65,16 @@ test("legacy Backlog issues migrate to To do and placement persists", async () =
   for (const position of ["42", null, 1e30]) assert.equal((await request(`${id}/${issueId}`, "PUT", { ...input, position })).status, 400);
   assert.equal((await request(id, "POST", { ...input, status: "backlog" })).status, 400);
 });
+
+test("older projects without a board or actionable summary return an empty board", async () => {
+  for (const feedbackSummary of [null, {}, { features: [] }, { features: null }]) {
+    const _id = new mongoose.Types.ObjectId();
+    await Project.collection.insertOne({ _id, userId, name: "Older project", fields: [{ type: "text", label: "Feedback" }], feedbackSummary });
+    const res = await request(String(_id));
+    assert.equal(res.status, 200, JSON.stringify(feedbackSummary));
+    assert.deepEqual(await res.json(), []);
+    const created = await request(String(_id), "POST", { title: "First issue", description: "", status: "todo" });
+    assert.equal(created.status, 201);
+    assert.equal((await created.json())[0].title, "First issue");
+  }
+});

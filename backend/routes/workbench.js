@@ -19,7 +19,7 @@ function fields(body) {
 
 router.get("/:projectId", async (req, res) => {
   try {
-    await Project.updateOne(owner(req), { $set: { "workbenchIssues.$[issue].status": "todo" } }, { arrayFilters: [{ "issue.status": "backlog" }] });
+    await Project.updateOne({ ...owner(req), workbenchIssues: { $elemMatch: { status: "backlog" } } }, { $set: { "workbenchIssues.$[issue].status": "todo" } }, { arrayFilters: [{ "issue.status": "backlog" }] });
     const project = await Project.findOne(owner(req)).select("+workbenchIssues");
     if (!project) return res.status(404).json({ message: "Project not found." });
     // Keep imported keys on deleted cards so summaries cannot resurrect them.
