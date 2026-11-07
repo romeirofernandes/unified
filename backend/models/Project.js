@@ -49,6 +49,21 @@ const appearanceSchema = new mongoose.Schema(
   { _id: false },
 );
 
+const digestChannelSchema = new mongoose.Schema({
+  enabled: { type: Boolean, default: false },
+  cadence: { type: String, enum: ["hourly", "daily"], default: "daily" },
+  since: Date,
+  nextRunAt: Date,
+  lastSentAt: Date,
+  lastCheckedAt: Date,
+  lastCount: Number,
+  error: String,
+  pendingUntil: Date,
+  lockToken: String,
+  lockUntil: Date,
+  testAfter: Date,
+}, { _id: false });
+
 const projectSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -67,6 +82,8 @@ const projectSchema = new mongoose.Schema({
   feedbackSummary: { type: mongoose.Schema.Types.Mixed, default: null },
   summaryLock: { type: String, select: false },
   summaryLockUntil: { type: Date, select: false },
+  slackWebhookEncrypted: { type: String, select: false },
+  notifications: { slack: { type: digestChannelSchema, default: () => ({}) }, email: { type: digestChannelSchema, default: () => ({}) } },
   submissionKeyEncrypted: { type: String, select: false },
   submissionKeyHash: { type: String, select: false },
   fields: { type: [fieldSchema], validate: { validator: (fields) => fields.length > 0, message: "Add at least one question before saving." } },
@@ -82,5 +99,7 @@ const projectSchema = new mongoose.Schema({
 });
 
 projectSchema.index({ userId: 1 });
+projectSchema.index({ "notifications.slack.enabled": 1, "notifications.slack.nextRunAt": 1 });
+projectSchema.index({ "notifications.email.enabled": 1, "notifications.email.nextRunAt": 1 });
 
 module.exports = mongoose.model("Project", projectSchema);

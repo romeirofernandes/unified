@@ -11,7 +11,7 @@ const authMiddleware = require("./middleware/auth");
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-connectDB();
+connectDB().then(() => require("./services/digest-worker").startDigestWorker());
 
 app.use(
   cors({
@@ -26,6 +26,7 @@ app.use(express.json());
 
 app.use("/api/submissions", require("./routes/submissions"));
 app.use("/api/auth", authRoutes);
+app.use("/api/integrations", authMiddleware, require("./routes/integrations"));
 app.use("/api/projects", authMiddleware, projectRoutes);
 app.use("/api/feedback", authMiddleware, feedbackRoutes);
 app.use("/api/payment", paymentRoutes);

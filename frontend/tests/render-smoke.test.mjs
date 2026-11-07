@@ -25,8 +25,9 @@ import Dashboard from "./src/pages/Dashboard";
 import Feedbacks from "./src/pages/Feedbacks";
 import Settings from "./src/pages/Settings";
 import Docs from "./src/pages/Docs";
+import Integrations from "./src/pages/Integrations";
 import NotFound from "./src/pages/NotFound";
-const pages = { Login, Signup, Dashboard, Feedbacks, Settings, Docs, NotFound };
+const pages = { Integrations, Login, Signup, Dashboard, Feedbacks, Settings, Docs, NotFound };
 export function render(name, url) {
   const Page = pages[name];
   return renderToString(<MemoryRouter initialEntries={[url]}><FluidRoot><Routes><Route path="/project/:projectId/feedbacks" element={<Page />} /><Route path="*" element={<Page />} /></Routes></FluidRoot></MemoryRouter>);
@@ -88,6 +89,7 @@ for (const [name, url, expected] of [
   ["Signup", "/signup", "Create account"],
   ["Dashboard", "/dashboard", "Sample project"],
   ["Feedbacks", "/project/project-1/feedbacks", "customer@example.com"],
+  ["Integrations", "/dashboard/integrations", "Slack"],
   ["Settings", "/dashboard/settings", "person@example.com"],
   ["Docs", "/docs", "Set up the SDK"],
   ["Docs", "/dashboard/docs", "Set up the SDK"],

@@ -5,6 +5,7 @@ import {
   DashboardSquare01Icon,
   Settings01Icon,
   File01Icon,
+  ConnectIcon,
   LogOutIcon,
 } from "@hugeicons/core-free-icons";
 import { useAuth } from "@/hooks/use-auth";
@@ -31,6 +32,7 @@ function SignOutGlyph({ size }) {
 
 const navigation = [
   { path: "/dashboard", label: "Projects", icon: DashboardSquare01Icon },
+  { path: "/dashboard/integrations", label: "Integrations", icon: ConnectIcon },
   { path: "/dashboard/docs", label: "Documentation", icon: File01Icon },
   { path: "/dashboard/settings", label: "Settings", icon: Settings01Icon },
 ];
