@@ -56,7 +56,7 @@ export default function ProjectApi({ project, uid }) {
     {!confirming && <ErrorMessage>{message}</ErrorMessage>}
     <AlertDialog.Root open={confirming} onOpenChange={(open) => { if (!pending) setConfirming(open); }}>
       <AlertDialog.Portal>
-        <AlertDialog.Backdrop className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm" />
+        <AlertDialog.Backdrop forceRender className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm" />
         <AlertDialog.Popup className="fixed left-1/2 top-1/2 z-[71] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 space-y-4 rounded-md border border-border bg-background p-6 text-foreground shadow-xl">
           <AlertDialog.Title className="text-xl">Revoke submission key?</AlertDialog.Title>
           <AlertDialog.Description className="text-sm leading-6 text-muted-foreground">Forms using this key will stop sending feedback. You can create a new key and update your integration afterward.</AlertDialog.Description>
