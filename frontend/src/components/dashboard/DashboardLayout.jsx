@@ -86,6 +86,7 @@ export default function DashboardLayout({ children }) {
   const { pathname } = useLocation();
   const [error, setError] = useState("");
   const [signingOut, setSigningOut] = useState(false);
+  const bounded = pathname.startsWith("/dashboard/docs") || pathname.startsWith("/dashboard/workbench");
   const title =
     navigation.find(
       ({ path }) => path !== "/dashboard" && pathname.startsWith(path),
@@ -106,7 +107,7 @@ export default function DashboardLayout({ children }) {
   return (
     <SidebarProvider
       width="248px"
-      className={`${pathname.startsWith("/dashboard/docs") ? "h-dvh overflow-hidden" : "min-h-svh"} bg-background text-foreground`}
+      className={`${bounded ? "h-dvh overflow-hidden" : "min-h-svh"} bg-background text-foreground`}
     >
       <a
         href="#workspace-content"
@@ -189,7 +190,7 @@ export default function DashboardLayout({ children }) {
         <div
           id="workspace-content"
           tabIndex={-1}
-          className={`w-full px-5 py-7 outline-none sm:px-8 sm:py-8 lg:py-10 ${pathname.startsWith("/dashboard/docs") ? "flex h-[calc(100dvh-4rem)] min-h-0 flex-col overflow-hidden" : "space-y-7"}`}
+          className={`w-full px-5 py-7 outline-none sm:px-8 sm:py-8 lg:py-10 ${bounded ? "flex h-[calc(100dvh-4rem)] min-h-0 flex-col gap-7 overflow-hidden" : "space-y-7"}`}
         >
           {children}
         </div>

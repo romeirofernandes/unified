@@ -85,7 +85,8 @@ const projectSchema = new mongoose.Schema({
   workbenchIssues: { type: [new mongoose.Schema({
     title: { type: String, required: true, maxlength: 2000 },
     description: { type: String, default: "", maxlength: 10000 },
-    status: { type: String, enum: ["backlog", "todo", "in_progress", "done"], default: "backlog" },
+    status: { type: String, enum: ["todo", "in_progress", "done"], default: "todo" },
+    position: Number,
     sourceKey: String,
     deleted: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },

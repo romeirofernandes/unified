@@ -71,7 +71,7 @@ const result = await build({
                 ? `export const useAuth = () => ({ user: { uid: "user-1", email: "person@example.com", providerData: [], metadata: {} }, login() {}, signup() {}, loginWithGoogle() {}, logout() {} });`
                 : name === "firebase-fixture"
                   ? "export const auth = {};"
-                  : `const project = ${JSON.stringify(fixture)}; export const useApiResource = (path) => ({ data: path === "/projects" ? [project] : path.startsWith("/projects/") ? project : path.startsWith("/workbench/") ? [{ _id: "issue-1", title: "Fix search", description: "Search fails on mobile", status: "backlog", sourceKey: "summary" }] : [{ _id: "feedback-1", timestamp: "2026-11-05T00:00:00.000Z", formAnswers: { "email-field": "customer@example.com" } }], loading: false, error: "", reload() {}, setData() {} });`,
+                  : `const project = ${JSON.stringify(fixture)}; export const useApiResource = (path) => ({ data: path === "/projects" ? [project] : path.startsWith("/projects/") ? project : path.startsWith("/workbench/") ? [{ _id: "issue-1", title: "Fix search", description: "Search fails on mobile", status: "todo", sourceKey: "summary" }] : [{ _id: "feedback-1", timestamp: "2026-11-05T00:00:00.000Z", formAnswers: { "email-field": "customer@example.com" } }], loading: false, error: "", reload() {}, setData() {} });`,
           }),
         );
       },
@@ -102,6 +102,11 @@ for (const [name, url, expected] of [
     const markup = render(name, url);
     assert.ok(markup.includes(expected), `Expected ${expected} in ${name}`);
     assert.doesNotMatch(markup, /undefined responses/);
+    if (name === "Workbench") {
+      assert.equal((markup.match(/data-stage=/g) || []).length, 3);
+      assert.doesNotMatch(markup, /Summary issues appear|Add issue to|<select/);
+      for (const stage of ["todo", "in_progress", "done"]) assert.ok(markup.includes(`data-stage="${stage}"`));
+    }
   });
 }
 

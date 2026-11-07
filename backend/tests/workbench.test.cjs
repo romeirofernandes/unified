@@ -30,7 +30,7 @@ test("concurrent imports deduplicate and preserve edits, moves, and deletions", 
   assert.equal((await request(`${id}/${search._id}`, "DELETE")).status, 200);
   await Project.updateOne({ _id: id }, { $set: { "feedbackSummary.features": ["Fix search", "Add filters", "Support exports"] } });
   cards = await (await request(id)).json(); assert.equal(cards.length, 2);
-  assert.ok(cards.some(card => card.title === "Support exports" && card.status === "backlog"));
+  assert.ok(cards.some(card => card.title === "Support exports" && card.status === "todo"));
   assert.ok(!cards.some(card => card._id === search._id));
 });
 test("manual CRUD validates inputs and cannot restore deleted cards", async () => {
@@ -52,4 +52,16 @@ test("all operations enforce ownership and project isolation", async () => {
   const other = await fixture(); assert.equal((await request(`${other._id}/${card._id}`, "DELETE")).status, 404);
   assert.equal((await (await request(id)).json()).length, 2);
   assert.equal((await Project.findById(id).lean()).workbenchIssues, undefined);
+});
+
+test("legacy Backlog issues migrate to To do and placement persists", async () => {
+  const project = await fixture(), id = String(project._id), issueId = new mongoose.Types.ObjectId();
+  await Project.collection.updateOne({ _id: project._id }, { $push: { workbenchIssues: { _id: issueId, title: "Legacy issue", status: "backlog", description: "", deleted: false, createdAt: new Date() } } });
+  const cards = await (await request(id)).json();
+  assert.equal(cards.find(card => card._id === String(issueId)).status, "todo");
+  const input = { title: "Legacy issue", description: "", status: "in_progress", position: 42 };
+  assert.equal((await request(`${id}/${issueId}`, "PUT", input)).status, 200);
+  assert.equal((await (await request(id)).json()).find(card => card._id === String(issueId)).position, 42);
+  for (const position of ["42", null, 1e30]) assert.equal((await request(`${id}/${issueId}`, "PUT", { ...input, position })).status, 400);
+  assert.equal((await request(id, "POST", { ...input, status: "backlog" })).status, 400);
 });
