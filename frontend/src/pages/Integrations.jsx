@@ -66,7 +66,7 @@ function Channel({ channel, project, settings, uid, onSaved }) {
       <ErrorMessage>{error}</ErrorMessage>
       <p role="status" className="text-sm text-muted-foreground">{message}</p>
       <div className="flex flex-wrap gap-2">
-        <Button onClick={() => save()} disabled={pending || (!dirty && ready)}>Save {slack ? "Slack" : "email"}</Button>
+        <Button onClick={() => save()} disabled={pending || !dirty}>Save {slack ? "Slack" : "email"}</Button>
         <Button variant="secondary" onClick={test} disabled={pending || !ready || dirty}>Send test digest</Button>
         {slack && settings.slackConnected && <Button variant="secondary" onClick={() => save(true)} disabled={pending}>Disconnect</Button>}
       </div>

@@ -21,8 +21,8 @@ function encryptionKey() {
 function encrypt(value) {
   const iv = randomBytes(12);
   const cipher = createCipheriv("aes-256-gcm", encryptionKey(), iv);
-    const ciphertext = Buffer.concat([cipher.update(value, "utf8"), cipher.final()]);
-    return [iv, cipher.getAuthTag(), ciphertext].map((part) => part.toString("base64")).join(".");
+  const ciphertext = Buffer.concat([cipher.update(value, "utf8"), cipher.final()]);
+  return [iv, cipher.getAuthTag(), ciphertext].map((part) => part.toString("base64")).join(".");
 }
 function decrypt(value) {
   const [iv, tag, ciphertext] = value.split(".").map((part) => Buffer.from(part, "base64"));

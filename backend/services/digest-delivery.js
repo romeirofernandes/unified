@@ -18,7 +18,11 @@ async function deliverDigest({ project, channel, summary, count, recipient, batc
   if (channel === "slack") {
     url = validateSlackWebhook(decrypt(project.slackWebhookEncrypted));
     // Plain text blocks prevent feedback from creating mentions or Slack markup.
-    body = { text: `Feedback digest for ${project.name}`.slice(0, 200), blocks: [{ type: "section", text: { type: "plain_text", text: text.slice(0, 2900), emoji: false } }] };
+    const base = (process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/$/, "");
+    body = { text: "Your Unified feedback digest is ready.", blocks: [
+      { type: "section", text: { type: "plain_text", text: text.slice(0, 2900), emoji: false } },
+      { type: "actions", elements: [{ type: "button", text: { type: "plain_text", text: "View responses" }, url: `${base}/project/${project._id}/feedbacks` }] },
+    ] };
   } else {
     if (!process.env.RESEND_API_KEY || !process.env.DIGEST_EMAIL_FROM) throw new Error("Email delivery is not configured on the server.");
     url = "https://api.resend.com/emails";

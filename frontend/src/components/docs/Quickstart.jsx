@@ -6,7 +6,7 @@ import { BounceSidebar } from "@/components/motion/bounce-sidebar";
 import { Link } from "react-router-dom";
 import CodeBlock from "@/components/shared/CodeBlock";
 import { Button } from "@/components/ui/button";
-import { integrationCode } from "@/lib/integration-code";
+import { integrationCode, setupCommand } from "@/lib/integration-code";
 
 const customFormCode = `const response = await fetch("YOUR_BACKEND_URL/api/submissions/YOUR_PROJECT_ID", {
   method: "POST",
@@ -88,7 +88,9 @@ const steps = [
   },
 ];
 
-export const documentationMarkdown = "# Unified documentation\n\n" + steps.map((step) => `## ${step.title}\n\n${step.description}\n\n${(step.items || []).map((item) => `- ${item}`).join("\n")}${step.code ? `\n\n\`\`\`${step.label === "Terminal" ? "sh" : "jsx"}\n${step.code}\n\`\`\`` : ""}`).join("\n\n") + "\n\n## SDK installation\n\n```sh\n# npm\nnpm install unified-sdk\n# pnpm\npnpm add unified-sdk\n# Yarn\nyarn add unified-sdk\n# Bun\nbun add unified-sdk\n```\n\nThe CLI requires SDK 2.2.0 to be published. Manual installation works with 2.1.2. Replace project and Firebase UID placeholders with values from Preview. Keep project submission keys server-side.\n";
+const managers = ["npm", "pnpm", "yarn", "bun"];
+const automaticMarkdown = managers.map((manager) => `### ${manager}\n\n\`\`\`sh\n${setupCommand({ manager })}\n\`\`\``).join("\n\n");
+export const documentationMarkdown = "# Unified documentation\n\n" + steps.map((step) => `## ${step.title}\n\n${step.description}\n\n${step.id === "install" ? automaticMarkdown + "\n\n" : ""}${(step.items || []).map((item) => `- ${item}`).join("\n")}${step.code ? `\n\n\`\`\`${step.label === "Terminal" ? "sh" : "jsx"}\n${step.code}\n\`\`\`` : ""}`).join("\n\n") + "\n\n## SDK installation\n\n```sh\n# npm\nnpm install unified-sdk\n# pnpm\npnpm add unified-sdk\n# Yarn\nyarn add unified-sdk\n# Bun\nbun add unified-sdk\n```\n\nAutomatic setup requires SDK 2.2.0 to be published. Yarn automatic setup requires Yarn 2 or newer. Manual installation works with 2.1.2. Replace project and Firebase UID placeholders with values from Preview. Keep project submission keys server-side.\n";
 
 export default function Quickstart() {
   const contentRef = useRef(null);

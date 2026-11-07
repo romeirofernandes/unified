@@ -6,13 +6,15 @@ import CodeBlock from "@/components/shared/CodeBlock";
 
 export default function ProjectApi({ project, uid }) {
   const [key, setKey] = useState("");
+  const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
   useEffect(() => {
     const controller = new AbortController();
     apiRequest(`/projects/${project._id}/submission-key`, { uid, signal: controller.signal })
       .then((data) => { setKey(data.key); if (data.legacy) setMessage("This older key cannot be recovered. Replace it once to make the new key available here anytime."); })
-      .catch((error) => { if (!controller.signal.aborted) setMessage(error.message); });
+      .catch((error) => { if (!controller.signal.aborted) setMessage(error.message); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [project._id, uid]);
   async function changeKey(revoke = false) {
@@ -30,10 +32,11 @@ export default function ProjectApi({ project, uid }) {
     <h3>Connect your own form</h3>
     <p className="text-sm text-muted-foreground">Send answers from your existing form to this endpoint. The project key can only submit responses. Keep it on your server to control who can submit.</p>
     <div className="flex flex-wrap gap-2">
-      <Button disabled={pending} onClick={() => changeKey()}>Create or replace key</Button>
-      <Button variant="secondary" disabled={pending} onClick={() => changeKey(true)}>Revoke key</Button>
+      <Button disabled={pending || loading} onClick={() => changeKey()}>Create or replace key</Button>
+      <Button variant="secondary" disabled={pending || loading} onClick={() => changeKey(true)}>Revoke key</Button>
     </div>
     <p role="status" className="text-sm">{message}</p>
+    {loading && <p className="text-sm text-muted-foreground">Loading submission key…</p>}
     {key && <InputCopy label="Submission key" value={key} />}
     <InputCopy label="Submission endpoint" value={endpoint} />
     <CodeBlock label="Server · JavaScript" code={`const response = await fetch(${JSON.stringify(endpoint)}, {\n  method: "POST",\n  headers: {\n    "Content-Type": "application/json",\n    "Authorization": "Bearer YOUR_SUBMISSION_KEY"\n  },\n  body: JSON.stringify({ formAnswers: ${JSON.stringify(answers, null, 2)} })\n});\nif (!response.ok) throw new Error("Feedback could not be sent");`} />

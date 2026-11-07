@@ -37,6 +37,7 @@ function response() {
       return this;
     },
     header() {},
+    set() {},
   };
 }
 
@@ -224,4 +225,31 @@ test("revoked submission keys cannot save responses", async () => {
   const res = response();
   await routes.get("post /:projectId")({ headers: { authorization: `Bearer uf_${"b".repeat(64)}` }, params: { projectId: "507f1f77bcf86cd799439011" } }, res);
   assert.equal(res.statusCode, 401);
+});
+
+test("owners can retrieve encrypted submission keys without exposing the hash", async () => {
+  const routes = loadRoutes("projects.js", {
+    "../models/Project": { findOne: (filter) => {
+      assert.equal(filter.userId, "owner");
+      assert.equal(filter._id, "project");
+      return { select: async () => ({ submissionKeyEncrypted: "ciphertext", submissionKeyHash: "digest" }) };
+    } },
+    "../services/secret-storage": { decrypt: (value) => { assert.equal(value, "ciphertext"); return "uf_saved"; } },
+  });
+  const res = response();
+  await routes.get("get /:id/submission-key")({ params: { id: "project" }, user: { id: "owner" } }, res);
+  assert.equal(res.data.key, "uf_saved");
+  assert.equal(res.data.submissionKeyHash, undefined);
+});
+test("replacing a submission key updates its encrypted value and authentication digest", async () => {
+  let saved;
+  const routes = loadRoutes("projects.js", {
+    "../models/Project": { findOneAndUpdate: async (filter, update) => { assert.equal(filter.userId, "owner"); saved = update.$set; return {}; } },
+    "../services/secret-storage": { encrypt: (value) => `encrypted:${value}` },
+  });
+  const res = response();
+  await routes.get("post /:id/submission-key")({ params: { id: "project" }, user: { id: "owner" } }, res);
+  assert.match(res.data.key, /^uf_[a-f0-9]{64}$/);
+  assert.equal(saved.submissionKeyEncrypted, `encrypted:${res.data.key}`);
+  assert.equal(saved.submissionKeyHash, require("node:crypto").createHash("sha256").update(res.data.key).digest("hex"));
 });
