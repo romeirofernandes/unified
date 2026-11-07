@@ -88,3 +88,31 @@ test("the public submission quota is atomic across concurrent requests", async (
   assert.equal(results.filter(result => result.status === "fulfilled").length, 10);
   assert.equal(results.filter(result => result.status === "rejected" && result.reason.status === 429).length, 20);
 });
+
+test("custom forms accept cross-origin Bearer submissions and preflight from unrelated frontends", async (t) => {
+  const express = require("express");
+  const cors = require("cors");
+  const { createHash } = require("node:crypto");
+  const app = express();
+  app.use(cors(require("../config/cors"))); app.use(express.json());
+  app.use("/api/submissions", require("../routes/submissions"));
+  const server = app.listen(0, "127.0.0.1");
+  await new Promise(resolve => server.once("listening", resolve));
+  t.after(() => new Promise(resolve => server.close(resolve)));
+  const { project, answers } = await fixture();
+  const key = `uf_${"a".repeat(64)}`;
+  await Project.updateOne({ _id: project._id }, { $set: { submissionKeyHash: createHash("sha256").update(key).digest("hex") } });
+  const url = `http://127.0.0.1:${server.address().port}/api/submissions/${project._id}`;
+  for (const origin of ["http://localhost:3000", "https://independent-frontend.example"]) {
+    const preflight = await fetch(url, { method: "OPTIONS", headers: { Origin: origin, "Access-Control-Request-Method": "POST", "Access-Control-Request-Headers": "authorization,content-type" } });
+    assert.equal(preflight.status, 204);
+    assert.equal(preflight.headers.get("access-control-allow-origin"), origin);
+    assert.match(preflight.headers.get("access-control-allow-headers"), /authorization/i);
+    const response = await fetch(url, { method: "POST", headers: { Origin: origin, Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ formAnswers: answers }) });
+    assert.equal(response.status, 201);
+    assert.equal(response.headers.get("access-control-allow-origin"), origin);
+  }
+  await Project.updateOne({ _id: project._id }, { $unset: { submissionKeyHash: 1 } });
+  const revoked = await fetch(url, { method: "POST", headers: { Origin: "https://independent-frontend.example", Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ formAnswers: answers }) });
+  assert.equal(revoked.status, 404);
+});
