@@ -5,14 +5,15 @@ const { encrypt } = require("../services/secret-storage");
 const { validateSlackWebhook, deliverDigest } = require("../services/digest-delivery");
 const { intervalMs } = require("../services/digest-worker");
 const router = express.Router();
-const emailReady = () => !!(process.env.RESEND_API_KEY && process.env.DIGEST_EMAIL_FROM);
+const { emailReady } = require("../services/email-transport");
+const slackOAuth = require("../services/slack-oauth");
 function publicSettings(project, email) {
   const channels = {};
   for (const channel of ["slack", "email"]) {
     const state = project.notifications?.[channel] || {};
     channels[channel] = Object.fromEntries(["enabled", "cadence", "nextRunAt", "lastSentAt", "lastCheckedAt", "lastCount", "error"].map((key) => [key, state[key]]));
   }
-  return { ...channels, slackConnected: !!project.slackWebhookEncrypted, emailReady: emailReady(), email };
+  return { ...channels, slackConnected: !!project.slackWebhookEncrypted, slackInstallReady: slackOAuth.configured(), slackWorkspace: project.slackWorkspace, slackChannel: project.slackChannel, emailReady: emailReady(), email };
 }
 router.get("/:id", async (req, res) => {
   res.set("Cache-Control", "no-store");
@@ -21,6 +22,16 @@ router.get("/:id", async (req, res) => {
     if (!project) return res.status(404).json({ message: "Project not found" });
     res.json(publicSettings(project, req.user.email));
   } catch { res.status(500).json({ message: "Could not load integrations." }); }
+});
+router.post("/:id/slack/install", async (req, res) => {
+  res.set("Cache-Control", "no-store");
+  if (!slackOAuth.configured()) return res.status(503).json({ message: "Slack installation is not configured on the server yet." });
+  try {
+    const { state, url } = slackOAuth.authorization();
+    const project = await Project.findOneAndUpdate({ _id: req.params.id, userId: req.user.id }, { $set: { slackOAuthStateHash: slackOAuth.stateHash(state), slackOAuthStateUntil: new Date(Date.now() + 10 * 60 * 1000) } });
+    if (!project) return res.status(404).json({ message: "Project not found" });
+    res.json({ url });
+  } catch { res.status(500).json({ message: "Could not start Slack installation." }); }
 });
 router.put("/:id/:channel", async (req, res) => {
   const { channel } = req.params;
@@ -31,13 +42,13 @@ router.put("/:id/:channel", async (req, res) => {
     const owner = { _id: req.params.id, userId: req.user.id };
     const project = await Project.findOne(owner).select("+slackWebhookEncrypted").lean();
     if (!project) return res.status(404).json({ message: "Project not found" });
-    if (channel === "email" && enabled && !emailReady()) return res.status(503).json({ message: "Email delivery needs RESEND_API_KEY and DIGEST_EMAIL_FROM on the server." });
+    if (channel === "email" && enabled && !emailReady()) return res.status(503).json({ message: "Email delivery needs a configured SMTP or Resend transport on the server." });
     const prefix = `notifications.${channel}`;
     const previous = project.notifications?.[channel] || {};
     const set = { [`${prefix}.enabled`]: disconnect ? false : enabled, [`${prefix}.cadence`]: cadence, [`${prefix}.error`]: "" };
-    const unset = { [`${prefix}.lockToken`]: 1, [`${prefix}.lockUntil`]: 1, [`${prefix}.pendingUntil`]: 1 };
+    const unset = { [`${prefix}.lockToken`]: 1, [`${prefix}.lockUntil`]: 1, [`${prefix}.pendingUntil`]: 1, [`${prefix}.pendingSummary`]: 1 };
     if (channel === "slack") {
-      if (disconnect) unset.slackWebhookEncrypted = 1;
+      if (disconnect) { unset.slackWebhookEncrypted = 1; unset.slackWorkspace = 1; unset.slackChannel = 1; unset.slackOAuthStateHash = 1; unset.slackOAuthStateUntil = 1; }
       else if (webhook) set.slackWebhookEncrypted = encrypt(validateSlackWebhook(webhook));
       else if (enabled && !project.slackWebhookEncrypted) return res.status(400).json({ message: "Add a Slack incoming webhook first." });
     }

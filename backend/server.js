@@ -26,6 +26,7 @@ app.use(express.json());
 
 app.use("/api/submissions", require("./routes/submissions"));
 app.use("/api/auth", authRoutes);
+app.use("/api/slack", require("./routes/slack"));
 app.use("/api/integrations", authMiddleware, require("./routes/integrations"));
 app.use("/api/projects", authMiddleware, projectRoutes);
 app.use("/api/feedback", authMiddleware, feedbackRoutes);

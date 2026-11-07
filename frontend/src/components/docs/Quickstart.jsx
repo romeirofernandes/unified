@@ -68,10 +68,10 @@ const steps = [
   {
     id: "notifications",
     title: "Get feedback digests",
-    description: "Open Integrations in your workspace and choose a project. Connect a Slack incoming webhook, enable email to your account address, or use both.",
+    description: "Open Integrations in your workspace and choose a project. Use Install in workspace to choose your Slack workspace and channel, enable email to your account address, or use both.",
     items: [
-      "Choose hourly or daily delivery for each channel. The first digest covers feedback received after you enable it, and empty periods are skipped.",
-      "Each digest includes the new response count, an AI overview, actionable requests and a link to the project. Email addresses from answers are excluded from the summary.",
+      "Choose hourly or daily delivery for each channel. The first digest covers feedback received after you enable it. Empty periods and unchanged summaries are skipped.",
+      "A fresh summary is generated from new feedback before delivery, even when nobody opens the responses page. Each digest includes the new response count, an AI overview, actionable requests and a link to the project. Email answers are excluded from the summary.",
       "Send a test after saving to check delivery. Tests use sample content and do not consume pending feedback. Pause a channel anytime to stop scheduled delivery.",
     ],
   },

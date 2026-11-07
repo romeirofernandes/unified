@@ -59,6 +59,8 @@ const digestChannelSchema = new mongoose.Schema({
   lastCount: Number,
   error: String,
   pendingUntil: Date,
+  pendingSummary: mongoose.Schema.Types.Mixed,
+  lastSummaryHash: String,
   lockToken: String,
   lockUntil: Date,
   testAfter: Date,
@@ -82,6 +84,10 @@ const projectSchema = new mongoose.Schema({
   feedbackSummary: { type: mongoose.Schema.Types.Mixed, default: null },
   summaryLock: { type: String, select: false },
   summaryLockUntil: { type: Date, select: false },
+  slackOAuthStateHash: { type: String, select: false },
+  slackOAuthStateUntil: { type: Date, select: false },
+  slackWorkspace: String,
+  slackChannel: String,
   slackWebhookEncrypted: { type: String, select: false },
   notifications: { slack: { type: digestChannelSchema, default: () => ({}) }, email: { type: digestChannelSchema, default: () => ({}) } },
   submissionKeyEncrypted: { type: String, select: false },
@@ -99,6 +105,7 @@ const projectSchema = new mongoose.Schema({
 });
 
 projectSchema.index({ userId: 1 });
+projectSchema.index({ slackOAuthStateHash: 1 }, { sparse: true });
 projectSchema.index({ "notifications.slack.enabled": 1, "notifications.slack.nextRunAt": 1 });
 projectSchema.index({ "notifications.email.enabled": 1, "notifications.email.nextRunAt": 1 });
 

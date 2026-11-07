@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 process.env.INTEGRATION_ENCRYPTION_KEY = "f".repeat(64);
 const { encrypt, decrypt } = require("../services/secret-storage");
 const { validateSlackWebhook, deliverDigest, digestText } = require("../services/digest-delivery");
-const { intervalMs, processDigest } = require("../services/digest-worker");
+const { summaryHash, intervalMs, processDigest } = require("../services/digest-worker");
 const webhook = "https://hooks.slack.com/services/T123/B456/abcDEF789";
 const project = { _id: "project", name: "Feedback app", slackWebhookEncrypted: encrypt(webhook) };
 const summary = { tldr: "People want better docs.", features: ["Add installation examples"] };
@@ -55,9 +55,9 @@ test("email delivery uses the owner address, text content and a stable idempoten
   await assert.rejects(deliverDigest(input, request), /not configured/);
 });
 
-function workerFixture({ feedback = [], failure = false, claimed = true, current = true, pendingUntil } = {}) {
+function workerFixture({ feedback = [], failure = false, claimed = true, current = true, pendingUntil, lastSummaryHash, pendingSummary } = {}) {
   const writes = [], deliveries = [];
-  const state = { enabled: true, cadence: "daily", since: new Date("2026-11-01T00:00:00Z"), pendingUntil };
+  const state = { enabled: true, cadence: "daily", since: new Date("2026-11-01T00:00:00Z"), pendingUntil, lastSummaryHash, pendingSummary };
   const document = { ...project, userId: "owner", notifications: { slack: state } };
   let query;
   const dependencies = {
@@ -112,4 +112,24 @@ test("an active lease or changed settings prevent delivery", async () => {
   const changed = workerFixture({ feedback: [{ _id: "response" }], current: false });
   await processDigest("project", "slack", changed.dependencies);
   assert.equal(changed.deliveries.length, 0);
+});
+
+test("new feedback regenerates a summary but unchanged content is not sent again", async () => {
+  const fixture = workerFixture({ feedback: [{ _id: "new-response" }], lastSummaryHash: summaryHash(summary) });
+  let generated = 0;
+  fixture.dependencies.summarizeFeedback = async () => { generated++; return summary; };
+  await processDigest("project", "slack", fixture.dependencies);
+  assert.equal(generated, 1);
+  assert.equal(fixture.deliveries.length, 0);
+  assert.ok(fixture.writes.at(-1).update.$set["notifications.slack.since"]);
+  assert.equal(fixture.writes.at(-1).update.$set["notifications.slack.lastSentAt"], undefined);
+});
+test("retrying a batch uses its freshly generated frozen summary", async () => {
+  const fixture = workerFixture({ feedback: [{ _id: "response" }], pendingUntil: new Date("2026-11-02"), pendingSummary: summary });
+  fixture.dependencies.summarizeFeedback = () => assert.fail("must preserve the original retry content");
+  await processDigest("project", "slack", fixture.dependencies);
+  assert.deepEqual(fixture.deliveries[0].summary, summary);
+});
+test("summary comparisons ignore timestamps, whitespace, case and feature order", () => {
+  assert.equal(summaryHash({ tldr: "Good docs", features: ["Fix form", "Add export"], timestamp: "old" }), summaryHash({ tldr: " GOOD   docs ", features: ["add export", "fix form"], timestamp: "new" }));
 });

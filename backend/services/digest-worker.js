@@ -1,10 +1,15 @@
-const { randomUUID } = require("node:crypto");
+const { randomUUID, createHash } = require("node:crypto");
 const Project = require("../models/Project");
 const Feedback = require("../models/Feedback");
 const User = require("../models/User");
 const { summarizeFeedback } = require("./feedback-summary");
 const { deliverDigest } = require("./digest-delivery");
 const intervalMs = (cadence) => cadence === "hourly" ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+
+function summaryHash(summary) {
+  const normalize = (value) => value.trim().replace(/\s+/g, " ").toLowerCase();
+  return createHash("sha256").update(JSON.stringify({ tldr: normalize(summary.tldr), features: summary.features.map(normalize).sort() })).digest("hex");
+}
 
 async function processDigest(id, channel, dependencies = {}) {
   const models = { Project, Feedback, User, ...dependencies };
@@ -23,17 +28,25 @@ async function processDigest(id, channel, dependencies = {}) {
     // Retain the batch boundary on failures so retries cover the same feedback.
     await models.Project.updateOne(owner, { $set: { [`${prefix}.pendingUntil`]: until } });
     const feedback = await models.Feedback.find({ projectId: id, timestamp: { $gt: state.since, $lte: until } }).sort({ timestamp: 1 }).lean();
+    let sentHash;
     if (feedback.length) {
-      const summary = await (dependencies.summarizeFeedback || summarizeFeedback)(project, feedback);
-      const user = await models.User.findById(project.userId).lean();
-      if (!user) throw new Error("The project owner is unavailable.");
-      // Config edits clear the token, cancelling work which has not been delivered yet.
-      if (!await models.Project.exists(owner)) return;
-      await (dependencies.deliverDigest || deliverDigest)({ project, channel, summary, count: feedback.length, recipient: user.email, batchId: `${id}:${channel}:${new Date(state.since).toISOString()}:${new Date(until).toISOString()}` });
+      // Freshly summarize every new batch, independently of visits to the dashboard.
+      // Freeze the generated content for retries so email idempotency stays valid.
+      const summary = state.pendingSummary || await (dependencies.summarizeFeedback || summarizeFeedback)(project, feedback);
+      await models.Project.updateOne(owner, { $set: { [`${prefix}.pendingSummary`]: summary } });
+      const hash = summaryHash(summary);
+      if (hash !== state.lastSummaryHash) {
+        const user = await models.User.findById(project.userId).lean();
+        if (!user) throw new Error("The project owner is unavailable.");
+        // Config edits clear the token, cancelling work which has not been delivered yet.
+        if (!await models.Project.exists(owner)) return;
+        await (dependencies.deliverDigest || deliverDigest)({ project, channel, summary, count: feedback.length, recipient: user.email, batchId: `${id}:${channel}:${new Date(state.since).toISOString()}:${new Date(until).toISOString()}` });
+        sentHash = hash;
+      }
     }
     await models.Project.updateOne(owner, {
-      $set: { [`${prefix}.since`]: until, [`${prefix}.nextRunAt`]: new Date(Date.now() + intervalMs(state.cadence)), [`${prefix}.lastCheckedAt`]: new Date(), [`${prefix}.error`]: "", ...(feedback.length ? { [`${prefix}.lastSentAt`]: new Date(), [`${prefix}.lastCount`]: feedback.length } : {}) },
-      $unset: { [`${prefix}.lockToken`]: 1, [`${prefix}.lockUntil`]: 1, [`${prefix}.pendingUntil`]: 1 },
+      $set: { [`${prefix}.since`]: until, [`${prefix}.nextRunAt`]: new Date(Date.now() + intervalMs(state.cadence)), [`${prefix}.lastCheckedAt`]: new Date(), [`${prefix}.error`]: "", ...(sentHash ? { [`${prefix}.lastSentAt`]: new Date(), [`${prefix}.lastCount`]: feedback.length, [`${prefix}.lastSummaryHash`]: sentHash } : {}) },
+      $unset: { [`${prefix}.lockToken`]: 1, [`${prefix}.lockUntil`]: 1, [`${prefix}.pendingUntil`]: 1, [`${prefix}.pendingSummary`]: 1 },
     });
   } catch (error) {
     // Provider payloads and credentials never enter user-visible errors.
@@ -59,4 +72,4 @@ function startDigestWorker() {
   tick();
   return () => clearInterval(timer);
 }
-module.exports = { intervalMs, processDigest, startDigestWorker };
+module.exports = { summaryHash, intervalMs, processDigest, startDigestWorker };
