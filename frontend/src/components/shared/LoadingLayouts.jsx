@@ -18,10 +18,17 @@ function ResponseLayout() {
 function IntegrationLayout() {
   return <div className="space-y-10">{["Slack", "Email"].map((name) => <section key={name} className="grid items-start gap-3 lg:grid-cols-[minmax(180px,0.6fr)_minmax(0,1.4fr)] lg:gap-8"><div className="space-y-2"><h2 className="text-xl">{name}</h2><p className="max-w-sm text-sm leading-5">Get feedback summaries where your team works.</p></div><div className="space-y-5 rounded-md border border-border bg-card p-4"><p className="text-sm">Your connected destination</p>{name === "Slack" && <button className="h-10 rounded-md border border-border px-4">Change workspace</button>}<div className="grid items-end gap-4 sm:grid-cols-2"><div><p className="mb-2 text-sm">Digest frequency</p><button className="h-10 w-full rounded-md border border-border">Every 24 hours</button></div><p className="flex h-10 items-center text-sm">Send feedback digests</p></div><div className="grid grid-cols-2 gap-3 border-y border-border py-4 text-xs"><div><p>Next check</p><p className="mt-2">Tomorrow, 9:00 am</p></div><div><p>Last delivered</p><p className="mt-2">Yesterday, 9:00 am</p></div></div><div className="flex gap-2"><button className="h-10 rounded-md border border-border px-4">Save {name}</button><button className="h-10 rounded-md border border-border px-4">Send test digest</button></div></div></section>)}</div>;
 }
+function AnalyticsLayout() {
+  return <div className="space-y-7">
+    <div className="grid divide-y divide-border rounded-md border border-border bg-card sm:grid-cols-3 sm:divide-x sm:divide-y-0">{["Responses", "Current questions", "Recorded answers"].map((label) => <div key={label} className="p-6"><p className="text-xs">{label}</p><p className="mt-2 text-3xl">128</p></div>)}</div>
+    <div className="rounded-md border border-border bg-card p-6"><h2 className="text-xl">Responses over time</h2><p className="mt-2 text-sm">The number of responses received in each period.</p><div className="mt-5 h-64 rounded-md bg-muted" /></div>
+    <div className="grid gap-6 xl:grid-cols-2">{[1, 2].map((id) => <div key={id} className="rounded-md border border-border bg-card p-6"><p className="text-xs">Question results</p><h2 className="mt-3 text-xl">Your feedback question</h2><p className="mt-3 text-xs">24 answered · 2 not answered</p><p className="mt-6 text-sm">Compare the answer counts for this question.</p><div className="mt-5 h-56 rounded-md bg-muted" /></div>)}</div>
+  </div>;
+}
 export function LoadingState({ variant = "projects", delay = 180 }) {
   const [visible, setVisible] = useState(false);
   useEffect(() => { const timer = setTimeout(() => setVisible(true), delay); return () => clearTimeout(timer); }, [delay]);
   if (!visible) return <span role="status" className="sr-only">Loading {variant}…</span>;
   if (variant === "route" || variant === "auth") return <p role="status" className="text-sm text-muted-foreground">{variant === "auth" ? "Opening your workspace…" : "Opening page…"}</p>;
-  return <Skeleton loading id={`workspace-${variant}`} label={`Loading ${variant}`}><div className="min-w-0">{variant === "responses" ? <ResponseLayout /> : variant === "integrations" ? <IntegrationLayout /> : <ProjectLayout />}</div></Skeleton>;
+  return <Skeleton loading id={`workspace-${variant}`} label={`Loading ${variant}`}><div className="min-w-0">{variant === "analytics" ? <AnalyticsLayout /> : variant === "responses" ? <ResponseLayout /> : variant === "integrations" ? <IntegrationLayout /> : <ProjectLayout />}</div></Skeleton>;
 }

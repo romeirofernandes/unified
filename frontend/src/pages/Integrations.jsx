@@ -1,3 +1,4 @@
+import ProjectPicker from "@/components/shared/ProjectPicker";
 import { AlertDialog } from "@animate-ui/react/primitives/base-ui/alert-dialog";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Delete01Icon } from "@hugeicons/core-free-icons";
@@ -157,7 +158,7 @@ export default function Integrations() {
   }, [params, setParams]);
   const projects = data || [];
   const project = projects.find((item) => item._id === params.get("project")) || projects[0];
-  const selector = project && <div className="w-full min-w-52 sm:w-60"><IntegrationSelect label="Project" value={project._id} onChange={(value) => setParams({ project: value }, { replace: true })} options={projects.map((item) => ({ value: item._id, label: item.name }))} /></div>;
+  const selector = project && <ProjectPicker projects={projects} value={project._id} onChange={(value) => setParams({ project: value }, { replace: true })} />;
   return <>
     <PageHeader title="Integrations" description="Bring feedback summaries to your team, in Slack or your inbox." action={selector} />
     <ToastNotice message={toast} onClose={dismissToast} />

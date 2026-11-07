@@ -1,14 +1,13 @@
 import CopyButton from "@/components/shared/CopyButton";
 import { feedbackPrompt } from "@/lib/feedback-prompt";
 
-export default function SummaryCard({ summary, current, copyAction }) {
+export default function SummaryCard({ summary, copyAction }) {
   return (
     <section aria-labelledby="feedback-summary-title" className="overflow-hidden rounded-md border border-border bg-card">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-5 py-4 sm:px-6">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-3">
             <h2 id="feedback-summary-title" className="text-base font-medium">Feedback summary</h2>
-            <span className="rounded border border-fluid-accent/25 bg-fluid-accent/10 px-2 py-0.5 text-xs text-foreground">{current ? "Up to date" : "New responses"}</span>
           </div>
           <p className="text-xs leading-5 text-muted-foreground">This summary updates automatically when new responses arrive.</p>
         </div>
