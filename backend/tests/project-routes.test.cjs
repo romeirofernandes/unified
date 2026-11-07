@@ -253,3 +253,22 @@ test("replacing a submission key updates its encrypted value and authentication 
   assert.equal(saved.submissionKeyEncrypted, `encrypted:${res.data.key}`);
   assert.equal(saved.submissionKeyHash, require("node:crypto").createHash("sha256").update(res.data.key).digest("hex"));
 });
+
+test("owner feedback cannot bypass the same answer validation as public submissions", async () => {
+  let saves = 0;
+  const routes = loadRoutes("feedback.js", {
+    "../models/Project": { findOne: async () => ({ fields: [{ _id: "email", type: "email", label: "Email", required: true }] }) },
+    "../models/Feedback": class Feedback {
+      constructor(data) { Object.assign(this, data); }
+      async save() { saves++; }
+    },
+  });
+  const invalid = response();
+  await routes.get("post /")({ user: { id: "owner" }, body: { projectId: "project", formAnswers: { email: "bad" } } }, invalid);
+  assert.equal(invalid.statusCode, 400);
+  assert.equal(saves, 0);
+  const valid = response();
+  await routes.get("post /")({ user: { id: "owner" }, body: { projectId: "project", formAnswers: { email: "person@example.com" } } }, valid);
+  assert.equal(valid.statusCode, 201);
+  assert.equal(saves, 1);
+});

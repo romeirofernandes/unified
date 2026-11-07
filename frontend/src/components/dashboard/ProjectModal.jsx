@@ -53,7 +53,7 @@ export default function ProjectModal({
   const [name, setName] = useState(project?.name || "");
   const [description, setDescription] = useState(project?.description || "");
   const [theme, setTheme] = useState(() =>
-    resolvedTheme === "dark" ? "dark" : "light",
+    project?.theme || (resolvedTheme === "dark" ? "dark" : "light"),
   );
   const [appearance, setAppearance] = useState(
     project?.appearance || { preset: "unified", colors: {} },

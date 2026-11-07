@@ -3,6 +3,7 @@ const { randomUUID } = require("node:crypto");
 const router = express.Router();
 const Feedback = require("../models/Feedback");
 const Project = require("../models/Project");
+const { validateAnswers } = require("../services/submission-answers");
 const { summarizeFeedback } = require("../services/feedback-summary");
 
 // Submit feedback
@@ -18,15 +19,15 @@ router.post("/", async (req, res) => {
 
     const feedback = new Feedback({
       projectId,
-      formAnswers,
+      formAnswers: validateAnswers(project.fields, formAnswers),
     });
 
     await feedback.save();
     res.status(201).json(feedback);
   } catch (error) {
     res
-      .status(500)
-      .json({ message: "Error submitting feedback", error: error.message });
+      .status(error.status || 500)
+      .json({ message: error.status ? error.message : "Error submitting feedback" });
   }
 });
 

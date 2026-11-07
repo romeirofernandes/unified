@@ -1,0 +1,13 @@
+{
+  "name": "unified-development",
+  "private": true,
+  "scripts": {
+    "install:all": "npm ci --prefix backend && npm ci --prefix frontend && npm ci --prefix unified-sdk",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "npm run dev --prefix backend",
+    "test": "npm test --prefix backend && npm test --prefix frontend && npm test --prefix unified-sdk",
+    "lint": "npm run lint --prefix frontend && npm run lint --prefix unified-sdk",
+    "build": "npm run build --prefix frontend && npm run build --prefix unified-sdk",
+    "test:consumer": "npm run test:consumer --prefix unified-sdk"
+  }
+}

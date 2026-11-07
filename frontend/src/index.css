@@ -658,30 +658,3 @@ html:not(.dark)::view-transition-new(root) {
 @keyframes theme-reveal-fade {
   from { opacity: 0; }
 }
-
-/* Analytics uses the workspace palette, including the chart library's semantic tokens. */
-.analytics-charts {
-  --chart-1: #5575b4;
-  --chart-2: #72866b;
-  --chart-3: #aa7849;
-  --chart-4: #9c6867;
-  --chart-5: #627f8f;
-  --chart-line-primary: var(--chart-1);
-  --chart-line-secondary: var(--chart-2);
-  --chart-background: var(--card);
-  --chart-foreground: var(--foreground);
-  --chart-foreground-muted: var(--muted-foreground);
-  --chart-label: var(--muted-foreground);
-  --chart-grid: var(--border);
-  --chart-crosshair: var(--muted-foreground);
-  --chart-tooltip-background: var(--popover);
-  --chart-tooltip-foreground: var(--popover-foreground);
-  --chart-tooltip-muted: var(--muted-foreground);
-}
-.dark .analytics-charts {
-  --chart-1: #9cb8e8;
-  --chart-2: #a4bb9b;
-  --chart-3: #d7ac7d;
-  --chart-4: #d7a3a0;
-  --chart-5: #9db8c9;
-}

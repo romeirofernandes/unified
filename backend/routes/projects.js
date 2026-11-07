@@ -4,6 +4,7 @@ const Project = require("../models/Project");
 const Feedback = require("../models/Feedback");
 const { generateForm } = require("../services/form-generation");
 const { validateAppearance } = require("../services/project-appearance");
+const { validateFields } = require("../services/project-fields");
 const generationInFlight = new Set();
 
 router.post("/generate-form", async (req, res) => {
@@ -83,9 +84,9 @@ router.use((error, req, res, next) => {
 router.post("/", async (req, res) => {
   try {
     const { name, description, fields, theme } = req.body;
-    if (!Array.isArray(fields) || !fields.length) return res.status(400).json({ message: "Add at least one question before saving." });
+    validateFields(fields);
     const appearance = validateAppearance(req.body.appearance);
-    const userId = req.user.id; // Will add auth middleware later
+    const userId = req.user.id;
 
     const project = new Project({
       name,
@@ -108,7 +109,7 @@ router.post("/", async (req, res) => {
 // Get all projects for user
 router.get("/", async (req, res) => {
   try {
-    const userId = req.user.id; // Will add auth middleware later
+    const userId = req.user.id;
     const projects = await Project.find({ userId }).lean();
     const counts = projects.length
       ? await Feedback.aggregate([
@@ -186,7 +187,7 @@ router.get("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { name, description, fields, theme } = req.body;
-    if (!Array.isArray(fields) || !fields.length) return res.status(400).json({ message: "Add at least one question before saving." });
+    validateFields(fields);
     const appearance = validateAppearance(req.body.appearance);
     const project = await Project.findOneAndUpdate(
       { _id: req.params.id, userId: req.user.id },

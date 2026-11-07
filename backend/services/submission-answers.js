@@ -1,6 +1,7 @@
 function validateAnswers(fields, answers) {
   const invalid = (message) => { const error = new Error(message); error.status = 400; throw error; };
   if (!answers || typeof answers !== "object" || Array.isArray(answers)) invalid("Provide formAnswers keyed by question ID.");
+  require("./project-fields").validateFields(fields);
   const known = new Set(fields.map((field) => String(field._id)));
   if (Object.keys(answers).some((id) => !known.has(id))) invalid("An answer refers to an unknown question.");
   const result = {};
