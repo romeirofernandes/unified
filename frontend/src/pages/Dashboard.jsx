@@ -1,6 +1,6 @@
+import { forgetResource } from "@/lib/resource-cache";
 import { useState } from "react";
 import ProjectModal from "@/components/dashboard/ProjectModal";
-import ProjectPreview from "@/components/dashboard/ProjectPreview";
 import ProjectCard from "@/components/dashboard/ProjectCard";
 import PageHeader from "@/components/shared/PageHeader";
 import {
@@ -23,8 +23,6 @@ export default function Dashboard() {
   const [editing, setEditing] = useState(null);
   const [creating, setCreating] = useState(false);
   const [creationKey, setCreationKey] = useState(0);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [preview, setPreview] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [pending, setPending] = useState(false);
   const [deleteError, setDeleteError] = useState("");
@@ -75,6 +73,8 @@ export default function Dashboard() {
       setData((previous) =>
         previous.filter((project) => project._id !== deleting._id),
       );
+      forgetResource(`/projects/${deleting._id}`, user.uid);
+      forgetResource(`/feedback/project/${deleting._id}`, user.uid);
       setDeleting(null);
     } catch (error) {
       setDeleteError(error.message);
@@ -139,21 +139,6 @@ export default function Dashboard() {
         onClose={() => setCreating(false)}
         onSubmit={saveProject}
         project={editing}
-        onPreview={
-          editing
-            ? () => {
-                setPreview(editing);
-                setPreviewOpen(true);
-                setCreating(false);
-              }
-            : undefined
-        }
-      />
-      <ProjectPreview
-        key={`${preview?._id || "preview"}-${previewOpen}`}
-        isOpen={previewOpen}
-        onClose={() => setPreviewOpen(false)}
-        project={preview}
       />
       <ConfirmDialog
         open={!!deleting}

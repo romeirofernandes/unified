@@ -5,7 +5,7 @@ import { LoadingState } from "./shared/PageState";
 export default function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
   const location = useLocation();
-  if (loading) return <LoadingState />;
+  if (loading) return <LoadingState variant="auth" />;
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
   return children;
 }

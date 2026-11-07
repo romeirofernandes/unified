@@ -1,3 +1,4 @@
+import { ProjectPreviewContent } from "./ProjectPreview";
 import { projectDraftKey } from "@/lib/project-draft";
 import { useTheme } from "next-themes";
 import AnimatedEditorBody from "@/components/projects/AnimatedEditorBody";
@@ -40,11 +41,13 @@ export default function ProjectModal({
   onClose,
   onSubmit,
   project,
-  onPreview,
 }) {
   const { resolvedTheme } = useTheme();
   const formId = useId();
   const headerRef = useRef(null);
+  const modalRef = useRef(null);
+  const [previewing, setPreviewing] = useState(false);
+  const [handoffHeight, setHandoffHeight] = useState(null);
   const [step, setStep] = useState(1);
   const [name, setName] = useState(project?.name || "");
   const [description, setDescription] = useState(project?.description || "");
@@ -122,10 +125,14 @@ export default function ProjectModal({
       }}
     >
       <DialogContent
+        ref={modalRef}
+        style={handoffHeight ? { height: handoffHeight } : undefined}
         className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-md border border-border bg-background p-0 text-foreground sm:max-w-[1060px]"
         size="xl"
         showCloseButton={!pending}
       >
+        {previewing && <ProjectPreviewContent project={project} onEdit={() => setPreviewing(false)} />}
+        <div className={previewing ? "hidden" : "flex min-h-0 flex-1 flex-col"}>
         <Tabs
           value={String(step)}
           onValueChange={(value) => {
@@ -149,10 +156,10 @@ export default function ProjectModal({
                   </DialogDescription>
                 </div>
                 <div className="flex shrink-0 flex-wrap items-center gap-2">
-                  {onPreview && (
+                  {project && (
                     <Button
                       variant="secondary"
-                      onClick={onPreview}
+                      onClick={() => { setHandoffHeight(modalRef.current?.offsetHeight || null); setPreviewing(true); }}
                       disabled={pending}
                     >
                       Preview
@@ -336,6 +343,7 @@ export default function ProjectModal({
             </AnimatedEditorBody>
           </form>
         </Tabs>
+        </div>
       </DialogContent>
     </Dialog>
   );

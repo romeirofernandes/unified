@@ -54,10 +54,10 @@ function ProjectFeedback({ projectId }) {
         </div>
       )}
       {analysis.error && <div className="space-y-3"><ErrorMessage>{analysis.error}</ErrorMessage><Button variant="secondary" onClick={analysis.generate} disabled={analysis.pending}>Retry summary</Button></div>}
-      {loading && <LoadingState />}
+      {loading && <LoadingState variant="responses" />}
       {!loading && !error && (
         <>
-          {analysis.pending || (!analysis.summary && responses.length > 0 && !analysis.error) ? <SummaryLoading updating={!!analysis.summary} /> : analysis.summary && <SummaryCard summary={analysis.summary} current={analysis.current} />}
+          {analysis.summary ? <SummaryCard summary={analysis.summary} current={analysis.current} /> : responses.length > 0 && !analysis.error && <SummaryLoading />}
           <FeedbackList
             responses={responses}
             fields={project.data?.fields || []}

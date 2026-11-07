@@ -1,3 +1,4 @@
+import { activeDocSection } from "@/lib/active-doc-section";
 import PageHeader from "@/components/shared/PageHeader";
 import CopyButton from "@/components/shared/CopyButton";
 import PackageCommands from "@/components/shared/PackageCommands";
@@ -94,40 +95,42 @@ export const documentationMarkdown = "# Unified documentation\n\n" + steps.map((
 
 export default function Quickstart() {
   const contentRef = useRef(null);
+  const articleRef = useRef(null);
   const [active, setActive] = useState(steps[0].id);
   useEffect(() => {
     let frame;
-    const root = contentRef.current;
-    let scroller = root?.parentElement;
-    while (scroller && !/(auto|scroll)/.test(getComputedStyle(scroller).overflowY)) scroller = scroller.parentElement;
+    const scroller = articleRef.current;
+    const content = contentRef.current;
     const update = () => {
-      const viewport = scroller && scroller !== document.body && scroller !== document.documentElement
-        ? scroller.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
-      const last = document.getElementById(steps.at(-1).id)?.getBoundingClientRect();
-      const endVisible = last && last.top < viewport.bottom && last.bottom <= viewport.bottom + 16;
-      const current = endVisible ? steps.at(-1) : [...steps].reverse().find(({ id }) => document.getElementById(id)?.getBoundingClientRect().top <= viewport.top + Math.min(320, (viewport.bottom - viewport.top) * 0.35)) || steps[0];
-      setActive(current.id);
+      if (!scroller || !content) return;
+      const viewport = scroller.getBoundingClientRect();
+      const sections = steps.map(({ id }) => ({ id, top: content.querySelector(`#${id}`)?.getBoundingClientRect().top ?? Infinity }));
+      setActive(activeDocSection(sections, viewport.top, viewport.height));
     };
     const onScroll = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); };
-    // Capture scroll from nested containers as well as the document.
-    document.addEventListener("scroll", onScroll, { passive: true, capture: true });
+    scroller?.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     const observer = new ResizeObserver(onScroll);
-    if (root) observer.observe(root);
+    if (content) observer.observe(content);
+    if (scroller) observer.observe(scroller);
     update();
-    return () => { cancelAnimationFrame(frame); observer.disconnect(); document.removeEventListener("scroll", onScroll, true); window.removeEventListener("resize", onScroll); };
+    return () => { cancelAnimationFrame(frame); observer.disconnect(); scroller?.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); };
   }, []);
   return (
-    <div ref={contentRef} className="space-y-10 pb-8">
-      <PageHeader title="Documentation" description="Set up the widget, connect your own form, and bring feedback into your workflow." action={<CopyButton value={documentationMarkdown} label="page" showLabel />} />
-      <div className="grid min-w-0 items-start gap-10 xl:grid-cols-[minmax(0,1fr)_220px] xl:gap-16">
-        <div className="min-w-0 max-w-4xl space-y-12">
+    <div className="flex h-full min-h-0 flex-1 flex-col gap-8">
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_220px] xl:gap-16">
+        <PageHeader title="Documentation" description="Set up the widget, connect your own form, and bring feedback into your workflow." />
+        <div className="xl:ps-5"><CopyButton value={documentationMarkdown} label="page" showLabel /></div>
+      </div>
+      <div className="grid min-h-0 min-w-0 flex-1 gap-10 xl:grid-cols-[minmax(0,1fr)_220px] xl:gap-16">
+        <article ref={articleRef} tabIndex={0} aria-label="Documentation article" className="min-h-0 min-w-0 overflow-y-auto pe-2 outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <div ref={contentRef} className="min-w-0 max-w-4xl space-y-12 pb-[60vh]">
           {steps.map((step, index) => (
             <section
               key={step.id}
               id={step.id}
               aria-labelledby={`${step.id}-title`}
-              className="min-w-0 scroll-mt-24 space-y-6 border-b border-border pb-12 last:border-0 last:pb-0"
+              className="min-w-0 scroll-mt-5 space-y-6 border-b border-border pb-12 last:border-0 last:pb-0"
             >
               <div className="flex items-baseline gap-4">
                 <span className="font-mono text-xs text-muted-foreground">
@@ -181,15 +184,19 @@ export default function Quickstart() {
             </section>
           ))}
         </div>
+        </article>
         <aside onClick={(event) => {
           const link = event.target.closest('a[href^="#"]');
           if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
           const section = document.getElementById(link.hash.slice(1));
           if (!section) return;
           event.preventDefault();
-          history.replaceState(null, "", link.hash);
-          section.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
-        }} className="hidden space-y-6 xl:sticky xl:top-24 xl:block">
+          const scroller = articleRef.current;
+          if (!scroller) return;
+          const top = section.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop - 20;
+          history.replaceState(history.state, "", link.hash);
+          scroller.scrollTo({ top, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+        }} className="hidden self-start space-y-6 xl:block">
           <BounceSidebar items={steps.map((step) => ({ id: step.id, label: step.title, href: `#${step.id}` }))} value={active} onValueChange={setActive} ariaLabel="On this page" itemClassName="text-sm" indicatorClassName="bg-fluid-accent" />
           <p className="ps-5 text-xs leading-6 text-muted-foreground">
             Already set up? Open a project to view responses and generate a

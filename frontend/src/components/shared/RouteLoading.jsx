@@ -8,7 +8,7 @@ export default function RouteLoading() {
         <Brand />
       </div>
       <div className="mx-auto max-w-[1200px] px-5 py-8 sm:px-8">
-        <LoadingState />
+        <LoadingState variant="route" />
       </div>
     </div>
   );

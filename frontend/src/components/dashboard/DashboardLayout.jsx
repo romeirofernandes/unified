@@ -1,3 +1,5 @@
+import { prefetchResource } from "@/lib/resource-cache";
+import { preloadPage } from "@/lib/preload-page";
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -38,6 +40,8 @@ const navigation = [
 ];
 
 function WorkspaceNavigation() {
+  const { user } = useAuth();
+  const prefetch = (path) => { preloadPage(path); if (["/dashboard", "/dashboard/integrations"].includes(path)) void prefetchResource("/projects", user?.uid).catch(() => {}); };
   const { pathname } = useLocation();
   const { setOpenMobile } = useSidebar();
   return (
@@ -57,6 +61,8 @@ function WorkspaceNavigation() {
             <li key={path}>
               <Link
                 to={path}
+                onMouseEnter={() => prefetch(path)}
+                onFocus={() => prefetch(path)}
                 aria-current={active ? "page" : undefined}
                 onClick={() => setOpenMobile(false)}
                 className={`flex min-h-10 items-center gap-3 rounded-md px-3 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring ${active ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground"}`}
@@ -181,7 +187,7 @@ export default function DashboardLayout({ children }) {
         <div
           id="workspace-content"
           tabIndex={-1}
-          className="w-full space-y-7 px-5 py-7 outline-none sm:px-8 sm:py-8 lg:py-10"
+          className={`w-full px-5 py-7 outline-none sm:px-8 sm:py-8 lg:py-10 ${pathname === "/dashboard/docs" ? "flex h-[calc(100dvh-4rem)] min-h-0 flex-col overflow-hidden" : "space-y-7"}`}
         >
           {children}
         </div>

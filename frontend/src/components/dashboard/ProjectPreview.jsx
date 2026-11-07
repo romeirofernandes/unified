@@ -20,6 +20,7 @@ import { useAuth } from "@/hooks/use-auth";
 import PreviewField from "@/components/projects/PreviewField";
 import CodeBlock from "@/components/shared/CodeBlock";
 import { integrationCode } from "@/lib/integration-code";
+import { Button } from "@/components/ui/button";
 import { typeClass } from "@/lib/type-scale";
 
 function PreviewTabPanel({ value, active, children }) {
@@ -29,7 +30,7 @@ function PreviewTabPanel({ value, active, children }) {
   </TabsContent>;
 }
 
-export default function ProjectPreview({ isOpen, onClose, project }) {
+export function ProjectPreviewContent({ project, onEdit }) {
   const { user } = useAuth();
   const [tab, setTab] = useState("preview");
   const headerRef = useRef(null);
@@ -39,21 +40,12 @@ export default function ProjectPreview({ isOpen, onClose, project }) {
   );
   if (!project) return null;
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={(open) => {
-        if (!open) onClose();
-      }}
-    >
-      <DialogContent
-        className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-md border border-border bg-background p-0 text-foreground sm:max-w-[1060px]"
-        size="xl"
-      >
+    <>
         <FormFont appearance={project.appearance} />
         <Tabs value={tab} onValueChange={setTab} variant="underline" className="flex min-h-0 min-w-0 flex-1 flex-col">
           <div ref={headerRef} className="shrink-0">
           <DialogHeader className="mb-0 px-5 pb-0 pt-5 sm:px-6">
-            <DialogTitle>{project.name}</DialogTitle>
+            <div className="flex items-center justify-between gap-3 pe-8"><DialogTitle>{project.name}</DialogTitle>{onEdit && <Button variant="secondary" size="compact" onClick={onEdit}>Back to editor</Button>}</div>
             <DialogDescription>Try your questions, then copy the integration into your React app.</DialogDescription>
           <TabsList aria-label="Project preview and setup" className="mt-4 w-full gap-0 border-b border-border [&>button]:min-h-11 [&>button]:flex-1 [&>button]:justify-center [&>button]:px-2 [&>button]:pb-3 [&>button]:pt-2">
             <TabsTrigger value="preview">Preview</TabsTrigger>
@@ -128,7 +120,14 @@ export default function ProjectPreview({ isOpen, onClose, project }) {
           <PreviewTabPanel value="api" active={tab === "api"}><ProjectApi project={project} uid={user?.uid} /></PreviewTabPanel>
           </AnimatedEditorBody>
         </Tabs>
-      </DialogContent>
-    </Dialog>
+    </>
   );
+}
+
+export default function ProjectPreview({ isOpen, onClose, project }) {
+  return <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+    <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-md border border-border bg-background p-0 text-foreground sm:max-w-[1060px]" size="xl">
+      <ProjectPreviewContent project={project} />
+    </DialogContent>
+  </Dialog>;
 }

@@ -1,3 +1,4 @@
+import { AlertDialog } from "@animate-ui/react/primitives/base-ui/alert-dialog";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Delete01Icon } from "@hugeicons/core-free-icons";
 import { useCallback, useEffect, useId, useState } from "react";
@@ -59,6 +60,7 @@ function Channel({ channel, project, settings, uid, onSaved }) {
   const [cadence, setCadence] = useState(state.cadence || "daily");
   const [destination, setDestination] = useState(settings.slackChannelId || "");
   const [pending, setPending] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const dismissMessage = useCallback(() => setMessage(""), []);
@@ -70,7 +72,7 @@ function Channel({ channel, project, settings, uid, onSaved }) {
     try {
       const data = await apiRequest(`/integrations/${project._id}/${channel}`, { uid, method: "PUT", body: { enabled, cadence, disconnect, ...(slack && destination ? { channelId: destination } : {}) } });
       onSaved(data);
-      if (disconnect) { setEnabled(false); setDestination(""); }
+      if (disconnect) { setEnabled(false); setDestination(""); setDisconnecting(false); }
       setMessage(disconnect ? "Slack disconnected." : "Saved. Digests include new feedback from now on; empty periods are skipped.");
     } catch (error) { setError(error.message); }
     finally { setPending(false); }
@@ -94,7 +96,7 @@ function Channel({ channel, project, settings, uid, onSaved }) {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm font-medium">{slack ? settings.slackConnected ? `${settings.slackWorkspace || "Workspace connected"}${settings.slackChannel ? ` · ${settings.slackChannel}` : ""}` : "Connect a workspace" : settings.emailAddress}</p>
-        {slack && settings.slackConnected && <Button variant="destructive" size="icon-compact" aria-label="Disconnect Slack" title="Disconnect Slack" onClick={() => save(true)} disabled={pending}><HugeiconsIcon icon={Delete01Icon} size={16} aria-hidden="true" /></Button>}
+        {slack && settings.slackConnected && <Button variant="destructive" size="icon-compact" aria-label="Disconnect Slack" title="Disconnect Slack" onClick={() => { setError(""); setDisconnecting(true); }} disabled={pending}><HugeiconsIcon icon={Delete01Icon} size={16} aria-hidden="true" /></Button>}
       </div>
       {slack ? <div className="space-y-2">
         <Button variant="secondary" onClick={installSlack} disabled={pending || !settings.slackInstallReady}><span className="inline-flex items-center gap-2"><img src="/logos/slack.svg" alt="" className="size-4" />{settings.slackConnected ? settings.slackCanChooseChannel ? "Change workspace" : "Reconnect Slack" : "Install in workspace"}</span></Button>
@@ -113,6 +115,17 @@ function Channel({ channel, project, settings, uid, onSaved }) {
       </dl>
       {state.error && <ErrorMessage>{state.error}</ErrorMessage>}
       <ErrorMessage>{error}</ErrorMessage>
+      <AlertDialog.Root open={disconnecting} onOpenChange={(open) => { if (!pending) setDisconnecting(open); }}>
+        <AlertDialog.Portal>
+          <AlertDialog.Backdrop forceRender onClick={() => { if (!pending) setDisconnecting(false); }} className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm" />
+          <AlertDialog.Popup className="fixed left-1/2 top-1/2 z-[71] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 space-y-4 rounded-md border border-border bg-background p-6 text-foreground shadow-xl">
+            <AlertDialog.Title className="text-xl">Disconnect Slack?</AlertDialog.Title>
+            <AlertDialog.Description className="text-sm leading-6 text-muted-foreground">Slack digests for this project will stop. You can reconnect the workspace anytime.</AlertDialog.Description>
+            <ErrorMessage>{error}</ErrorMessage>
+            <div className="flex justify-end gap-2"><Button variant="secondary" disabled={pending} onClick={() => setDisconnecting(false)}>Cancel</Button><Button variant="destructive" loading={pending} onClick={() => save(true)}>Disconnect Slack</Button></div>
+          </AlertDialog.Popup>
+        </AlertDialog.Portal>
+      </AlertDialog.Root>
       <ToastNotice message={message} onClose={dismissMessage} />
       <div className="flex flex-wrap gap-2">
         <Button onClick={() => save()} disabled={pending || !dirty}>Save {slack ? "Slack" : "email"}</Button>
@@ -123,7 +136,7 @@ function Channel({ channel, project, settings, uid, onSaved }) {
 }
 function ProjectConnections({ project, uid }) {
   const { data, loading, error, reload, setData } = useApiResource(`/integrations/${project._id}`, uid);
-  if (loading) return <LoadingState />;
+  if (loading) return <LoadingState variant="integrations" />;
   if (error) return <div className="space-y-3"><ErrorMessage>{error}</ErrorMessage><Button onClick={reload}>Try again</Button></div>;
   return <div className="space-y-10">
     <Channel channel="slack" project={project} settings={data} uid={uid} onSaved={setData} />
@@ -148,6 +161,6 @@ export default function Integrations() {
   return <>
     <PageHeader title="Integrations" description="Bring feedback summaries to your team, in Slack or your inbox." action={selector} />
     <ToastNotice message={toast} onClose={dismissToast} />
-    {loading ? <LoadingState /> : error ? <div className="space-y-3"><ErrorMessage>{error}</ErrorMessage><Button onClick={reload}>Try again</Button></div> : !projects.length ? <EmptyState title="Create a project first" description="Once you have a project, you can connect Slack and email digests here." /> : <ProjectConnections key={project._id} project={project} uid={user?.uid} />}
+    {loading ? <LoadingState variant="integrations" /> : error ? <div className="space-y-3"><ErrorMessage>{error}</ErrorMessage><Button onClick={reload}>Try again</Button></div> : !projects.length ? <EmptyState title="Create a project first" description="Once you have a project, you can connect Slack and email digests here." /> : <ProjectConnections key={project._id} project={project} uid={user?.uid} />}
   </>;
 }

@@ -1,3 +1,6 @@
+import { useAuth } from "@/hooks/use-auth";
+import { prefetchResource } from "@/lib/resource-cache";
+import { preloadPage } from "@/lib/preload-page";
 import { Link } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Delete01Icon, PencilEdit01Icon } from "@hugeicons/core-free-icons";
@@ -6,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { raisedCardSurface } from "@/components/ui/cardStyles";
 
 export default function ProjectCard({ project, onEdit, onDelete }) {
+  const { user } = useAuth();
+  const prepare = () => { preloadPage(`/project/${project._id}/feedbacks`); void prefetchResource(`/feedback/project/${project._id}`, user?.uid).catch(() => {}); };
   const count = project.feedbackCount ?? 0;
   return (
     <Card
@@ -34,6 +39,8 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
       <h2 className="pe-20 text-lg leading-7">
         <Link
           to={`/project/${project._id}/feedbacks`}
+          onMouseEnter={prepare}
+          onFocus={prepare}
           className="break-words outline-none after:absolute after:inset-0 after:rounded-md"
         >
           {project.name}

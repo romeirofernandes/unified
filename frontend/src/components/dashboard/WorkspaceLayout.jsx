@@ -8,7 +8,7 @@ import { LoadingState } from "@/components/shared/PageState";
 export default function WorkspaceLayout() {
   return (
     <DashboardLayout>
-      <Suspense fallback={<LoadingState />}>
+      <Suspense fallback={<LoadingState variant="route" />}>
         <ProtectedRoute>
           <Outlet />
         </ProtectedRoute>

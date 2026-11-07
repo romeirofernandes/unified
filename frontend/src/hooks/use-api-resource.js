@@ -1,53 +1,31 @@
 import { useCallback, useEffect, useState } from "react";
-import { apiRequest } from "@/lib/api";
+import { cacheResource, prefetchResource, readResource } from "@/lib/resource-cache";
 
-// Each request owns its result; route changes and unmounts abort stale work.
+// Keep recently loaded content on navigation and during background refreshes.
 export function useApiResource(path, uid) {
-  const [resource, setResource] = useState({
-    path: null,
-    uid: null,
-    data: null,
-    error: "",
-    loading: true,
-  });
+  const [resource, setResource] = useState(() => ({ path, uid, data: readResource(path, uid)?.data ?? null, error: "" }));
   const [revision, setRevision] = useState(0);
   useEffect(() => {
     if (!uid) return;
-    const controller = new AbortController();
-    apiRequest(path, { uid, signal: controller.signal }).then(
-      (data) => {
-        if (!controller.signal.aborted)
-          setResource({ path, uid, data, error: "", loading: false });
-      },
-      (error) => {
-        if (!controller.signal.aborted)
-          setResource({
-            path,
-            uid,
-            data: null,
-            error: error.message,
-            loading: false,
-          });
-      },
+    let current = true;
+    prefetchResource(path, uid, revision > 0).then(
+      (data) => { if (current) setResource({ path, uid, data, error: "" }); },
+      (error) => { if (current) setResource({ path, uid, data: readResource(path, uid)?.data ?? null, error: error.message }); },
     );
-    return () => controller.abort();
+    return () => { current = false; };
   }, [path, uid, revision]);
-
-  const refresh = useCallback(() => setRevision((value) => value + 1), []);
   const current = resource.path === path && resource.uid === uid;
+  const data = current ? resource.data : readResource(path, uid)?.data ?? null;
+  const error = current ? resource.error : "";
+  const refresh = useCallback(() => setRevision((value) => value + 1), []);
   return {
-    data: current ? resource.data : null,
-    error: current ? resource.error : "",
-    loading: !current || resource.loading,
-    refresh,
-    reload: () => {
-      setResource((previous) => ({ ...previous, loading: true }));
-      setRevision((value) => value + 1);
+    data, error, loading: data === null && !error,
+    refresh, reload: refresh,
+    setData: (update) => {
+      const previous = readResource(path, uid)?.data ?? data;
+      const next = typeof update === "function" ? update(previous) : update;
+      cacheResource(path, uid, next);
+      setResource({ path, uid, data: next, error: "" });
     },
-    setData: (update) =>
-      setResource((previous) => ({
-        ...previous,
-        data: typeof update === "function" ? update(previous.data) : update,
-      })),
   };
 }
