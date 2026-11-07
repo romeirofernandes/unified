@@ -1,3 +1,4 @@
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/motion/tabs";
 import PackageCommands from "@/components/shared/PackageCommands";
 import ProjectApi from "./ProjectApi";
 import { useState } from "react";
@@ -44,8 +45,14 @@ export default function ProjectPreview({ isOpen, onClose, project }) {
             Try your questions, then copy the integration into your React app.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid min-w-0 items-start gap-6 lg:grid-cols-2">
-          <section className="min-w-0 space-y-4">
+        <Tabs defaultValue="preview" variant="underline" className="min-w-0">
+          <TabsList aria-label="Project preview and setup">
+            <TabsTrigger value="preview">Preview</TabsTrigger>
+            <TabsTrigger value="sdk">React SDK</TabsTrigger>
+            <TabsTrigger value="api">Custom form</TabsTrigger>
+          </TabsList>
+          <TabsContent value="preview" className="pt-5">
+          <section className="mx-auto w-full max-w-2xl min-w-0 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className={typeClass("title")}>Widget preview</h3>
               <PreviewModeToggle value={mode} onChange={setMode} />
@@ -72,6 +79,8 @@ export default function ProjectPreview({ isOpen, onClose, project }) {
               This preview doesn’t submit feedback.
             </p>
           </section>
+          </TabsContent>
+          <TabsContent value="sdk" className="pt-5">
           <section className="min-w-0 space-y-4">
             <h3 className={typeClass("title")}>Integration</h3>
             <p className="text-sm text-muted-foreground">
@@ -101,9 +110,11 @@ export default function ProjectPreview({ isOpen, onClose, project }) {
               label="Firebase UID"
               value={user?.uid || ""}
             />
-            <ProjectApi project={project} uid={user?.uid} />
+
           </section>
-        </div>
+          </TabsContent>
+          <TabsContent value="api" className="pt-5"><ProjectApi project={project} uid={user?.uid} /></TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

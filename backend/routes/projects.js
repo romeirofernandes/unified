@@ -136,19 +136,28 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Keys grant submission access only. Store only a digest and reveal once.
+// Keys grant submission access only. Keep a digest for auth and encrypted owner retrieval.
+router.get("/:id/submission-key", async (req, res) => {
+  res.set("Cache-Control", "no-store");
+  try {
+    const project = await Project.findOne({ _id: req.params.id, userId: req.user.id }).select("+submissionKeyEncrypted +submissionKeyHash");
+    if (!project) return res.status(404).json({ message: "Project not found" });
+    res.json({ key: project.submissionKeyEncrypted ? require("../services/secret-storage").decrypt(project.submissionKeyEncrypted) : "", legacy: !!project.submissionKeyHash && !project.submissionKeyEncrypted });
+  } catch { res.status(500).json({ message: "Could not retrieve submission key." }); }
+});
 router.post("/:id/submission-key", async (req, res) => {
   try {
     const { randomBytes, createHash } = require("node:crypto");
     const key = `uf_${randomBytes(32).toString("hex")}`;
-    const project = await Project.findOneAndUpdate({ _id: req.params.id, userId: req.user.id }, { $set: { submissionKeyHash: createHash("sha256").update(key).digest("hex") } }, { new: true });
+    const project = await Project.findOneAndUpdate({ _id: req.params.id, userId: req.user.id }, { $set: { submissionKeyHash: createHash("sha256").update(key).digest("hex"), submissionKeyEncrypted: require("../services/secret-storage").encrypt(key) } }, { new: true });
     if (!project) return res.status(404).json({ message: "Project not found" });
+    res.set("Cache-Control", "no-store");
     res.json({ key });
   } catch { res.status(500).json({ message: "Could not create submission key." }); }
 });
 router.delete("/:id/submission-key", async (req, res) => {
   try {
-    const project = await Project.findOneAndUpdate({ _id: req.params.id, userId: req.user.id }, { $unset: { submissionKeyHash: 1 } });
+    const project = await Project.findOneAndUpdate({ _id: req.params.id, userId: req.user.id }, { $unset: { submissionKeyHash: 1, submissionKeyEncrypted: 1 } });
     if (!project) return res.status(404).json({ message: "Project not found" });
     res.json({ message: "Submission key revoked." });
   } catch { res.status(500).json({ message: "Could not revoke submission key." }); }
