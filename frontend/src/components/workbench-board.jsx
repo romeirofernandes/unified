@@ -27,7 +27,7 @@ function CardView({ issue, pending, onEdit, onDelete, onMove, handle, overlay = 
     </button>
     <div className="flex items-center justify-between gap-2 border-t border-border px-3 py-2">
       {overlay ? <span className="h-7 text-xs text-muted-foreground">{columns.find(column => column.id === issue.status)?.label}</span> : <StatusSelect compact label={`Status for ${issue.title}`} value={issue.status} disabled={pending} onChange={onMove} />}
-      <Button variant="destructive-ghost" size="icon-compact" aria-label={`Delete ${issue.title}`} disabled={pending || overlay} onClick={onDelete}><HugeiconsIcon icon={Delete01Icon} size={14} aria-hidden="true" /></Button>
+      <Button variant="destructive" size="icon-compact" title="Delete issue" aria-label={`Delete ${issue.title}`} disabled={pending || overlay} onClick={onDelete}><HugeiconsIcon icon={Delete01Icon} size={15} aria-hidden="true" /></Button>
     </div>
   </article>;
 }
