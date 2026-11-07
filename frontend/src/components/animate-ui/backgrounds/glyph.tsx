@@ -253,7 +253,7 @@ function createRenderer(gl: WebGLRenderingContext) {
   gl.uniform1i(uniforms.atlas, 0);
   gl.uniform1f(uniforms.count, CHARACTERS.length);
   gl.uniform1f(uniforms.rest, 0);
-  gl.uniform1f(uniforms.haze, 0.12);
+  gl.uniform1f(uniforms.haze, 0.15);
   gl.uniform1f(uniforms.hoverInk, 0.3);
 
   return {
