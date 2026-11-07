@@ -2,6 +2,7 @@
 
 import {
   Children,
+  cloneElement,
   forwardRef,
   isValidElement,
   useRef,
@@ -12,6 +13,7 @@ import {
   createContext,
   useContext,
   type ReactNode,
+  type ReactElement,
   type HTMLAttributes,
 } from "react";
 import { motion, AnimatePresence } from "motion/react";
@@ -351,6 +353,19 @@ interface SelectContentProps {
 const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
   ({ className, children }, ref) => {
     const { open, value, actionsRef } = useSelectContext();
+    // Assign hover indices here so callers and nested groups cannot omit or duplicate them.
+    const indexedChildren = useMemo(() => {
+      let index = 0;
+      function indexItems(nodes: ReactNode): ReactNode {
+        return Children.map(nodes, (child) => {
+          if (!isValidElement(child)) return child;
+          if (child.type === SelectItem) return cloneElement(child as ReactElement<SelectItemProps>, { index: index++ });
+          const element = child as ReactElement<{ children?: ReactNode }>;
+          return element.props.children ? cloneElement(element, {}, indexItems(element.props.children)) : element;
+        });
+      }
+      return indexItems(children);
+    }, [children]);
     const shape = popupShape;
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -604,7 +619,7 @@ const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
                   </AnimatePresence>
                 )}
 
-                {children}
+                {indexedChildren}
                   </div>
                 </ScrollArea>
               </SelectPrimitive.Popup>
@@ -624,7 +639,7 @@ SelectContent.displayName = "SelectContent";
 
 interface SelectItemProps extends HTMLAttributes<HTMLDivElement> {
   icon?: IconComponent;
-  index: number;
+  index?: number;
   value: string;
   disabled?: boolean;
 }
