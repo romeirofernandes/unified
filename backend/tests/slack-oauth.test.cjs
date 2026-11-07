@@ -13,7 +13,7 @@ test("Slack installs request the channel picker with a random state and exact re
   const first = authorization(), second = authorization();
   const url = new URL(first.url);
   assert.equal(url.origin, "https://slack.com");
-  assert.equal(url.searchParams.get("scope"), "incoming-webhook");
+  assert.deepEqual(url.searchParams.get("scope").split(","), ["incoming-webhook", "channels:read", "groups:read", "chat:write", "chat:write.public"]);
   assert.equal(url.searchParams.get("redirect_uri"), process.env.SLACK_REDIRECT_URI);
   assert.equal(url.searchParams.get("state"), first.state);
   assert.notEqual(first.state, second.state);
@@ -66,4 +66,10 @@ test("invalid state and cancelled installations never exchange codes or change c
   await routes.handler({ query: { state: "a".repeat(64), error: "access_denied" } }, cancelled);
   assert.match(cancelled.location, /slack=cancelled/);
   assert.equal(routes.written(), undefined);
+});
+
+test("channel-capable installs retain the bot token and selected channel ID", async () => {
+  const data = await exchangeCode("code", async () => ({ ok: true, json: async () => ({ ok: true, scope: "incoming-webhook,channels:read,chat:write,chat:write.public", access_token: "test-bot-token", incoming_webhook: { url: "https://hooks.slack.com/services/T/B/token", channel_id: "C123456", channel: "#feedback" } }) }));
+  assert.equal(data.token, "test-bot-token");
+  assert.equal(data.channelId, "C123456");
 });

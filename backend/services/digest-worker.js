@@ -19,7 +19,7 @@ async function processDigest(id, channel, dependencies = {}) {
   const project = await models.Project.findOneAndUpdate({
     _id: id, [`${prefix}.enabled`]: true, [`${prefix}.nextRunAt`]: { $lte: now },
     $or: [{ [`${prefix}.lockUntil`]: null }, { [`${prefix}.lockUntil`]: { $lt: now } }],
-  }, { $set: { [`${prefix}.lockToken`]: token, [`${prefix}.lockUntil`]: new Date(Date.now() + 12 * 60 * 1000) } }, { new: true }).select("+slackWebhookEncrypted").lean();
+  }, { $set: { [`${prefix}.lockToken`]: token, [`${prefix}.lockUntil`]: new Date(Date.now() + 12 * 60 * 1000) } }, { new: true }).select("+slackWebhookEncrypted +slackBotTokenEncrypted").lean();
   if (!project) return;
   const owner = { _id: id, [`${prefix}.lockToken`]: token };
   const state = project.notifications[channel];

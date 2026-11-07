@@ -88,3 +88,23 @@ test("install links are project-owned and persist only a short-lived hashed stat
   delete process.env.SLACK_CLIENT_SECRET;
   delete process.env.SLACK_REDIRECT_URI;
 });
+
+test("email save returns channel settings separately from the recipient address", async () => {
+  const handlers = routes({ findOne: () => query({ notifications: { email: { enabled: true, cadence: "hourly" } } }) });
+  const res = response();
+  await handlers.get("get /:id")(request(), res);
+  assert.equal(res.data.email.enabled, true);
+  assert.equal(res.data.email.cadence, "hourly");
+  assert.equal(res.data.emailAddress, "owner@example.com");
+});
+
+test("channel listing requires project ownership and a channel-capable install", async () => {
+  const noProject = routes({ findOne: (filter) => { assert.equal(filter.userId, "owner"); return query(null); } });
+  const denied = response();
+  await noProject.get("get /:id/slack/channels")({ ...request(), query: {} }, denied);
+  assert.equal(denied.statusCode, 404);
+  const legacy = routes({ findOne: () => query({ slackWebhookEncrypted: "encrypted" }) });
+  const reconnect = response();
+  await legacy.get("get /:id/slack/channels")({ ...request(), query: {} }, reconnect);
+  assert.equal(reconnect.statusCode, 409);
+});

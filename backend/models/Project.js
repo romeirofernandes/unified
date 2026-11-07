@@ -88,6 +88,8 @@ const projectSchema = new mongoose.Schema({
   slackOAuthStateUntil: { type: Date, select: false },
   slackWorkspace: String,
   slackChannel: String,
+  slackChannelId: String,
+  slackBotTokenEncrypted: { type: String, select: false },
   slackWebhookEncrypted: { type: String, select: false },
   notifications: { slack: { type: digestChannelSchema, default: () => ({}) }, email: { type: digestChannelSchema, default: () => ({}) } },
   submissionKeyEncrypted: { type: String, select: false },

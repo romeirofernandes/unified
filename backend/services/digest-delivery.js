@@ -1,3 +1,5 @@
+const { slackApi } = require("./slack-client");
+const { digestHtml, slackDigest } = require("./digest-format");
 const { emailFrom, emailTransport, emailReady, sendSmtp } = require("./email-transport");
 const { createHash } = require("node:crypto");
 const { decrypt } = require("./secret-storage");
@@ -17,21 +19,20 @@ async function deliverDigest({ project, channel, summary, count, recipient, batc
   const text = digestText({ project, summary, count, test });
   let url, body, headers = { "Content-Type": "application/json" };
   if (channel === "slack") {
+    body = slackDigest({ project, summary, count, test });
+    if (project.slackBotTokenEncrypted && project.slackChannelId) {
+      await slackApi(decrypt(project.slackBotTokenEncrypted), "chat.postMessage", { ...body, channel: project.slackChannelId, parse: "none" }, request);
+      return;
+    }
     url = validateSlackWebhook(decrypt(project.slackWebhookEncrypted));
-    // Plain text blocks prevent feedback from creating mentions or Slack markup.
-    const base = (process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/$/, "");
-    body = { text: "Your Unified feedback digest is ready.", blocks: [
-      { type: "section", text: { type: "plain_text", text: text.slice(0, 2900), emoji: false } },
-      { type: "actions", elements: [{ type: "button", text: { type: "plain_text", text: "View responses" }, url: `${base}/project/${project._id}/feedbacks` }] },
-    ] };
   } else {
     if (!emailReady()) throw new Error("Email delivery is not configured on the server.");
     const subject = `${test ? "[Test] " : ""}${project.name.replace(/[\r\n]/g, " ").slice(0, 120)} · feedback digest`;
-    if (emailTransport() === "smtp") return sendSmtp({ recipient, subject, text, batchId });
+    if (emailTransport() === "smtp") return sendSmtp({ recipient, subject, text, html: digestHtml({ project, summary, count, test }), batchId });
     url = "https://api.resend.com/emails";
     headers.Authorization = `Bearer ${process.env.RESEND_API_KEY}`;
     headers["Idempotency-Key"] = createHash("sha256").update(batchId).digest("hex");
-    body = { from: emailFrom(), to: [recipient], subject, text };
+    body = { from: emailFrom(), to: [recipient], subject, text, html: digestHtml({ project, summary, count, test }) };
   }
   const response = await request(url, { method: "POST", headers, body: JSON.stringify(body), signal: AbortSignal.timeout(20000), redirect: "error" });
   if (!response.ok) throw new Error(`${channel === "slack" ? "Slack" : "Email"} delivery failed (${response.status}). Check the connection and try again.`);

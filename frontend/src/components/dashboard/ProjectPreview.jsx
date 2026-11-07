@@ -1,8 +1,9 @@
+import AnimatedEditorBody from "@/components/projects/AnimatedEditorBody";
 import { motion as Motion, useReducedMotion } from "motion/react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/motion/tabs";
 import PackageCommands from "@/components/shared/PackageCommands";
 import ProjectApi from "./ProjectApi";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTheme } from "next-themes";
 import PreviewModeToggle from "@/components/projects/PreviewModeToggle";
 import FormFont from "../../../../shared/FormFont";
@@ -23,7 +24,7 @@ import { typeClass } from "@/lib/type-scale";
 
 function PreviewTabPanel({ value, active, children }) {
   const reduced = useReducedMotion();
-  return <TabsContent value={value} className="m-0 px-1 pb-1 pt-5">
+  return <TabsContent value={value} className="m-0">
     <Motion.div initial={false} animate={{ opacity: active ? 1 : 0, y: active ? 0 : 6 }} transition={{ duration: reduced ? 0 : 0.18, ease: [0.22, 1, 0.36, 1] }}>{children}</Motion.div>
   </TabsContent>;
 }
@@ -31,8 +32,7 @@ function PreviewTabPanel({ value, active, children }) {
 export default function ProjectPreview({ isOpen, onClose, project }) {
   const { user } = useAuth();
   const [tab, setTab] = useState("preview");
-  const viewport = useRef(null);
-  useLayoutEffect(() => { if (viewport.current) viewport.current.scrollTop = 0; }, [tab]);
+  const headerRef = useRef(null);
   const { resolvedTheme } = useTheme();
   const [mode, setMode] = useState(() =>
     resolvedTheme === "dark" ? "dark" : "light",
@@ -46,23 +46,23 @@ export default function ProjectPreview({ isOpen, onClose, project }) {
       }}
     >
       <DialogContent
-        className="flex h-[min(820px,calc(100dvh-2rem))] max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-md border border-border bg-background text-foreground sm:max-w-[1060px]"
+        className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-md border border-border bg-background p-0 text-foreground sm:max-w-[1060px]"
         size="xl"
       >
         <FormFont appearance={project.appearance} />
-        <DialogHeader className="shrink-0">
-          <DialogTitle>{project.name}</DialogTitle>
-          <DialogDescription>
-            Try your questions, then copy the integration into your React app.
-          </DialogDescription>
-        </DialogHeader>
         <Tabs value={tab} onValueChange={setTab} variant="underline" className="flex min-h-0 min-w-0 flex-1 flex-col">
-          <TabsList aria-label="Project preview and setup" className="w-full [&>button]:flex-1 [&>button]:justify-center">
+          <div ref={headerRef} className="shrink-0">
+          <DialogHeader className="mb-0 px-5 pb-0 pt-5 sm:px-6">
+            <DialogTitle>{project.name}</DialogTitle>
+            <DialogDescription>Try your questions, then copy the integration into your React app.</DialogDescription>
+          <TabsList aria-label="Project preview and setup" className="mt-4 w-full gap-0 border-b border-border [&>button]:min-h-11 [&>button]:flex-1 [&>button]:justify-center [&>button]:px-2 [&>button]:pb-3 [&>button]:pt-2">
             <TabsTrigger value="preview">Preview</TabsTrigger>
             <TabsTrigger value="sdk">React SDK</TabsTrigger>
             <TabsTrigger value="api">Custom form</TabsTrigger>
           </TabsList>
-          <div ref={viewport} className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
+          </DialogHeader>
+          </div>
+          <AnimatedEditorBody headerRef={headerRef}>
           <PreviewTabPanel value="preview" active={tab === "preview"}>
           <section className="mx-auto w-full max-w-2xl min-w-0 space-y-4">
             <div className="flex items-center justify-between">
@@ -126,7 +126,7 @@ export default function ProjectPreview({ isOpen, onClose, project }) {
           </section>
           </PreviewTabPanel>
           <PreviewTabPanel value="api" active={tab === "api"}><ProjectApi project={project} uid={user?.uid} /></PreviewTabPanel>
-          </div>
+          </AnimatedEditorBody>
         </Tabs>
       </DialogContent>
     </Dialog>

@@ -45,7 +45,7 @@ Nodemailer is a sending library, not an email service with a free unlimited quot
 ### Slack - configure one app, then users install it
 
 1. create an app at <https://api.slack.com/apps>, using `backend/slack-app-manifest.json` if helpful. replace `YOUR_BACKEND_HOST` with the deployed backend host before importing it.
-2. enable incoming webhooks and ensure OAuth & Permissions includes the `incoming-webhook` bot scope.
+2. enable incoming webhooks and ensure OAuth & Permissions includes `incoming-webhook`, `channels:read`, `groups:read`, `chat:write`, and `chat:write.public` bot scopes.
 3. add the exact HTTPS redirect URL `https://YOUR_BACKEND_HOST/api/slack/callback` under OAuth & Permissions.
 4. copy the client ID and client secret from Basic Information into the backend environment:
 
@@ -56,11 +56,12 @@ SLACK_REDIRECT_URI=https://YOUR_BACKEND_HOST/api/slack/callback
 ```
 
 5. for installations outside the app’s development workspace, complete Slack’s app distribution setup. workspace policies may still require administrator approval.
-6. redeploy the backend. users can now click **install in workspace**, choose a workspace and channel in Slack, then return to Unified to enable their digest schedule.
+6. existing installs need to reconnect once after adding the channel permissions. the channel picker lists public channels plus private channels the app has been invited to; archived channels are excluded, and larger workspaces can load more pages. saved destinations are validated against Slack before changing them.
+7. redeploy the backend. users can now click **install in workspace**, choose a workspace and channel in Slack, then return to Unified to enable their digest schedule.
 
 Slack requires an HTTPS callback. for local development, use an HTTPS tunnel to your backend and register that exact URL. no signing secret, event subscription, mail-reading permission or per-user webhook copy/paste is needed for this flow.
 
-OAuth state is random, project-bound, expires in 10 minutes and is consumed once. webhook credentials are encrypted and never returned to the browser. disconnecting a project removes its stored destination and stops delivery; it does not uninstall the shared Slack app from the whole workspace. an already accepted provider request cannot be recalled.
+OAuth state is random, project-bound, expires in 10 minutes and is consumed once. webhook credentials and bot tokens are encrypted and never returned to the browser. disconnecting a project removes its stored destination and stops delivery; it does not uninstall the shared Slack app from the whole workspace. an already accepted provider request cannot be recalled.
 
 project submission keys are encrypted for owner retrieval and hashed separately for authentication. legacy hashed-only keys require replacement once.
 
@@ -82,3 +83,5 @@ delivery errors exclude provider payloads and secrets. tests are limited to one 
 - [Resend pricing](https://resend.com/pricing)
 - [Resend idempotency](https://resend.com/docs/dashboard/emails/idempotency-keys)
 - [Slack logo from SVGL](https://svgl.app/)
+
+HTML email digests use the project’s warm neutral palette, serif headings, numbered actions and a response link, with a plain-text alternative. Slack messages use Block Kit headings, context and separate action sections; feedback remains plain text so it cannot create Slack mentions.

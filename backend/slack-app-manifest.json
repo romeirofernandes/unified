@@ -11,8 +11,18 @@
     }
   },
   "oauth_config": {
-    "redirect_urls": ["https://YOUR_BACKEND_HOST/api/slack/callback"],
-    "scopes": { "bot": ["incoming-webhook"] }
+    "redirect_urls": [
+      "https://YOUR_BACKEND_HOST/api/slack/callback"
+    ],
+    "scopes": {
+      "bot": [
+        "incoming-webhook",
+        "channels:read",
+        "groups:read",
+        "chat:write",
+        "chat:write.public"
+      ]
+    }
   },
   "settings": {
     "org_deploy_enabled": false,

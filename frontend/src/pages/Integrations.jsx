@@ -1,3 +1,5 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Delete01Icon } from "@hugeicons/core-free-icons";
 import { useCallback, useEffect, useId, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import PageHeader from "@/components/shared/PageHeader";
@@ -22,24 +24,53 @@ function IntegrationSelect({ label, value, onChange, options, disabled = false }
   </div>;
 }
 
+function SlackChannelSelect({ project, uid, value, onChange, currentName, disabled }) {
+  const { data, error, loading, reload } = useApiResource(`/integrations/${project._id}/slack/channels`, uid);
+  const [extra, setExtra] = useState([]);
+  const [next, setNext] = useState(undefined);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [pageError, setPageError] = useState("");
+  const entries = [...(data?.channels || []), ...extra];
+  const channels = [...new Map(entries.map((item) => [item.id, item])).values()];
+  const options = channels.map((item) => ({ value: item.id, label: `#${item.name}${item.private ? " · Private" : ""}` }));
+  if (value && !options.some((item) => item.value === value)) options.unshift({ value, label: currentName || "Current channel" });
+  async function loadMore() {
+    setLoadingMore(true); setPageError("");
+    try {
+      const page = await apiRequest(`/integrations/${project._id}/slack/channels?cursor=${encodeURIComponent(next ?? data.nextCursor)}`, { uid });
+      setExtra((previous) => [...previous, ...page.channels]);
+      setNext(page.nextCursor);
+    } catch (error) { setPageError(error.message); }
+    finally { setLoadingMore(false); }
+  }
+  return <div className="space-y-2">
+    <IntegrationSelect label="Channel" value={value} onChange={onChange} options={options} disabled={disabled || loading || !!error} />
+    {loading && <p className="text-xs text-muted-foreground">Loading channels…</p>}
+    <ErrorMessage>{error || pageError}</ErrorMessage>
+    {error ? <Button variant="secondary" onClick={reload}>Try again</Button> : (next ?? data?.nextCursor) && <Button variant="ghost" disabled={loadingMore} onClick={loadMore}>Load more channels</Button>}
+  </div>;
+}
+
 const date = (value) => value ? new Date(value).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "Not yet";
 
 function Channel({ channel, project, settings, uid, onSaved }) {
   const state = settings[channel] || {};
   const [enabled, setEnabled] = useState(state.enabled || false);
   const [cadence, setCadence] = useState(state.cadence || "daily");
+  const [destination, setDestination] = useState(settings.slackChannelId || "");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const dismissMessage = useCallback(() => setMessage(""), []);
   const slack = channel === "slack";
   const ready = slack ? settings.slackConnected : settings.emailReady;
-  const dirty = enabled !== !!state.enabled || cadence !== (state.cadence || "daily");
+  const dirty = enabled !== !!state.enabled || cadence !== (state.cadence || "daily") || (slack && destination !== (settings.slackChannelId || ""));
   async function save(disconnect = false) {
     setPending(true); setError(""); setMessage("");
     try {
-      const data = await apiRequest(`/integrations/${project._id}/${channel}`, { uid, method: "PUT", body: { enabled, cadence, disconnect } });
+      const data = await apiRequest(`/integrations/${project._id}/${channel}`, { uid, method: "PUT", body: { enabled, cadence, disconnect, ...(slack && destination ? { channelId: destination } : {}) } });
       onSaved(data);
-      if (disconnect) setEnabled(false);
+      if (disconnect) { setEnabled(false); setDestination(""); }
       setMessage(disconnect ? "Slack disconnected." : "Saved. Digests include new feedback from now on; empty periods are skipped.");
     } catch (error) { setError(error.message); }
     finally { setPending(false); }
@@ -62,16 +93,19 @@ function Channel({ channel, project, settings, uid, onSaved }) {
   return <SettingsSection id={`digest-${channel}`} title={slack ? <span className="flex items-center gap-2"><img src="/logos/slack.svg" alt="" className="size-5" />Slack</span> : <span className="flex items-center gap-2"><img src="/logos/gmail.svg" alt="" className="size-5" />Email</span>} description={slack ? "Keep your team up to date in a channel, with a digest of new feedback." : "Get a digest in your account’s inbox, without checking the dashboard."}>
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm font-medium">{slack ? settings.slackConnected ? `${settings.slackWorkspace || "Workspace connected"}${settings.slackChannel ? ` · ${settings.slackChannel}` : ""}` : "Connect a workspace" : settings.email}</p>
-        <span className="rounded border border-border px-2 py-1 text-xs text-muted-foreground">{state.enabled ? "Active" : "Paused"}</span>
+        <p className="text-sm font-medium">{slack ? settings.slackConnected ? `${settings.slackWorkspace || "Workspace connected"}${settings.slackChannel ? ` · ${settings.slackChannel}` : ""}` : "Connect a workspace" : settings.emailAddress}</p>
+        {slack && settings.slackConnected && <Button variant="destructive" size="icon-compact" aria-label="Disconnect Slack" title="Disconnect Slack" onClick={() => save(true)} disabled={pending}><HugeiconsIcon icon={Delete01Icon} size={16} aria-hidden="true" /></Button>}
       </div>
       {slack ? <div className="space-y-2">
-        <Button variant="secondary" onClick={installSlack} disabled={pending || !settings.slackInstallReady}><span className="inline-flex items-center gap-2"><img src="/logos/slack.svg" alt="" className="size-4" />{settings.slackConnected ? "Change workspace or channel" : "Install in workspace"}</span></Button>
+        <Button variant="secondary" onClick={installSlack} disabled={pending || !settings.slackInstallReady}><span className="inline-flex items-center gap-2"><img src="/logos/slack.svg" alt="" className="size-4" />{settings.slackConnected ? settings.slackCanChooseChannel ? "Change workspace" : "Reconnect Slack" : "Install in workspace"}</span></Button>
         {!settings.slackInstallReady && <p className="text-xs text-muted-foreground">Slack installation hasn’t been configured for this workspace yet.</p>}
       </div> : !settings.emailReady && <p className="rounded border border-border bg-muted/40 p-3 text-sm text-muted-foreground">Email delivery hasn’t been configured for this workspace yet.</p>}
+      {slack && settings.slackConnected && (settings.slackCanChooseChannel
+        ? <SlackChannelSelect project={project} uid={uid} value={destination} onChange={setDestination} currentName={settings.slackChannel} disabled={pending} />
+        : <p className="text-xs text-muted-foreground">Reconnect Slack to choose channels here.</p>)}
       <div className="grid items-end gap-4 sm:grid-cols-2">
         <IntegrationSelect label="Digest frequency" value={cadence} onChange={setCadence} disabled={pending} options={[{ value: "hourly", label: "Every hour" }, { value: "daily", label: "Every 24 hours" }]} />
-        <div className="pb-2"><Checkbox label="Send feedback digests" checked={enabled} onCheckedChange={setEnabled} disabled={pending || !ready} /></div>
+        <div className="flex h-10 items-center"><Checkbox label="Send feedback digests" checked={enabled} onCheckedChange={setEnabled} disabled={pending || !ready} /></div>
       </div>
       <dl className="grid gap-3 border-y border-border py-4 text-xs sm:grid-cols-2">
         <div><dt className="text-muted-foreground">Next check</dt><dd className="mt-1">{state.enabled ? date(state.nextRunAt) : "Delivery paused"}</dd></div>
@@ -79,11 +113,10 @@ function Channel({ channel, project, settings, uid, onSaved }) {
       </dl>
       {state.error && <ErrorMessage>{state.error}</ErrorMessage>}
       <ErrorMessage>{error}</ErrorMessage>
-      <p role="status" className="text-sm text-muted-foreground">{message}</p>
+      <ToastNotice message={message} onClose={dismissMessage} />
       <div className="flex flex-wrap gap-2">
         <Button onClick={() => save()} disabled={pending || !dirty}>Save {slack ? "Slack" : "email"}</Button>
         <Button variant="secondary" onClick={test} disabled={pending || !ready || dirty}>Send test digest</Button>
-        {slack && settings.slackConnected && <Button variant="secondary" onClick={() => save(true)} disabled={pending}>Disconnect</Button>}
       </div>
     </div>
   </SettingsSection>;

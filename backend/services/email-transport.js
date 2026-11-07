@@ -10,7 +10,7 @@ function emailReady() {
     ? !!(process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASS)
     : emailTransport() === "resend" && !!process.env.RESEND_API_KEY;
 }
-async function sendSmtp({ recipient, subject, text, batchId }, createTransport = nodemailer.createTransport) {
+async function sendSmtp({ recipient, subject, text, html, batchId }, createTransport = nodemailer.createTransport) {
   const port = Number(process.env.SMTP_PORT);
   if (!emailReady() || !Number.isInteger(port) || port < 1 || port > 65535) throw new Error("Email delivery is not configured on the server.");
   const transport = createTransport({
@@ -22,7 +22,7 @@ async function sendSmtp({ recipient, subject, text, batchId }, createTransport =
     disableFileAccess: true, disableUrlAccess: true,
   });
   try {
-    const result = await transport.sendMail({ from: emailFrom(), to: recipient, subject, text, messageId: `<${createHash("sha256").update(batchId).digest("hex")}@unified.digest>` });
+    const result = await transport.sendMail({ from: emailFrom(), to: recipient, subject, text, html, messageId: `<${createHash("sha256").update(batchId).digest("hex")}@unified.digest>` });
     if (!result.accepted?.length || result.rejected?.length) throw new Error("SMTP recipient rejected");
   } catch { throw new Error("Email delivery failed. Check the SMTP connection and try again."); }
   finally { transport.close(); }

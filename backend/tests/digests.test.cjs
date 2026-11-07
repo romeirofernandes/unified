@@ -27,7 +27,8 @@ test("Slack delivery uses safe plain text and surfaces provider failures", async
     assert.equal(options.redirect, "error");
     const body = JSON.parse(options.body);
     assert.equal(body.blocks[0].text.type, "plain_text");
-    assert.match(body.blocks[0].text.text, /3 new responses/);
+    assert.match(body.blocks[1].elements[0].text, /3 new responses/);
+    assert.equal(body.blocks[3].text.type, "plain_text");
     return { ok: true };
   };
   await deliverDigest({ project, channel: "slack", count: 3, summary }, request);
