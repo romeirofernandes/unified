@@ -1,6 +1,6 @@
 export function integrationCode({
   projectId = "YOUR_PROJECT_ID",
-  theme = "light",
+  theme = "auto",
   apiUrl = import.meta.env?.VITE_BACKEND_URL || "http://localhost:8000",
 } = {}) {
   return `import { UnifiedFeedback } from "unified-sdk";
@@ -23,6 +23,6 @@ export function setupCommand({
   apiUrl = import.meta.env?.VITE_BACKEND_URL || "http://localhost:8000",
 } = {}) {
   const quote = (value) => "'" + String(value).replaceAll("'", "'\\''") + "'";
-  const runners = { npm: "npx --yes unified-sdk@2.2.0", pnpm: "pnpm dlx unified-sdk@2.2.0", yarn: "yarn dlx unified-sdk@2.2.0", bun: "bunx unified-sdk@2.2.0" };
+  const runners = { npm: "npx --yes unified-sdk@2.2.1", pnpm: "pnpm dlx unified-sdk@2.2.1", yarn: "yarn dlx unified-sdk@2.2.1", bun: "bunx unified-sdk@2.2.1" };
   return `${runners[manager]} init --project ${quote(projectId)} --api-url ${quote(apiUrl)} --package-manager ${manager}`;
 }

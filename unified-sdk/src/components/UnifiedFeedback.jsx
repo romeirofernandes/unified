@@ -1,6 +1,7 @@
 import FormFont from "../../../shared/FormFont";
 import { formThemeStyle } from "../../../shared/form-theme.mjs";
 import { useState, useEffect, useCallback, useRef, memo } from "react";
+import { useHostTheme } from "../hooks/use-host-theme";
 import FeedbackShell from "./FeedbackShell";
 import FeedbackModal from "./FeedbackModal";
 
@@ -19,7 +20,7 @@ function FeedbackSession({ projectId, theme, apiUrl = import.meta.env.VITE_API_U
   const pending = status === "sending";
   const success = status === "success";
   const formData = resource.data;
-  const widgetTheme = theme || formData?.theme || "light";
+  const { mode: widgetTheme, anchorRef } = useHostTheme(theme, formData?.theme);
 
   useEffect(() => {
     if (!projectId) return;
@@ -82,14 +83,16 @@ function FeedbackSession({ projectId, theme, apiUrl = import.meta.env.VITE_API_U
     }
   };
 
-  if (resource.status !== "ready" || status === "dismissed") return null;
   return (
-    <FeedbackShell open={status !== "closed"} onOpen={() => setStatus("editing")} onClose={handleClose}
-      pending={pending} success={success} position={position} style={formThemeStyle(formData.appearance, widgetTheme)}>
+    <>
+    <span ref={anchorRef} hidden aria-hidden="true" />
+    {resource.status === "ready" && status !== "dismissed" && <FeedbackShell open={status !== "closed"} onOpen={() => setStatus("editing")} onClose={handleClose}
+      pending={pending} success={success} position={position} theme={widgetTheme} style={formThemeStyle(formData.appearance, widgetTheme)}>
       <FormFont appearance={formData.appearance} />
       <FeedbackModal isOpen onClose={handleClose} formData={formData} theme={widgetTheme}
         answers={answers} onSubmit={handleSubmit} pending={pending} error={error} onChange={handleInputChange} />
-    </FeedbackShell>
+    </FeedbackShell>}
+    </>
   );
 }
 

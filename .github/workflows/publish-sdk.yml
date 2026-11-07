@@ -32,6 +32,8 @@ jobs:
         env:
           CONSUMER_REACT_VERSION: 18.3.1
           CONSUMER_MOTION: no-preference
+      - run: npm run test:consumer:next
+        working-directory: unified-sdk
       - name: Check release tag matches package version
         if: startsWith(github.ref, 'refs/tags/')
         working-directory: unified-sdk

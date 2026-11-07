@@ -92,7 +92,7 @@ export function packageManager(root, pkg, override) {
 export function createPlan({
   cwd = process.cwd(),
   projectId,
-  theme = "project",
+  theme = "auto",
   apiUrl,
   entry,
   manager,
@@ -102,8 +102,8 @@ export function createPlan({
   ])
     if (typeof value !== "string" || !value.trim() || value.length > 200)
       throw new Error(`Provide --${name} from the project integration panel.`);
-  if (!["project", "light", "dark"].includes(theme))
-    throw new Error("Theme must be project, light, or dark.");
+  if (!["auto", "project", "light", "dark"].includes(theme))
+    throw new Error("Theme must be auto, project, light, or dark.");
   if (apiUrl && !/^https?:\/\/[^\s]+$/.test(apiUrl)) throw new Error("Provide an http(s) --api-url.");
   const root = realpathSync(cwd);
   const manifestFile = safeTarget(root, "package.json");
@@ -178,7 +178,7 @@ export function createPlan({
   const props = {
     projectId: projectId.trim(),
     ...(apiUrl ? { apiUrl: apiUrl.replace(/\/$/, "") } : {}),
-    ...(theme === "project" ? {} : { theme }),
+    ...(theme === "auto" ? {} : { theme }),
   };
   const generated = `"use client";\n${marker}\nimport { createElement } from "react";\nimport { UnifiedFeedback } from "unified-sdk";\n\nexport default function UnifiedFeedbackWidget() {\n  return createElement(UnifiedFeedback, ${JSON.stringify(props, null, 2).replace(/\n/g, "\n  ")});\n}\n`;
   pkg.dependencies = {

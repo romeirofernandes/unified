@@ -10,7 +10,7 @@ Installs and mounts the widget in Vite or Next.js.
   --cwd PATH              App directory (default: current directory)
   --api-url URL           Unified backend origin (default: localhost:8000)
   --entry PATH            Custom entry, relative to the app directory
-  --theme project|light|dark  Default: use the project's saved mode
+  --theme auto|project|light|dark  Default: follow the host app
   --package-manager NAME  npm, pnpm, yarn, or bun (auto-detected)
   --dry-run               Show the plan without changing files
   --skip-install          Write files; leave dependency installation to you

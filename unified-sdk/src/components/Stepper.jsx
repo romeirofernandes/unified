@@ -278,7 +278,7 @@ export default function Stepper({
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const mode = transition === 'none' ? 'none' : reduced ? 'fade' : transition;
     const finish = () => setView(state => (state.id === id ? { ...state, previous: null } : state));
-    if (leaving && pane && leaving.contains(document.activeElement)) pane.focus({ preventScroll: true });
+    if (leaving && pane && leaving.contains(leaving.getRootNode().activeElement || document.activeElement)) pane.focus({ preventScroll: true });
     if (!viewport || typeof viewport.animate !== 'function' || mode === 'none') {
       finish();
       return;
@@ -287,7 +287,7 @@ export default function Stepper({
     const from = heightRef.current;
     const to = viewport.offsetHeight;
     const spring = ease();
-    if (Math.abs(from - to) > 0.5) {
+    if (!reduced && Math.abs(from - to) > 0.5) {
       viewport.animate([{ height: `${from}px` }, { height: `${to}px` }], {
         duration: reduced ? 200 : 560,
         easing: reduced ? SETTLE : spring

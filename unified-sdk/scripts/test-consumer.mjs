@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { execFileSync, spawn } from "node:child_process";
-import { chromium } from "@playwright/test";
+import { chromium, expect } from "@playwright/test";
 
 const sdk = path.resolve(import.meta.dirname, "..");
 const app = mkdtempSync(path.join(tmpdir(), "unified-consumer-"));
@@ -22,6 +22,8 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
   execFileSync("npm", ["install", "--no-audit", "--no-fund"], { cwd: app, stdio: "pipe" });
   execFileSync("node", ["--input-type=commonjs", "-e", "if(typeof require('unified-sdk').UnifiedFeedback !== 'function' && typeof require('unified-sdk').UnifiedFeedback !== 'object') process.exit(1)"], { cwd: app, stdio: "pipe" });
   execFileSync(path.join(app, "node_modules/.bin/unified-sdk"), ["init", "--project", "test-project", "--api-url", "https://feedback.test", "--yes"], { cwd: app, stdio: "pipe" });
+  const entryPath = path.join(app, "src/main.jsx");
+  writeFileSync(entryPath, readFileSync(entryPath, "utf8").replace(/import\s+["']unified-sdk\/dist\/unified-sdk\.css["'];?\s*/g, ""));
   execFileSync(path.join(app, "node_modules/.bin/vite"), ["build"], { cwd: app, stdio: "pipe" });
   server = spawn(path.join(app, "node_modules/.bin/vite"), ["--host", "127.0.0.1", "--port", "4178", "--strictPort"], { cwd: app, stdio: "ignore" });
   for (let attempt = 0; ; attempt++) {
@@ -30,14 +32,20 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
     await new Promise(resolve => setTimeout(resolve, 100));
   }
   browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage({ reducedMotion: process.env.CONSUMER_MOTION || "reduce", viewport: { width: 390, height: 844 } });
+  const page = await browser.newPage({ reducedMotion: process.env.CONSUMER_MOTION || "reduce", colorScheme: "light", viewport: { width: 390, height: 844 } });
   const errors = [];
   page.on("pageerror", error => { errors.push(error.message); console.error("Consumer runtime error:", error.message); });
   let submissions = 0;
   let submitted;
+  let allFields = false;
   await page.route("https://feedback.test/**", async route => {
     if (route.request().method() === "OPTIONS") return route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "*" } });
-    if (route.request().method() === "GET") return route.fulfill({ json: { _id: "test-project", name: "Tell us", theme: "light", fields: [
+    if (route.request().method() === "GET") return route.fulfill({ json: { _id: "test-project", name: "Tell us", theme: "light", fields: allFields ? [
+      { _id: "date", type: "date", label: "Visit date", required: true },
+      { _id: "choice", type: "mcq", label: "Would you return?", required: true, options: [{ label: "Yes", value: "yes" }, { label: "No", value: "no" }] },
+      { _id: "rating", type: "slider", label: "Rating", required: true, config: { min: 0, max: 10, step: 1 } },
+      { _id: "name", type: "text", label: "Your name", required: true },
+    ] : [
       { _id: "email", type: "email", label: "Your email", required: true },
       { _id: "message", type: "textarea", label: "Your feedback", required: true },
     ] } });
@@ -50,29 +58,98 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
     return route.fulfill({ status: submissions === 1 ? 500 : 201, json: { id: "saved" } });
   });
   await page.goto("http://127.0.0.1:4178");
+  const widget = page.locator(".unified-feedback-root");
+  await expect(widget).toHaveAttribute("data-theme", "light");
   await page.getByRole("button", { name: "Open feedback form" }).click();
   await page.getByRole("textbox", { name: "Your email" }).waitFor();
-  await page.getByRole("button", { name: "Next", exact: true }).click();
+  await expect(page.getByRole("textbox", { name: "Your email" })).toBeFocused();
+  await page.setViewportSize({ width: 320, height: 640 });
+  await expect(page.locator(".uf-panel")).toBeInViewport({ ratio: 1 });
+  const compactPanel = await page.locator(".uf-panel").boundingBox();
+  assert.ok(compactPanel.x >= 0 && compactPanel.x + compactPanel.width <= 320);
+  await page.setViewportSize({ width: 390, height: 844 });
+  if (process.env.CONSUMER_CAPTURE) await page.screenshot({ path: process.env.CONSUMER_CAPTURE });
+  await page.evaluate(() => document.documentElement.classList.add("dark"));
+  await expect(widget).toHaveAttribute("data-theme", "dark");
+  if (process.env.CONSUMER_CAPTURE) await page.screenshot({ path: process.env.CONSUMER_CAPTURE.replace(/\.png$/, "-dark.png") });
+  await page.evaluate(() => { document.documentElement.classList.remove("dark"); document.documentElement.classList.add("light"); });
+  await page.emulateMedia({ colorScheme: "dark" });
+  await expect(widget).toHaveAttribute("data-theme", "light");
+  await page.evaluate(() => document.documentElement.classList.remove("light"));
+  await expect(widget).toHaveAttribute("data-theme", "dark");
+  await page.evaluate(() => document.documentElement.setAttribute("data-theme", "light"));
+  await expect(widget).toHaveAttribute("data-theme", "light");
+  await page.evaluate(() => document.documentElement.removeAttribute("data-theme"));
+  await page.emulateMedia({ colorScheme: "light" });
+  await expect(widget).toHaveAttribute("data-theme", "light");
+  await page.addStyleTag({ content: "body button { padding: 70px !important; background: magenta !important; font-size: 40px !important; } body input { height: 200px !important; font-size: 40px !important; }" });
+  assert.equal(await page.getByRole("textbox", { name: "Your email" }).evaluate(el => getComputedStyle(el).height), "44px", "Host CSS cannot change widget geometry");
+  assert.equal(await page.getByRole("textbox", { name: "Your email" }).evaluate(el => getComputedStyle(el).fontSize), "14px");
+  await page.keyboard.press("Escape");
+  await page.getByRole("dialog").waitFor({ state: "detached" });
+  await page.getByRole("button", { name: "Hide feedback widget" }).click();
+  if (process.env.CONSUMER_MOTION === "no-preference") {
+    await expect(page.locator(".uf-fragment")).toHaveCount(48);
+    if (process.env.CONSUMER_CAPTURE) await page.screenshot({ path: process.env.CONSUMER_CAPTURE.replace(/\.png$/, "-disintegrating.png") });
+  }
+  else await expect(page.locator(".uf-fragment")).toHaveCount(0);
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  const trigger = page.getByRole("button", { name: "Open feedback form" });
+  const start = await trigger.boundingBox();
+  await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(start.x + start.width / 2 - 20, start.y + start.height / 2 - 30, { steps: 8 });
+  const zone = page.getByRole("region", { name: "Drop here to hide feedback" });
+  await zone.waitFor();
+  const drop = await zone.boundingBox();
+  await page.mouse.move(drop.x + drop.width / 2, drop.y + drop.height / 2, { steps: 12 });
+  await page.mouse.up();
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  await trigger.click();
+  await page.getByRole("textbox", { name: "Your email" }).waitFor();
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
   assert.equal(await page.getByRole("textbox", { name: "Your email" }).count(), 1, "Required email cannot be skipped");
   await page.getByRole("textbox", { name: "Your email" }).fill("person@example.com");
-  await page.getByRole("button", { name: "Next", exact: true }).click();
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
   await page.getByRole("textbox", { name: "Your feedback" }).fill("Please add response triage");
-  await page.getByRole("button", { name: "Submit", exact: true }).click();
+  await page.getByRole("button", { name: "Send feedback", exact: true }).click();
   await page.getByRole("button", { name: "Sending…", exact: true }).waitFor();
   await page.keyboard.press("Escape");
   assert.equal(await page.getByRole("dialog").count(), 1, "Sending cannot be dismissed");
   await page.getByRole("alert").waitFor();
   assert.equal(await page.getByRole("textbox", { name: "Your feedback" }).inputValue(), "Please add response triage");
-  await page.getByRole("button", { name: "Submit", exact: true }).click();
+  await page.getByRole("button", { name: "Send feedback", exact: true }).click();
   await page.getByText("Thank you!", { exact: true }).waitFor();
   await page.getByRole("dialog").waitFor({ state: "detached" });
+  await page.setViewportSize({ width: 320, height: 640 });
   assert.equal(submissions, 2);
   assert.deepEqual(submitted.formAnswers, { email: "person@example.com", message: "Please add response triage" });
   const host = await page.locator("#host-title").evaluate(el => ({ margin: getComputedStyle(el).marginTop, weight: getComputedStyle(el).fontWeight }));
   assert.equal(host.weight, "700", "SDK reset must not change host headings");
   assert.notEqual(host.margin, "0px", "SDK reset must not remove host margins");
+  allFields = true;
+  await page.reload();
+  await page.getByRole("button", { name: "Open feedback form" }).click();
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
+  await expect(page.getByRole("alert")).toContainText("Choose a date");
+  await page.getByRole("button", { name: /Visit date: Choose a date/ }).click();
+  await page.getByRole("button", { name: "Use date", exact: true }).click();
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
+  await page.getByRole("radio", { name: "Yes", exact: true }).check();
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
+  const slider = page.getByRole("slider", { name: "Rating", exact: true });
+  await slider.focus(); await page.keyboard.press("ArrowRight");
+  await expect(slider).toHaveAttribute("aria-valuenow", "1");
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
+  await page.getByRole("textbox", { name: "Your name", exact: true }).fill("Ada");
+  await page.getByRole("button", { name: "Send feedback", exact: true }).click();
+  await expect(page.getByText("Thank you!", { exact: true })).toBeVisible();
+  assert.equal(submitted.formAnswers.choice, "yes");
+  assert.equal(submitted.formAnswers.rating, 1);
+  assert.match(submitted.formAnswers.date, /^\d{4}-\d{2}-\d{2}$/);
+  assert.equal(submitted.formAnswers.name, "Ada");
   assert.deepEqual(errors, []);
-  console.log(`Packed SDK installed with its CLI, built and passed dynamic validation/retry/success/CSS isolation checks (React ${process.env.CONSUMER_REACT_VERSION || "19.1.0"}).`);
+  console.log(`Packed SDK installed with its CLI, built and passed validation, retry, theme switching, Shadow DOM isolation, hide/undo and drag-to-trash checks (React ${process.env.CONSUMER_REACT_VERSION || "19.1.0"}).`);
 } finally {
   await browser?.close();
   server?.kill();

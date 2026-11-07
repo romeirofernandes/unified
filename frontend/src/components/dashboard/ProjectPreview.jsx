@@ -99,7 +99,7 @@ export function ProjectPreviewContent({ project, onEdit }) {
             <CodeBlock
               code={integrationCode({
                 projectId: project._id,
-                theme: project.theme,
+                theme: "auto",
               })}
               label="React component"
             />

@@ -12,14 +12,14 @@ A beautiful and customizable feedback component for React applications. Collect,
 - 💫 Smooth animations
 - 🎭 Elegant UI components
 
-## automatic setup (2.2.0)
+## automatic setup (2.2.1)
 
-this CLI is included in this branch but 2.2.0 must be published to npm before the command below works publicly.
+this CLI is included in this branch but 2.2.1 must be published to npm before the command below works publicly.
 
 from your Vite or Next.js frontend directory:
 
 ```bash
-npx unified-sdk@2.2.0 init --project YOUR_PROJECT_ID --api-url https://YOUR_BACKEND_HOST
+npx unified-sdk@2.2.1 init --project YOUR_PROJECT_ID --api-url https://YOUR_BACKEND_HOST
 ```
 
 get project ID from your project's **Preview & code** panel. omit the flags to enter them interactively. the project ID is public widget configuration, not an owner authentication credential.
@@ -49,7 +49,7 @@ npm pack
 then run it against your frontend (use absolute paths):
 
 ```bash
-npm install /path/to/unified-sdk/unified-sdk-2.2.0.tgz
+npm install /path/to/unified-sdk/unified-sdk-2.2.1.tgz
 npx unified-sdk init --project YOUR_PROJECT_ID --dry-run
 npx unified-sdk init --project YOUR_PROJECT_ID --api-url https://YOUR_BACKEND_HOST
 ```
@@ -73,7 +73,7 @@ function App() {
     <UnifiedFeedback
       projectId="your-project-id"
       apiUrl="https://YOUR_BACKEND_HOST"
-      theme="light" // or "dark"
+      theme="auto" // follows the host app, or set "light", "dark", "project"
     />
   );
 }
@@ -84,7 +84,7 @@ function App() {
 | Prop        | Type              | Required | Description                                         |
 | ----------- | ----------------- | -------- | --------------------------------------------------- |
 | projectId   | string            | Yes      | Your project ID from Unified dashboard              |
-| theme       | "light" \| "dark" | No       | Theme for the feedback component (default: "light") |
+| theme | "auto" \| "project" \| "light" \| "dark" | No | Follows the host app by default |
 
 ## Usage
 
@@ -136,3 +136,5 @@ For issues and feature requests, please visit our [GitHub repository](https://gi
 
 For more information on how to use the Unified SDK, check out our [documentation](https://unified-chi.vercel.app/docs).
 
+
+The widget embeds its own styles in a Shadow DOM. It follows host theme classes, data attributes, color-scheme and system preference by default. Remove a hard-coded `theme="light"` to enable automatic mode. Drag the trigger to the trash target or use its hide button to dismiss it, with a short Undo option. Reduced motion uses a fade.

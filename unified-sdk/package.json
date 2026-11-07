@@ -1,7 +1,7 @@
 {
   "name": "unified-sdk",
   "private": false,
-  "version": "2.2.0",
+  "version": "2.2.1",
   "type": "module",
   "main": "dist/unified-sdk.umd.cjs",
   "module": "dist/unified-sdk.es.js",
@@ -27,7 +27,8 @@
     "preview": "vite preview",
     "test": "node --test tests/*.test.mjs",
     "test:consumer": "npm run build && node scripts/test-consumer.mjs",
-    "prepublishOnly": "npm test && npm run test:consumer"
+    "prepublishOnly": "npm test && npm run test:consumer && npm run test:consumer:next",
+    "test:consumer:next": "npm run build && node scripts/test-next-consumer.mjs"
   },
   "dependencies": {
     "@babel/parser": "^7.29.13",

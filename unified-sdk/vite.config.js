@@ -20,6 +20,7 @@ export default defineConfig({
     rollupOptions: {
       external: [/^react(?:\/.*)?$/, /^react-dom(?:\/.*)?$/],
       output: {
+        banner: '"use client";',
         globals: {
           react: "React",
           "react-dom": "ReactDOM",

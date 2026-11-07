@@ -4,7 +4,7 @@ export interface UnifiedFeedbackProps {
   /** API origin for your Unified backend. Required outside local development. */
   apiUrl?: string;
   position?: "bottom-left" | "bottom-right";
-  /** Omit this to use the mode saved on the project. */
-  theme?: "light" | "dark";
+  /** Auto follows the host app and OS. Project uses the saved project mode. */
+  theme?: "auto" | "project" | "light" | "dark";
 }
 export declare const UnifiedFeedback: ComponentType<UnifiedFeedbackProps>;
