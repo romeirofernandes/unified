@@ -66,7 +66,7 @@ function Channel({ channel, project, settings, uid, onSaved }) {
         <span className="rounded border border-border px-2 py-1 text-xs text-muted-foreground">{state.enabled ? "Active" : "Paused"}</span>
       </div>
       {slack ? <div className="space-y-2">
-        <Button variant="secondary" onClick={installSlack} disabled={pending || !settings.slackInstallReady}><img src="/logos/slack.svg" alt="" className="size-4" />{settings.slackConnected ? "Change workspace or channel" : "Install in workspace"}</Button>
+        <Button variant="secondary" onClick={installSlack} disabled={pending || !settings.slackInstallReady}><span className="inline-flex items-center gap-2"><img src="/logos/slack.svg" alt="" className="size-4" />{settings.slackConnected ? "Change workspace or channel" : "Install in workspace"}</span></Button>
         {!settings.slackInstallReady && <p className="text-xs text-muted-foreground">Slack installation hasn’t been configured for this workspace yet.</p>}
       </div> : !settings.emailReady && <p className="rounded border border-border bg-muted/40 p-3 text-sm text-muted-foreground">Email delivery hasn’t been configured for this workspace yet.</p>}
       <div className="grid items-end gap-4 sm:grid-cols-2">
