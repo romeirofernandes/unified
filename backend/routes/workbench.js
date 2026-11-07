@@ -21,9 +21,12 @@ router.get("/:projectId", async (req, res) => {
     const project = await Project.findOne(owner(req)).select("+workbenchIssues");
     if (!project) return res.status(404).json({ message: "Project not found." });
     // Keep imported keys on deleted cards so summaries cannot resurrect them.
+    const imported = new Set(project.workbenchIssues.map((issue) => issue.sourceKey));
     for (const title of project.feedbackSummary?.features || []) {
       if (typeof title !== "string" || !title.trim()) continue;
       const sourceKey = createHash("sha256").update(title.trim().toLowerCase().replace(/\s+/g, " ")).digest("hex");
+      if (imported.has(sourceKey)) continue;
+      imported.add(sourceKey);
       await Project.updateOne({ ...owner(req), "workbenchIssues.sourceKey": { $ne: sourceKey } }, {
         $push: { workbenchIssues: { title: title.trim().slice(0, 2000), sourceKey, status: "backlog", description: "", createdAt: new Date() } },
       });

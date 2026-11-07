@@ -1,0 +1,55 @@
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const express = require("express");
+const mongoose = require("mongoose");
+const { MongoMemoryServer } = require("mongodb-memory-server");
+const Project = require("../models/Project");
+let mongo, server, base;
+const userId = new mongoose.Types.ObjectId();
+test.before(async () => {
+  mongo = await MongoMemoryServer.create(); await mongoose.connect(mongo.getUri());
+  const app = express(); app.use(express.json());
+  app.use((req, res, next) => { req.user = { id: req.headers["x-test-user"] || String(userId) }; next(); });
+  app.use("/workbench", require("../routes/workbench"));
+  server = app.listen(0, "127.0.0.1"); await new Promise(resolve => server.once("listening", resolve));
+  base = `http://127.0.0.1:${server.address().port}/workbench`;
+});
+test.after(async () => { if (server) await new Promise(resolve => server.close(resolve)); await mongoose.disconnect(); await mongo?.stop(); });
+const fixture = () => Project.create({ userId, name: "Workbench", fields: [{ type: "text", label: "Feedback" }], feedbackSummary: { features: ["Fix search", " fix   SEARCH ", "Add filters"] } });
+const request = (path, method = "GET", body, headers = {}) => fetch(`${base}/${path}`, { method, headers: { "Content-Type": "application/json", ...headers }, ...(body ? { body: JSON.stringify(body) } : {}) });
+test("concurrent imports deduplicate and preserve edits, moves, and deletions", async () => {
+  const project = await fixture(), id = String(project._id);
+  const reads = await Promise.all(Array.from({ length: 5 }, () => request(id)));
+  assert.ok(reads.every(res => res.status === 200));
+  let cards = await (await request(id)).json(); assert.equal(cards.length, 2);
+  const search = cards.find(card => card.title === "Fix search");
+  assert.equal((await request(`${id}/${search._id}`, "PUT", { title: "Repair search", description: "On mobile", status: "done" })).status, 200);
+  cards = await (await request(id)).json();
+  assert.equal(cards.find(card => card._id === search._id).status, "done");
+  assert.equal(cards.find(card => card._id === search._id).title, "Repair search");
+  assert.equal((await request(`${id}/${search._id}`, "DELETE")).status, 200);
+  await Project.updateOne({ _id: id }, { $set: { "feedbackSummary.features": ["Fix search", "Add filters", "Support exports"] } });
+  cards = await (await request(id)).json(); assert.equal(cards.length, 2);
+  assert.ok(cards.some(card => card.title === "Support exports" && card.status === "backlog"));
+  assert.ok(!cards.some(card => card._id === search._id));
+});
+test("manual CRUD validates inputs and cannot restore deleted cards", async () => {
+  const project = await Project.create({ userId, name: "Empty", fields: [{ type: "text", label: "Feedback" }] }), id = String(project._id);
+  assert.deepEqual(await (await request(id)).json(), []);
+  for (const body of [{ title: " ", description: "", status: "todo" }, { title: "Test", description: "", status: "invalid" }, { title: "Test", description: {}, status: "todo" }, { title: "x".repeat(2001), description: "", status: "todo" }]) assert.equal((await request(id, "POST", body)).status, 400);
+  const res = await request(id, "POST", { title: " Manual task ", description: "Details", status: "todo", sourceKey: "forged", deleted: true }); assert.equal(res.status, 201);
+  const [card] = await res.json(); assert.equal(card.title, "Manual task"); assert.equal(card.deleted, false); assert.equal(card.sourceKey, undefined);
+  assert.equal((await request(`${id}/${card._id}`, "DELETE")).status, 200);
+  assert.equal((await request(`${id}/${card._id}`, "PUT", { title: "Restore", description: "", status: "todo" })).status, 404);
+  assert.deepEqual(await (await request(id)).json(), []);
+  assert.equal((await request("invalid")).status, 400);
+});
+test("all operations enforce ownership and project isolation", async () => {
+  const project = await fixture(), id = String(project._id);
+  const [card] = await (await request(id)).json();
+  const stranger = { "x-test-user": String(new mongoose.Types.ObjectId()) }, input = { title: "Intrusion", description: "", status: "done" };
+  for (const [path, method, body] of [[id, "GET"], [id, "POST", input], [`${id}/${card._id}`, "PUT", input], [`${id}/${card._id}`, "DELETE"]]) assert.equal((await request(path, method, body, stranger)).status, 404);
+  const other = await fixture(); assert.equal((await request(`${other._id}/${card._id}`, "DELETE")).status, 404);
+  assert.equal((await (await request(id)).json()).length, 2);
+  assert.equal((await Project.findById(id).lean()).workbenchIssues, undefined);
+});

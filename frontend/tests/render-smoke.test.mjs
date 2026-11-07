@@ -26,9 +26,10 @@ import Feedbacks from "./src/pages/Feedbacks";
 import Settings from "./src/pages/Settings";
 import Docs from "./src/pages/Docs";
 import Integrations from "./src/pages/Integrations";
+import Workbench from "./src/pages/Workbench";
 import NotFound from "./src/pages/NotFound";
 export { documentationMarkdown } from "./src/components/docs/Quickstart";
-const pages = { Integrations, Login, Signup, Dashboard, Feedbacks, Settings, Docs, NotFound };
+const pages = { Workbench, Integrations, Login, Signup, Dashboard, Feedbacks, Settings, Docs, NotFound };
 export function render(name, url) {
   const Page = pages[name];
   return renderToString(<MemoryRouter initialEntries={[url]}><FluidRoot><Routes><Route path="/project/:projectId/feedbacks" element={<Page />} /><Route path="*" element={<Page />} /></Routes></FluidRoot></MemoryRouter>);
@@ -70,7 +71,7 @@ const result = await build({
                 ? `export const useAuth = () => ({ user: { uid: "user-1", email: "person@example.com", providerData: [], metadata: {} }, login() {}, signup() {}, loginWithGoogle() {}, logout() {} });`
                 : name === "firebase-fixture"
                   ? "export const auth = {};"
-                  : `const project = ${JSON.stringify(fixture)}; export const useApiResource = (path) => ({ data: path === "/projects" ? [project] : path.startsWith("/projects/") ? project : [{ _id: "feedback-1", timestamp: "2026-11-05T00:00:00.000Z", formAnswers: { "email-field": "customer@example.com" } }], loading: false, error: "", reload() {}, setData() {} });`,
+                  : `const project = ${JSON.stringify(fixture)}; export const useApiResource = (path) => ({ data: path === "/projects" ? [project] : path.startsWith("/projects/") ? project : path.startsWith("/workbench/") ? [{ _id: "issue-1", title: "Fix search", description: "Search fails on mobile", status: "backlog", sourceKey: "summary" }] : [{ _id: "feedback-1", timestamp: "2026-11-05T00:00:00.000Z", formAnswers: { "email-field": "customer@example.com" } }], loading: false, error: "", reload() {}, setData() {} });`,
           }),
         );
       },
@@ -90,6 +91,7 @@ for (const [name, url, expected] of [
   ["Signup", "/signup", "Create account"],
   ["Dashboard", "/dashboard", "Sample project"],
   ["Feedbacks", "/project/project-1/feedbacks", "customer@example.com"],
+  ["Workbench", "/dashboard/workbench", "Fix search"],
   ["Integrations", "/dashboard/integrations", "Slack"],
   ["Settings", "/dashboard/settings", "person@example.com"],
   ["Docs", "/docs", "Set up the SDK"],

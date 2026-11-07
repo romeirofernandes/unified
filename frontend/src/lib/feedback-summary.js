@@ -1,4 +1,5 @@
 import { apiRequest } from "./api.js";
+import { forgetResource } from "./resource-cache.js";
 
 export function parseSummary(text) {
   if (typeof text !== "string")
@@ -31,9 +32,11 @@ export function readSummary(key) {
 }
 
 export async function generateFeedbackSummary(project, uid) {
-  return apiRequest(`/feedback/project/${encodeURIComponent(project._id)}/summary`, {
+  const summary = await apiRequest(`/feedback/project/${encodeURIComponent(project._id)}/summary`, {
     method: "POST",
     uid,
     signal: AbortSignal.timeout(9 * 60 * 1000),
   });
+  forgetResource(`/workbench/${project._id}`, uid);
+  return summary;
 }
