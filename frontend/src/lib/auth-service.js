@@ -1,3 +1,4 @@
+import { prefetchResource } from "./resource-cache.js";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -32,6 +33,7 @@ export function syncUser(firebaseUser) {
         },
       });
     }
+    void prefetchResource("/projects", firebaseUser.uid).catch(() => {});
     return {
       ...firebaseUser,
       ...response.user,

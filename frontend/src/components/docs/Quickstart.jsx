@@ -120,7 +120,7 @@ export default function Quickstart() {
     <div className="flex h-full min-h-0 flex-1 flex-col gap-8">
       <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_220px] xl:gap-16">
         <PageHeader title="Documentation" description="Set up the widget, connect your own form, and bring feedback into your workflow." />
-        <div className="xl:ps-5"><CopyButton value={documentationMarkdown} label="page" showLabel /></div>
+        <div className="xl:ps-8"><CopyButton value={documentationMarkdown} label="page" showLabel /></div>
       </div>
       <div className="grid min-h-0 min-w-0 flex-1 gap-10 xl:grid-cols-[minmax(0,1fr)_220px] xl:gap-16">
         <article ref={articleRef} tabIndex={0} aria-label="Documentation article" className="min-h-0 min-w-0 overflow-y-auto pe-2 outline-none focus-visible:ring-2 focus-visible:ring-ring">
