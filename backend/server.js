@@ -16,13 +16,7 @@ const PORT = process.env.PORT || 8000;
 
 connectDB().then(() => require("./services/digest-worker").startDigestWorker());
 
-app.use(
-  cors({
-    origin: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  })
-);
+app.use(cors(require("./config/cors")));
 app.post("/api/payment/webhook", express.raw({ type: "application/json", limit: "64kb" }), require("./controller/paymentController").paymentWebhook);
 app.use(express.json());
 
