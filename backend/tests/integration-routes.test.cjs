@@ -66,3 +66,25 @@ test("test sends use sample feedback and do not advance pending cursors", async 
   assert.equal(write.$set["notifications.slack.since"], undefined);
   assert.ok(write.$set["notifications.slack.testAfter"]);
 });
+
+test("install links are project-owned and persist only a short-lived hashed state", async () => {
+  process.env.SLACK_CLIENT_ID = "client";
+  process.env.SLACK_CLIENT_SECRET = "secret";
+  process.env.SLACK_REDIRECT_URI = "https://api.example.com/api/slack/callback";
+  let saved;
+  const handlers = routes({ findOneAndUpdate: async (filter, update) => { assert.equal(filter.userId, "owner"); assert.equal(filter._id, "project"); saved = update.$set; return {}; } });
+  const res = response();
+  await handlers.get("post /:id/slack/install")(request(), res);
+  const url = new URL(res.data.url);
+  const state = url.searchParams.get("state");
+  assert.equal(saved.slackOAuthStateHash, require("node:crypto").createHash("sha256").update(state).digest("hex"));
+  assert.ok(saved.slackOAuthStateUntil > new Date());
+  assert.equal(saved.state, undefined);
+  const missing = routes({ findOneAndUpdate: async () => null });
+  const denied = response();
+  await missing.get("post /:id/slack/install")(request(), denied);
+  assert.equal(denied.statusCode, 404);
+  delete process.env.SLACK_CLIENT_ID;
+  delete process.env.SLACK_CLIENT_SECRET;
+  delete process.env.SLACK_REDIRECT_URI;
+});
