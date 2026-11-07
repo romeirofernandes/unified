@@ -47,7 +47,7 @@ export default function FieldEditor({
           </span>
           <CollapsibleIndicator />
         </CollapsibleTrigger>
-        {index > 0 && (
+        {(
           <Button
             variant="destructive"
             size="icon-compact"
@@ -70,7 +70,6 @@ export default function FieldEditor({
             </p>
             <Select
               value={field.type}
-              disabled={index === 0}
               onValueChange={(type) => onChange({ type })}
             >
               <SelectTrigger
@@ -98,7 +97,6 @@ export default function FieldEditor({
         <Checkbox
           label="Required answer"
           checked={field.required}
-          disabled={index === 0}
           onCheckedChange={(required) => onChange({ required })}
         />
         {field.type === "mcq" && (

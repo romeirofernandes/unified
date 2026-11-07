@@ -193,3 +193,35 @@ for (const scenario of ["save", "reuse", "new", "locked"]) {
     if (scenario === "reuse") assert.equal(res.data, saved);
   });
 }
+
+test("submission endpoint authenticates a scoped key and saves dashboard feedback", async () => {
+  const { createHash } = require("node:crypto");
+  const key = `uf_${"a".repeat(64)}`;
+  let saved;
+  const routes = loadRoutes("submissions.js", {
+    "../models/Project": { findOne: async (filter) => {
+      assert.equal(filter.submissionKeyHash, createHash("sha256").update(key).digest("hex"));
+      return { _id: filter._id, fields: [{ _id: "question", type: "text", label: "Feedback", required: true }] };
+    } },
+    "../models/Feedback": { create: async (value) => { saved = value; return { _id: "response" }; } },
+  });
+  const submit = routes.get("post /:projectId");
+  const request = { headers: { authorization: `Bearer ${key}` }, params: { projectId: "507f1f77bcf86cd799439011" }, body: { formAnswers: { question: "Looks good" } } };
+  const res = response();
+  await submit(request, res);
+  assert.equal(res.statusCode, 201);
+  assert.equal(saved.formAnswers.question, "Looks good");
+  const denied = response();
+  await submit({ ...request, headers: {} }, denied);
+  assert.equal(denied.statusCode, 401);
+});
+
+test("revoked submission keys cannot save responses", async () => {
+  const routes = loadRoutes("submissions.js", {
+    "../models/Project": { findOne: async () => null },
+    "../models/Feedback": { create: () => assert.fail("must not save") },
+  });
+  const res = response();
+  await routes.get("post /:projectId")({ headers: { authorization: `Bearer uf_${"b".repeat(64)}` }, params: { projectId: "507f1f77bcf86cd799439011" } }, res);
+  assert.equal(res.statusCode, 401);
+});

@@ -31,6 +31,7 @@ test("project documents retain both palettes and reject invalid stored colors", 
   const project = new Project({
     name: "Demo",
     userId: "507f1f77bcf86cd799439011",
+    fields: [{ type: "text", label: "Feedback" }],
     appearance: {
       preset: "iris",
       colors: { light: { accent: "#7650bc" }, dark: { background: "#171717" } },
@@ -54,6 +55,7 @@ test("form fonts are validated and saved with the project", () => {
   const project = new Project({
     name: "Font test",
     userId: "507f1f77bcf86cd799439011",
+    fields: [{ type: "text", label: "Feedback" }],
     appearance,
   });
   assert.equal(project.validateSync(), undefined);

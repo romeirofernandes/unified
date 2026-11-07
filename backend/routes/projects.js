@@ -83,6 +83,7 @@ router.use((error, req, res, next) => {
 router.post("/", async (req, res) => {
   try {
     const { name, description, fields, theme } = req.body;
+    if (!Array.isArray(fields) || !fields.length) return res.status(400).json({ message: "Add at least one question before saving." });
     const appearance = validateAppearance(req.body.appearance);
     const userId = req.user.id; // Will add auth middleware later
 
@@ -135,6 +136,24 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Keys grant submission access only. Store only a digest and reveal once.
+router.post("/:id/submission-key", async (req, res) => {
+  try {
+    const { randomBytes, createHash } = require("node:crypto");
+    const key = `uf_${randomBytes(32).toString("hex")}`;
+    const project = await Project.findOneAndUpdate({ _id: req.params.id, userId: req.user.id }, { $set: { submissionKeyHash: createHash("sha256").update(key).digest("hex") } }, { new: true });
+    if (!project) return res.status(404).json({ message: "Project not found" });
+    res.json({ key });
+  } catch { res.status(500).json({ message: "Could not create submission key." }); }
+});
+router.delete("/:id/submission-key", async (req, res) => {
+  try {
+    const project = await Project.findOneAndUpdate({ _id: req.params.id, userId: req.user.id }, { $unset: { submissionKeyHash: 1 } });
+    if (!project) return res.status(404).json({ message: "Project not found" });
+    res.json({ message: "Submission key revoked." });
+  } catch { res.status(500).json({ message: "Could not revoke submission key." }); }
+});
+
 // Get single project
 router.get("/:id", async (req, res) => {
   try {
@@ -158,6 +177,7 @@ router.get("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { name, description, fields, theme } = req.body;
+    if (!Array.isArray(fields) || !fields.length) return res.status(400).json({ message: "Add at least one question before saving." });
     const appearance = validateAppearance(req.body.appearance);
     const project = await Project.findOneAndUpdate(
       { _id: req.params.id, userId: req.user.id },

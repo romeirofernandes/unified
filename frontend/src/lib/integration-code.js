@@ -20,7 +20,9 @@ export default function App() {
 export function setupCommand({
   projectId = "YOUR_PROJECT_ID",
   uid = "YOUR_FIREBASE_UID",
+  manager = "npm",
 } = {}) {
   const quote = (value) => "'" + String(value).replaceAll("'", "'\\''") + "'";
-  return `npx unified-sdk@2.2.0 init --project ${quote(projectId)} --uid ${quote(uid)}`;
+  const runners = { npm: "npx --yes unified-sdk@2.2.0", pnpm: "pnpm dlx unified-sdk@2.2.0", yarn: "yarn dlx unified-sdk@2.2.0", bun: "bunx unified-sdk@2.2.0" };
+  return `${runners[manager]} init --project ${quote(projectId)} --uid ${quote(uid)} --package-manager ${manager}`;
 }

@@ -67,7 +67,8 @@ const projectSchema = new mongoose.Schema({
   feedbackSummary: { type: mongoose.Schema.Types.Mixed, default: null },
   summaryLock: { type: String, select: false },
   summaryLockUntil: { type: Date, select: false },
-  fields: [fieldSchema],
+  submissionKeyHash: { type: String, select: false },
+  fields: { type: [fieldSchema], validate: { validator: (fields) => fields.length > 0, message: "Add at least one question before saving." } },
   createdAt: {
     type: Date,
     default: Date.now,

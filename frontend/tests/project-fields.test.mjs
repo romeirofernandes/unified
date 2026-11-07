@@ -72,3 +72,8 @@ test("editing a project preserves field IDs used by existing feedback", () => {
   assert.equal(saved.label, "Contact email");
   assert.equal("id" in saved, false);
 });
+
+test("projects require at least one question, with no mandatory email type", () => {
+  assert.match(validateFields([]), /at least one question/);
+  assert.equal(validateFields([{ ...createField("text"), label: "Feedback" }]), "");
+});

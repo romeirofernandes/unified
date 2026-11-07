@@ -1,3 +1,5 @@
+import PackageCommands from "@/components/shared/PackageCommands";
+import ProjectApi from "./ProjectApi";
 import { useState } from "react";
 import { useTheme } from "next-themes";
 import PreviewModeToggle from "@/components/projects/PreviewModeToggle";
@@ -14,7 +16,7 @@ import { InputCopy } from "@/components/ui/input-copy";
 import { useAuth } from "@/hooks/use-auth";
 import PreviewField from "@/components/projects/PreviewField";
 import CodeBlock from "@/components/shared/CodeBlock";
-import { integrationCode, setupCommand } from "@/lib/integration-code";
+import { integrationCode } from "@/lib/integration-code";
 import { typeClass } from "@/lib/type-scale";
 
 export default function ProjectPreview({ isOpen, onClose, project }) {
@@ -73,16 +75,14 @@ export default function ProjectPreview({ isOpen, onClose, project }) {
           <section className="min-w-0 space-y-4">
             <h3 className={typeClass("title")}>Integration</h3>
             <p className="text-sm text-muted-foreground">
-              Automatic setup is available with SDK 2.2.0 after its npm release.
+              The published SDK 2.1.2 supports manual setup below. Automatic setup requires the upcoming 2.2.0 release.
               It installs the SDK and mounts the widget for you.
             </p>
-            <CodeBlock
-              code={setupCommand({ projectId: project._id, uid: user?.uid })}
-              label="Automatic setup · SDK 2.2.0"
-            />
+            <PackageCommands automatic projectId={project._id} uid={user?.uid} />
             <p className="text-sm text-muted-foreground">
               For manual setup, install unified-sdk and add this component once.
             </p>
+            <PackageCommands />
             <CodeBlock
               code={integrationCode({
                 projectId: project._id,
@@ -101,6 +101,7 @@ export default function ProjectPreview({ isOpen, onClose, project }) {
               label="Firebase UID"
               value={user?.uid || ""}
             />
+            <ProjectApi project={project} uid={user?.uid} />
           </section>
         </div>
       </DialogContent>

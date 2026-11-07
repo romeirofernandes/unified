@@ -19,6 +19,7 @@ export function createField(type = "text") {
 }
 
 export function validateFields(fields) {
+  if (!fields.length) return "Add at least one question before saving.";
   for (const [index, field] of fields.entries()) {
     if (!field.label.trim()) return `Add a label for field ${index + 1}.`;
     if (

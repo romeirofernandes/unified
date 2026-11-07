@@ -1,9 +1,10 @@
+import PackageCommands from "@/components/shared/PackageCommands";
 import { useEffect, useRef, useState } from "react";
 import { BounceSidebar } from "@/components/motion/bounce-sidebar";
 import { Link } from "react-router-dom";
 import CodeBlock from "@/components/shared/CodeBlock";
 import { Button } from "@/components/ui/button";
-import { integrationCode, setupCommand } from "@/lib/integration-code";
+import { integrationCode } from "@/lib/integration-code";
 
 const steps = [
   {
@@ -22,14 +23,13 @@ const steps = [
     id: "install",
     title: "Set up the SDK",
     description: "From SDK 2.2.0 (after its npm release), run this in your Vite or Next.js app. The CLI checks your React entry, installs the SDK, adds its stylesheet, and mounts the widget. Add --dry-run to inspect the changes first.",
-    code: setupCommand(),
     label: "Terminal",
   },
   {
     id: "integrate",
     title: "Or set it up manually",
     description:
-      "If you used the CLI, skip this step. Otherwise, run npm install unified-sdk. Select Preview in the project editor, then add the snippet and stylesheet once.",
+      "If you used the CLI, skip this step. Otherwise, install the SDK with your package manager below. Select Preview in the project editor, then add the snippet and stylesheet once.",
     code: integrationCode(),
     label: "App.jsx",
   },
@@ -59,7 +59,7 @@ export default function Quickstart() {
         ? scroller.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
       const last = document.getElementById(steps.at(-1).id)?.getBoundingClientRect();
       const endVisible = last && last.top < viewport.bottom && last.bottom <= viewport.bottom + 16;
-      const current = endVisible ? steps.at(-1) : [...steps].reverse().find(({ id }) => document.getElementById(id)?.getBoundingClientRect().top <= viewport.top + 130) || steps[0];
+      const current = endVisible ? steps.at(-1) : [...steps].reverse().find(({ id }) => document.getElementById(id)?.getBoundingClientRect().top <= viewport.top + Math.min(320, (viewport.bottom - viewport.top) * 0.35)) || steps[0];
       setActive(current.id);
     };
     const onScroll = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); };
@@ -109,6 +109,8 @@ export default function Quickstart() {
                   ))}
                 </ul>
               )}
+              {step.id === "install" && <><p className="text-sm text-muted-foreground">The npm release is currently 2.1.2 and has no CLI. Use manual setup below until 2.2.0 is published. These automatic commands require that release. Yarn commands require Yarn 2 or newer.</p><PackageCommands automatic /></>}
+              {step.id === "integrate" && <PackageCommands />}
               {step.code && <CodeBlock code={step.code} label={step.label} />}
               {step.id === "integrate" && (
                 <div className="rounded-lg border border-border bg-card px-5 py-4 text-sm leading-6 text-muted-foreground">

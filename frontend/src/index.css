@@ -399,10 +399,10 @@ button {
     @apply border-border outline-ring/50 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden;
   }
   body {
-    @apply overscroll-none bg-background text-foreground;
+    @apply overscroll-y-none bg-background text-foreground;
   }
   html {
-    @apply overscroll-none font-sans;
+    @apply overscroll-y-none font-sans;
   }
   ::selection {
     background-color: color-mix(in oklab, var(--fluid-accent, #6B97FF) 25%, transparent);
