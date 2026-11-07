@@ -23,3 +23,18 @@ async function deleteIdentity(token, request = fetch) {
   throw Object.assign(new Error("Could not delete the sign-in account. Please retry."), { status: 502 });
 }
 module.exports = { verifyIdToken, deleteIdentity };
+
+async function assertActiveIdentity(claims, token, request = fetch) {
+  if (!process.env.FIREBASE_API_KEY) throw Object.assign(new Error("Firebase authentication is not configured."), { status: 503 });
+  let response;
+  try {
+    response = await request(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${encodeURIComponent(process.env.FIREBASE_API_KEY)}`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken: token }), signal: AbortSignal.timeout(10000),
+    });
+  } catch { throw Object.assign(new Error("Sign-in verification is temporarily unavailable."), { status: 503 }); }
+  if (response.status >= 500 || response.status === 429) throw Object.assign(new Error("Sign-in verification is temporarily unavailable."), { status: 503 });
+  const account = (await response.json().catch(() => null))?.users?.[0];
+  if (!response.ok || !account || account.localId !== claims.uid || account.disabled || claims.auth_time < Number(account.validSince || 0)) throw new Error("This session has been revoked.");
+  return account;
+}
+module.exports.assertActiveIdentity = assertActiveIdentity;

@@ -8,7 +8,7 @@ A beautiful and customizable feedback component for React applications. Collect,
 - 🎨 Light and dark theme support
 - corner feedback popup with reversible open and close motion
 - 📝 Customizable form fields
-- 🔒 Firebase authentication support
+- Public feedback submissions without exposing dashboard credentials
 - 💫 Smooth animations
 - 🎭 Elegant UI components
 
@@ -22,7 +22,7 @@ from your Vite or Next.js frontend directory:
 npx unified-sdk@2.2.0 init --project YOUR_PROJECT_ID --api-url https://YOUR_BACKEND_HOST
 ```
 
-get project ID from your project's **Preview & code** panel. omit the flags to enter them interactively. these are widget configuration values, not your LLM API keys.
+get project ID from your project's **Preview & code** panel. omit the flags to enter them interactively. the project ID is public widget configuration, not an owner authentication credential.
 
 setup checks package.json, React, and the app entry before it changes anything. it installs the SDK with your package manager, creates `components/unified-feedback-widget.jsx` (or `.tsx`), imports the stylesheet, and mounts the widget inside your existing app. Next.js layouts stay server components, the generated widget is a client component.
 

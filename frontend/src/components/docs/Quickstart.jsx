@@ -91,7 +91,7 @@ const steps = [
 
 const managers = ["npm", "pnpm", "yarn", "bun"];
 const automaticMarkdown = managers.map((manager) => `### ${manager}\n\n\`\`\`sh\n${setupCommand({ manager })}\n\`\`\``).join("\n\n");
-export const documentationMarkdown = "# Unified documentation\n\n" + steps.map((step) => `## ${step.title}\n\n${step.description}\n\n${step.id === "install" ? automaticMarkdown + "\n\n" : ""}${(step.items || []).map((item) => `- ${item}`).join("\n")}${step.code ? `\n\n\`\`\`${step.label === "Terminal" ? "sh" : "jsx"}\n${step.code}\n\`\`\`` : ""}`).join("\n\n") + "\n\n## SDK installation\n\n```sh\n# npm\nnpm install unified-sdk\n# pnpm\npnpm add unified-sdk\n# Yarn\nyarn add unified-sdk\n# Bun\nbun add unified-sdk\n```\n\nAutomatic setup requires SDK 2.2.0 to be published. Yarn automatic setup requires Yarn 2 or newer. Manual installation works with 2.1.2. Replace project placeholders with values from Preview. Keep project submission keys server-side.\n";
+export const documentationMarkdown = "# Unified documentation\n\n" + steps.map((step) => `## ${step.title}\n\n${step.description}\n\n${step.id === "install" ? automaticMarkdown + "\n\n" : ""}${(step.items || []).map((item) => `- ${item}`).join("\n")}${step.code ? `\n\n\`\`\`${step.label === "Terminal" ? "sh" : "jsx"}\n${step.code}\n\`\`\`` : ""}`).join("\n\n") + "\n\n## SDK installation\n\n```sh\n# npm\nnpm install unified-sdk\n# pnpm\npnpm add unified-sdk\n# Yarn\nyarn add unified-sdk\n# Bun\nbun add unified-sdk\n```\n\nAutomatic setup requires SDK 2.2.0 to be published. Yarn automatic setup requires Yarn 2 or newer. This backend requires SDK 2.2.0 or newer. Replace project placeholders with values from Preview. Keep project submission keys server-side.\n";
 
 export default function Quickstart() {
   const contentRef = useRef(null);
@@ -159,7 +159,7 @@ export default function Quickstart() {
                   ))}
                 </ul>
               )}
-              {step.id === "install" && <><p className="text-sm text-muted-foreground">The npm release is currently 2.1.2 and has no CLI. Use manual setup below until 2.2.0 is published. These automatic commands require that release. Yarn commands require Yarn 2 or newer.</p><PackageCommands automatic /></>}
+              {step.id === "install" && <><p className="text-sm text-muted-foreground">These commands require SDK 2.2.0 to be published. Older widget installations must update to use this secured backend. Yarn commands require Yarn 2 or newer.</p><PackageCommands automatic /></>}
               {step.id === "integrate" && <PackageCommands />}
               {step.code && <CodeBlock code={step.code} label={step.label} />}
               {step.id === "integrate" && (

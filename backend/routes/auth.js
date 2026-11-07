@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-router.use(require("../middleware/identity"));
+const identity = require("../middleware/identity");
+router.use((req, res, next) => (req.method === "DELETE" && req.path === "/user" ? identity.forDeletion : identity)(req, res, next));
 const User = require("../models/User");
 const { deleteAccount } = require("../services/project-lifecycle");
 

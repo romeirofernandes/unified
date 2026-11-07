@@ -2,13 +2,34 @@ const { randomBytes, createHash, createHmac, timingSafeEqual } = require("node:c
 const CheckoutOrder = require("../models/CheckoutOrder");
 const hash = (value) => createHash("sha256").update(value).digest("hex");
 const fail = (status, message) => Object.assign(new Error(message), { status });
-function createPaymentHandlers({ client, Order = CheckoutOrder, secret = process.env.RAZORPAY_KEY_SECRET } = {}) {
+function createPaymentHandlers({ client, Order = CheckoutOrder, secret = process.env.RAZORPAY_KEY_SECRET, webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET } = {}) {
   const provider = () => {
     if (client) return client;
     if (!process.env.RAZORPAY_KEY_ID || !secret) throw fail(503, "Payments are not configured.");
     return new (require("razorpay"))({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: secret });
   };
   return {
+    async paymentWebhook(req, res) {
+      try {
+        if (!webhookSecret) throw fail(503, "Payment webhooks are not configured.");
+        const signature = req.headers["x-razorpay-signature"];
+        if (!Buffer.isBuffer(req.body) || !/^[a-f0-9]{64}$/.test(signature || "")) throw fail(400, "Invalid webhook signature.");
+        const expected = createHmac("sha256", webhookSecret).update(req.body).digest();
+        if (!timingSafeEqual(expected, Buffer.from(signature, "hex"))) throw fail(400, "Invalid webhook signature.");
+        let event;
+        try { event = JSON.parse(req.body.toString("utf8")); } catch { throw fail(400, "Invalid webhook payload."); }
+        if (event.event === "payment.captured") {
+          const payment = event.payload?.payment?.entity;
+          if (!payment || payment.status !== "captured" || !/^pay_[a-zA-Z0-9]{1,80}$/.test(payment.id || "")) throw fail(400, "Invalid captured payment.");
+          const order = await Order.findById(payment.order_id);
+          if (order) {
+            if (payment.amount !== order.amount || payment.currency !== order.currency) throw fail(400, "Payment does not match this order.");
+            await Order.findOneAndUpdate({ _id: order._id, status: "created" }, { $set: { status: "paid", paymentId: payment.id } });
+          }
+        }
+        res.json({ received: true });
+      } catch (error) { res.status(error.status || 503).json({ message: error.status ? error.message : "Could not process payment event. Please retry." }); }
+    },
     async createOrder(req, res) {
       try {
         // The coffee price is defined by the server, never by browser input.

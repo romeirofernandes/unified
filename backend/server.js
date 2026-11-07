@@ -23,6 +23,7 @@ app.use(
     credentials: true,
   })
 );
+app.post("/api/payment/webhook", express.raw({ type: "application/json", limit: "64kb" }), require("./controller/paymentController").paymentWebhook);
 app.use(express.json());
 
 // Routes

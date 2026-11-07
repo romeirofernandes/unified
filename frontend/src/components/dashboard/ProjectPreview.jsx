@@ -88,7 +88,7 @@ export function ProjectPreviewContent({ project, onEdit }) {
           <section className="min-w-0 space-y-4">
             <h3 className={typeClass("title")}>Integration</h3>
             <p className="text-sm text-muted-foreground">
-              The published SDK 2.1.2 supports manual setup below. Automatic setup requires the upcoming 2.2.0 release.
+              This backend requires SDK 2.2.0 or newer. Update older widget installations when deploying it.
               It installs the SDK and mounts the widget for you.
             </p>
             <PackageCommands automatic projectId={project._id} />

@@ -28,12 +28,16 @@ const BuyMeCoffeeButton = () => {
           modal: { ondismiss: resolve },
           handler: async (payment) => {
             try {
-              const verified = await fetch(`${base}/api/payment/verify`, {
-                method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...payment, checkoutToken: order.checkoutToken }),
-              });
-              const data = await verified.json();
-              if (!verified.ok) throw new Error(data.message || "Could not verify payment.");
+              for (let attempt = 0; attempt < 5; attempt++) {
+                const verified = await fetch(`${base}/api/payment/verify`, {
+                  method: "POST", headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ ...payment, checkoutToken: order.checkoutToken }),
+                });
+                const data = await verified.json();
+                if (verified.ok) break;
+                if (verified.status !== 409 || attempt === 4) throw new Error(data.message || "Could not verify payment.");
+                await new Promise(resolve => setTimeout(resolve, 1500));
+              }
               resolve();
             } catch (error) { reject(error); }
           },

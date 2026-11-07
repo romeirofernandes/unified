@@ -36,3 +36,23 @@ test("replaying a valid payment is idempotent", async () => {
   for (let i = 0; i < 2; i++) { const res = response(); await api.verifyPayment({ body }, res); assert.equal(res.code, 200); }
   assert.equal(api.writes(), 1);
 });
+
+test("captured webhooks verify the raw signature and reconcile each order once", async () => {
+  let writes = 0;
+  const order = { _id: "order_123", amount: 5000, currency: "INR", status: "created" };
+  const api = createPaymentHandlers({ webhookSecret: "webhook-secret", Order: {
+    findById: async () => order,
+    findOneAndUpdate: async (filter, update) => {
+      if (filter.status !== order.status) return null;
+      writes++; Object.assign(order, update.$set); return order;
+    },
+  } });
+  const raw = Buffer.from(JSON.stringify({ event: "payment.captured", payload: { payment: { entity: { id: "pay_123", order_id: order._id, status: "captured", amount: 5000, currency: "INR" } } } }));
+  const signature = createHmac("sha256", "webhook-secret").update(raw).digest("hex");
+  const invalid = response(); await api.paymentWebhook({ body: raw, headers: { "x-razorpay-signature": "0".repeat(64) } }, invalid);
+  assert.equal(invalid.code, 400); assert.equal(writes, 0);
+  for (let i = 0; i < 2; i++) {
+    const res = response(); await api.paymentWebhook({ body: raw, headers: { "x-razorpay-signature": signature } }, res); assert.equal(res.code, 200);
+  }
+  assert.equal(writes, 1);
+});

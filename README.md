@@ -63,7 +63,6 @@ function App() {
       <h1>My Application</h1>
       <UnifiedFeedback
         projectId="your-project-id"
-        firebaseUid="user-firebase-uid"
         theme="light"
       />
     </div>
@@ -113,7 +112,7 @@ MONGODB_URI=mongodb://localhost:27017/unified
 | Prop          | Type              | Required | Default | Description               |
 | ------------- | ----------------- | -------- | ------- | ------------------------- |
 | `projectId`   | string            | Yes      | -       | Project ID from dashboard |
-| `firebaseUid` | string            | Yes      | -       | Firebase user ID          |
+| `apiUrl` | string | No | `http://localhost:8000` | Your deployed Unified API origin |
 | `theme`       | "light" \| "dark" | No       | "light" | Visual theme              |
 
 ---
