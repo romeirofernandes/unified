@@ -20,7 +20,7 @@ function WrittenAnswers({ answers }) {
 export default function QuestionAnalytics({ question, index }) {
   const { field, data, kind, provided, skipped, invalid, stats, total, valid } = question;
   const horizontal = ["choice", "text-categories", "words", "email"].includes(kind);
-  const wide = kind === "words" || data.length > 10;
+  const wide = kind === "words" || data.length > (kind === "numeric" ? 16 : 10);
   const hasData = data.some((point) => point.count > 0);
   const denominator = kind === "email" ? total : valid;
   return <section aria-labelledby={`question-${field._id}`} className={`flex min-w-0 flex-col rounded-md border border-border bg-card ${wide ? "xl:col-span-2" : ""}`}>
