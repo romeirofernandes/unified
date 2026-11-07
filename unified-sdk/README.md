@@ -19,7 +19,7 @@ this CLI is included in this branch but 2.2.0 must be published to npm before th
 from your Vite or Next.js frontend directory:
 
 ```bash
-npx unified-sdk@2.2.0 init --project YOUR_PROJECT_ID --uid YOUR_FIREBASE_UID
+npx unified-sdk@2.2.0 init --project YOUR_PROJECT_ID --uid YOUR_FIREBASE_UID --api-url https://YOUR_BACKEND_HOST
 ```
 
 get both IDs from your project's **Preview & code** panel. omit the flags to enter them interactively. these are widget configuration values, not your LLM API keys.
@@ -27,6 +27,7 @@ get both IDs from your project's **Preview & code** panel. omit the flags to ent
 setup checks package.json, React, and the app entry before it changes anything. it installs the SDK with your package manager, creates `components/unified-feedback-widget.jsx` (or `.tsx`), imports the stylesheet, and mounts the widget inside your existing app. Next.js layouts stay server components, the generated widget is a client component.
 
 - `--dry-run` shows the files without writing or installing anything.
+- `--api-url URL` selects your deployed Unified backend (default: localhost:8000).
 - `--cwd ./frontend` selects an app in a monorepo.
 - `--entry src/main.tsx` selects a custom entry.
 - `--theme light` or `--theme dark` overrides the saved project mode.
@@ -50,7 +51,7 @@ then run it against your frontend (use absolute paths):
 ```bash
 npm install /path/to/unified-sdk/unified-sdk-2.2.0.tgz
 npx unified-sdk init --project YOUR_PROJECT_ID --uid YOUR_FIREBASE_UID --dry-run
-npx unified-sdk init --project YOUR_PROJECT_ID --uid YOUR_FIREBASE_UID
+npx unified-sdk init --project YOUR_PROJECT_ID --uid YOUR_FIREBASE_UID --api-url https://YOUR_BACKEND_HOST
 ```
 
 this installs our SDK and writes the integration. it does not copy all widget source into your app like a shadcn registry does, widget updates come through the SDK dependency.
@@ -72,6 +73,7 @@ function App() {
     <UnifiedFeedback
       projectId="your-project-id"
       firebaseUid="your-firebase-uid"
+      apiUrl="https://YOUR_BACKEND_HOST"
       theme="light" // or "dark"
     />
   );

@@ -1,5 +1,5 @@
 // Adapted from beUI Feedback Widget (MIT): https://beui.dev/r/feedback-widget/raw
-import React, { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   AnimatePresence,
@@ -17,6 +17,7 @@ export default function FeedbackShell({
   style,
   children,
   success,
+  position = "bottom-right",
 }) {
   const reduced = useReducedMotion();
   const root = useRef(null);
@@ -40,11 +41,13 @@ export default function FeedbackShell({
   const hidden = reduced
     ? { opacity: 0 }
     : { opacity: 0, x: 32, scale: 0.97, filter: "blur(2px)" };
+  if (typeof document === "undefined") return null;
   return createPortal(
+    <div className="unified-feedback-root">
     <div
       ref={root}
       style={style}
-      className="fixed bottom-4 right-4 z-50 text-[var(--uf-text)]"
+      className={`fixed bottom-4 ${position === "bottom-left" ? "left-4" : "right-4"} z-50 text-[var(--uf-text)]`}
     >
       <Motion.div
         layout
@@ -54,7 +57,7 @@ export default function FeedbackShell({
           layout: { duration: reduced ? 0 : 0.35, ease },
           borderRadius: { duration: reduced ? 0 : 0.35, ease },
         }}
-        style={{ transformOrigin: "bottom right" }}
+        style={{ transformOrigin: position === "bottom-left" ? "bottom left" : "bottom right" }}
         className={`overflow-hidden border border-[var(--uf-border)] bg-[var(--uf-background)] shadow-xl ${open ? "w-[min(420px,calc(100vw-2rem))]" : "size-14"}`}
       >
         <AnimatePresence
@@ -77,7 +80,7 @@ export default function FeedbackShell({
               onAnimationComplete={() =>
                 root.current
                   ?.querySelector(
-                    'input, textarea, [role="slider"], [role="listbox"]',
+                    'input, textarea, [role="slider"], [role="listbox"], button',
                   )
                   ?.focus()
               }
@@ -108,6 +111,7 @@ export default function FeedbackShell({
               type="button"
               aria-label="Open feedback form"
               aria-haspopup="dialog"
+              aria-controls={panelId}
               aria-expanded={open}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -132,6 +136,7 @@ export default function FeedbackShell({
           )}
         </AnimatePresence>
       </Motion.div>
+    </div>
     </div>,
     document.body,
   );

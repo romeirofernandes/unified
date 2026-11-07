@@ -8,6 +8,7 @@ const help = `unified-sdk init --project PROJECT_ID --uid FIREBASE_UID
 
 Installs and mounts the widget in Vite or Next.js.
   --cwd PATH              App directory (default: current directory)
+  --api-url URL           Unified backend origin (default: localhost:8000)
   --entry PATH            Custom entry, relative to the app directory
   --theme project|light|dark  Default: use the project's saved mode
   --package-manager NAME  npm, pnpm, yarn, or bun (auto-detected)
@@ -22,6 +23,7 @@ try {
     options: {
       project: { type: "string" },
       uid: { type: "string" },
+      "api-url": { type: "string" },
       cwd: { type: "string" },
       entry: { type: "string" },
       theme: { type: "string" },
@@ -54,6 +56,7 @@ try {
       cwd: values.cwd,
       projectId,
       uid,
+      apiUrl: values["api-url"],
       theme: values.theme,
       entry: values.entry,
       manager: values["package-manager"],

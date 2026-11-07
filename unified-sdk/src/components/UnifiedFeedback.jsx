@@ -1,143 +1,97 @@
 import FormFont from "../../../shared/FormFont";
 import { formThemeStyle } from "../../../shared/form-theme.mjs";
-import React, { useState, useEffect, useCallback, memo } from "react";
+import { useState, useEffect, useCallback, useRef, memo } from "react";
 import FeedbackShell from "./FeedbackShell";
 import FeedbackModal from "./FeedbackModal";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+// Changing identity remounts the session, including answers, timers and requests.
+const UnifiedFeedback = memo(function UnifiedFeedback(props) {
+  return <FeedbackSession key={JSON.stringify([props.projectId, props.firebaseUid, props.apiUrl])} {...props} />;
+});
 
-const UnifiedFeedback = memo(({ projectId, theme, firebaseUid }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [formData, setFormData] = useState(null);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
+function FeedbackSession({ projectId, theme, firebaseUid, apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000", position = "bottom-right" }) {
+  const [resource, setResource] = useState({ status: "loading", data: null });
+  const [status, setStatus] = useState("closed");
   const [answers, setAnswers] = useState({});
-  const [submissionError, setSubmissionError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-
-  const [isVisible, setIsVisible] = useState(true);
-
+  const [error, setError] = useState("");
+  const request = useRef(null);
+  const baseUrl = apiUrl.replace(/\/$/, "");
+  const pending = status === "sending";
+  const success = status === "success";
+  const formData = resource.data;
   const widgetTheme = theme || formData?.theme || "light";
 
   useEffect(() => {
-    const fetchProject = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    if (!projectId || !firebaseUid) return;
+    const controller = new AbortController();
+    fetch(`${baseUrl}/api/projects/${projectId}`, {
+      signal: controller.signal,
+      headers: { "firebase-uid": firebaseUid },
+    }).then(async (response) => {
+      if (!response.ok) throw new Error("Could not load feedback form.");
+      const data = await response.json();
+      if (!Array.isArray(data.fields) || !data.fields.length) throw new Error("The feedback form has no questions.");
+      if (!controller.signal.aborted) setResource({ status: "ready", data });
+    }).catch((error) => {
+      if (!controller.signal.aborted) setResource({ status: "error", data: null, error: error.message });
+    });
+    return () => controller.abort();
+  }, [projectId, firebaseUid, baseUrl]);
 
-        const response = await fetch(`${API_URL}/api/projects/${projectId}`, {
-          headers: {
-            "Content-Type": "application/json",
-            "firebase-uid": firebaseUid,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setFormData(data);
-      } catch (error) {
-        console.error("Failed to fetch project:", error);
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (projectId && firebaseUid) {
-      fetchProject();
-    }
-  }, [projectId, firebaseUid]);
-
-  const handleInputChange = useCallback((fieldId, value) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [fieldId]: value,
-    }));
-  }, []);
-
-  const handleSubmit = useCallback(
-    async (e) => {
-      e.preventDefault();
-      if (submitting) return;
-      setSubmitting(true);
-      setSubmissionError("");
-      const submittedAnswers = { ...answers };
-      for (const field of formData.fields || [])
-        if (
-          field.type === "slider" &&
-          submittedAnswers[field._id] === undefined
-        )
-          submittedAnswers[field._id] = field.config?.min ?? 0;
-      try {
-        const response = await fetch(`${API_URL}/api/feedback`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "firebase-uid": firebaseUid,
-          },
-          body: JSON.stringify({
-            projectId,
-            formAnswers: submittedAnswers,
-          }),
-        });
-        if (!response.ok)
-          throw new Error("Could not send feedback. Please try again.");
-        setShowToast(true);
-        localStorage.setItem(`unified-feedback-${projectId}`, "submitted");
-      } catch (error) {
-        setSubmissionError(
-          error.message || "Could not send feedback. Please try again.",
-        );
-      } finally {
-        setSubmitting(false);
-      }
-    },
-    [answers, projectId, firebaseUid, formData, submitting],
-  );
-
+  useEffect(() => () => request.current?.abort(), []);
   useEffect(() => {
-    const wasSubmitted = localStorage.getItem(`unified-feedback-${projectId}`);
-    if (wasSubmitted) {
-      setIsVisible(false);
-    }
-  }, [projectId]);
+    if (!success) return;
+    const timer = setTimeout(() => setStatus("dismissed"), 1800);
+    return () => clearTimeout(timer);
+  }, [success]);
 
   const handleClose = useCallback(() => {
-    if (!submitting) {
-      setIsOpen(false);
-      if (showToast) setAnswers({});
+    if (request.current) return;
+    setStatus((current) => current === "success" ? "dismissed" : "closed");
+  }, []);
+  const handleInputChange = useCallback((id, value) => {
+    setAnswers((previous) => ({ ...previous, [id]: value }));
+  }, []);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    // A ref guards same-tick double submits before React commits the sending state.
+    if (request.current || status === "success") return;
+    const controller = new AbortController();
+    request.current = controller;
+    setStatus("sending");
+    setError("");
+    const formAnswers = { ...answers };
+    for (const field of formData.fields) {
+      if (field.type === "slider" && formAnswers[field._id] === undefined) formAnswers[field._id] = field.config?.min ?? 0;
     }
-  }, [submitting, showToast]);
+    try {
+      const response = await fetch(`${baseUrl}/api/feedback`, {
+        method: "POST",
+        signal: controller.signal,
+        headers: { "Content-Type": "application/json", "firebase-uid": firebaseUid },
+        body: JSON.stringify({ projectId, formAnswers }),
+      });
+      if (!response.ok) throw new Error("Could not send feedback. Please try again.");
+      if (!controller.signal.aborted) setStatus("success");
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        setStatus("error");
+        setError(error.message || "Could not send feedback. Please try again.");
+      }
+    } finally {
+      if (request.current === controller) request.current = null;
+    }
+  };
 
-  if (loading || error || !formData || !isVisible) return null;
-
+  if (resource.status !== "ready" || status === "dismissed") return null;
   return (
-    <FeedbackShell
-      open={isOpen}
-      onOpen={() => setIsOpen(true)}
-      onClose={handleClose}
-      pending={submitting}
-      success={showToast}
-      style={formThemeStyle(formData.appearance, widgetTheme)}
-    >
+    <FeedbackShell open={status !== "closed"} onOpen={() => setStatus("editing")} onClose={handleClose}
+      pending={pending} success={success} position={position} style={formThemeStyle(formData.appearance, widgetTheme)}>
       <FormFont appearance={formData.appearance} />
-      <FeedbackModal
-        isOpen={isOpen}
-        onClose={handleClose}
-        formData={formData}
-        theme={widgetTheme}
-        answers={answers}
-        onSubmit={handleSubmit}
-        pending={submitting}
-        error={submissionError}
-        onChange={handleInputChange}
-      />
+      <FeedbackModal isOpen onClose={handleClose} formData={formData} theme={widgetTheme}
+        answers={answers} onSubmit={handleSubmit} pending={pending} error={error} onChange={handleInputChange} />
     </FeedbackShell>
   );
-});
+}
 
 export default UnifiedFeedback;

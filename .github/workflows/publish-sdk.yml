@@ -1,0 +1,40 @@
+name: publish SDK
+on:
+  push:
+    tags: ['sdk-v*']
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          cache: npm
+          cache-dependency-path: unified-sdk/package-lock.json
+      - run: npm ci
+        working-directory: unified-sdk
+      - run: npx playwright install --with-deps chromium
+        working-directory: unified-sdk
+      - run: npm test
+        working-directory: unified-sdk
+      - run: npm run lint
+        working-directory: unified-sdk
+      - run: npm run test:consumer
+        working-directory: unified-sdk
+      - run: npm run test:consumer
+        working-directory: unified-sdk
+        env:
+          CONSUMER_REACT_VERSION: 18.3.1
+          CONSUMER_MOTION: no-preference
+      - name: Check release tag matches package version
+        if: startsWith(github.ref, 'refs/tags/')
+        working-directory: unified-sdk
+        run: node -e 'if (process.env.GITHUB_REF_NAME !== `sdk-v${require("./package.json").version}`) process.exit(1)'
+      - run: npm publish --provenance --access public --ignore-scripts
+        working-directory: unified-sdk

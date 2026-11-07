@@ -235,3 +235,11 @@ test("the published CLI entry accepts noninteractive flags", (t) => {
   assert.match(output, /Widget configured/);
   assert.ok(f.read("src/main.jsx").includes("<UnifiedFeedbackWidget />"));
 });
+
+test("backend origin is preserved in generated consumer configuration", (t) => {
+  const app = fixture(t, { "src/main.jsx": 'import React from "react"; import {createRoot} from "react-dom/client"; createRoot(document.getElementById("root")).render(<div />);' });
+  const plan = app.plan({ apiUrl: "https://feedback.example.com/" });
+  applyPlan(plan, { skipInstall: true });
+  assert.match(app.read("src/components/unified-feedback-widget.jsx"), /"apiUrl": "https:\/\/feedback.example.com"/);
+  assert.throws(() => app.plan({ apiUrl: "javascript:alert(1)" }), /http/);
+});

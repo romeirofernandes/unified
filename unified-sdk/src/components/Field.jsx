@@ -1,7 +1,7 @@
 import { RangeField } from "../../../shared/controls/range-field";
 import { DateInput } from "../../../shared/controls/date-input";
 import { answerPlaceholder } from "../../../shared/form-fields.mjs";
-import React, { memo } from "react";
+import { memo } from "react";
 
 const Field = memo(({ field, value, onChange }) => {
   const baseInputClass =

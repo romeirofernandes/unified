@@ -1,8 +1,8 @@
 import { formThemeStyle } from "../../../shared/form-theme.mjs";
-import React, { memo } from "react";
+import { memo } from "react";
 import { useState } from "react";
 
-import { motion as Motion, useReducedMotion } from "motion/react";
+import Stepper, { Step } from "./Stepper";
 import Field from "./Field";
 
 const FeedbackModal = memo(
@@ -17,7 +17,6 @@ const FeedbackModal = memo(
     pending = false,
     error,
   }) => {
-    const reduced = useReducedMotion();
     const [fieldError, setFieldError] = useState("");
     const [currentStep, setCurrentStep] = useState(0);
 
@@ -85,30 +84,6 @@ const FeedbackModal = memo(
             </svg>
           </button>
         </div>
-        <div className="mb-5 flex justify-center">
-          <div className="flex items-center gap-2 px-4 py-1 rounded-full bg-[var(--uf-surface)] backdrop-blur-sm border border-[var(--uf-border)] shadow-sm">
-            {[...Array(totalSteps)].map((_, index) => (
-              <Motion.div
-                key={`step-${index}-${currentField?._id}`}
-                initial={false}
-                animate={{
-                  scale: currentStep >= index ? 1 : 0.85,
-                  opacity: currentStep >= index ? 1 : 0.5,
-                }}
-                className={`
-                    w-2 h-2 rounded-full transition-colors
-                    ${
-                      currentStep >= index
-                        ? "bg-[var(--uf-accent)]"
-                        : "bg-[var(--uf-border)]"
-                    }
-                  `}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Rest of the modal content */}
         <h2
           style={{ fontFamily: "var(--uf-font)" }}
           className="text-2xl font-bold mb-2 mt-4"
@@ -120,33 +95,34 @@ const FeedbackModal = memo(
         </p>
 
         <form onSubmit={handleFormSubmit} className="space-y-6">
-          <Motion.div
-            key={currentStep}
-            initial={{ opacity: 0, x: reduced ? 0 : 8 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.15 }}
-            className="space-y-4"
+          <Stepper
+            step={currentStep + 1}
+            indicator="numbers"
+            disableStepIndicators
+            showFooter={false}
+            frame={false}
+            theme={theme}
+            accentColor="var(--uf-accent)"
+            width="100%"
+            radius={8}
           >
-            <label
-              id={`uf-label-${currentField?._id}`}
-              htmlFor={`uf-field-${currentField?._id}`}
-              className="mb-2 block text-lg font-medium"
-            >
-              {currentField?.label}
-              {currentField?.required && (
-                <span className="text-red-500 ml-1">*</span>
-              )}
-            </label>
-            <Field
-              field={currentField}
-              theme={theme}
-              value={answers[currentField?._id]}
-              onChange={(id, value) => {
-                setFieldError("");
-                onChange(id, value);
-              }}
-            />
-          </Motion.div>
+            {formData.fields.map((field) => (
+              <Step key={field._id} title={field.label}>
+                <label
+                  id={`uf-label-${field._id}`}
+                  htmlFor={`uf-field-${field._id}`}
+                  className="mb-2 block text-lg font-medium"
+                >
+                  {field.label}
+                  {field.required && <span className="ml-1 text-red-500">*</span>}
+                </label>
+                <fieldset disabled={pending} className="min-w-0 border-0 p-0">
+                  <Field field={field} theme={theme} value={answers[field._id]}
+                    onChange={(id, value) => { setFieldError(""); onChange(id, value); }} />
+                </fieldset>
+              </Step>
+            ))}
+          </Stepper>
 
           {error && (
             <p role="alert" className="text-sm text-red-500">
