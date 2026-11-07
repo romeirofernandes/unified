@@ -1,19 +1,21 @@
+import { accessToken } from "./access-token.js";
 const API_URL = (
   import.meta.env?.VITE_BACKEND_URL || "http://localhost:8000"
 ).replace(/\/$/, "");
 
 export async function apiRequest(
   path,
-  { uid, body, rawBody, headers, ...options } = {},
+  { uid, token, body, rawBody, headers, ...options } = {},
 ) {
+  const bearer = token || await accessToken(uid);
   const response = await fetch(`${API_URL}/api${path}`, {
     ...options,
     signal: options.signal || AbortSignal.timeout(20000),
     headers: {
       ...(/\.ngrok-free\.app(?::\d+)?$/.test(new URL(API_URL).host) ? { "ngrok-skip-browser-warning": "true" } : {}),
-      ...(uid ? { "firebase-uid": uid } : {}),
       ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
       ...headers,
+      Authorization: `Bearer ${bearer}`,
     },
     ...(rawBody !== undefined
       ? { body: rawBody }

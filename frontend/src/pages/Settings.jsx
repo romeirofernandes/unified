@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  deleteUser,
   reauthenticateWithCredential,
   reauthenticateWithPopup,
   EmailAuthProvider,
@@ -47,8 +46,8 @@ export default function Settings() {
       await apiRequest("/auth/user", {
         method: "DELETE",
         uid: currentUser.uid,
+        token: await currentUser.getIdToken(true),
       });
-      await deleteUser(currentUser);
       await logout();
       navigate("/", { replace: true });
     } catch (error) {

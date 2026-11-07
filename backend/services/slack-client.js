@@ -6,6 +6,7 @@ async function slackApi(token, method, params = {}, request = fetch) {
   const data = response.ok ? await response.json() : null;
   if (!response.ok || !data?.ok) {
     const error = new Error(data?.error === "missing_scope" || data?.error === "invalid_auth" || data?.error === "token_revoked" ? "Reconnect Slack to grant channel access." : response.status === 429 ? "Slack is busy. Please try again shortly." : "Slack request failed. Check the connection and try again.");
+    error.deliveryRejected = data?.ok === false || response.status < 500;
     error.status = ["missing_scope", "invalid_auth", "token_revoked"].includes(data?.error) ? 409 : response.status === 429 ? 429 : 502;
     throw error;
   }

@@ -11,6 +11,8 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  deleting: { type: Boolean, default: false },
+  writeVersion: { type: Number, default: 0 },
   createdAt: {
     type: Date,
     default: Date.now,

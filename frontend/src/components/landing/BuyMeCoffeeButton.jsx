@@ -1,57 +1,53 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Coffee01Icon } from "@hugeicons/core-free-icons";
 import { motion as Motion } from "motion/react";
 
 const BuyMeCoffeeButton = () => {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const running = useRef(false);
 
   const handlePayment = async () => {
+    if (running.current) return;
+    running.current = true;
     setLoading(true);
-
+    setError("");
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/payment/create-order`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: 50 }),
-        },
-      );
-
-      const { orderId, amount } = await response.json();
-
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: amount,
-        currency: "INR",
-        name: "Buy Me a Coffee",
-        description: "Support my work ☕",
-        order_id: orderId,
-        handler: function (response) {
-          verifyPayment(response);
-        },
-        theme: { color: "#3B82F6" },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (error) {
-      console.error("Payment failed:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const verifyPayment = async (paymentData) => {
-    await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/payment/verify`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(paymentData),
-    });
+      const base = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+      const response = await fetch(`${base}/api/payment/create-order`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ amount: 50 }),
+      });
+      const order = await response.json();
+      if (!response.ok) throw new Error(order.message || "Could not start checkout.");
+      if (typeof window.Razorpay !== "function") throw new Error("Checkout did not load. Refresh and try again.");
+      await new Promise((resolve, reject) => {
+        const checkout = new window.Razorpay({
+          key: import.meta.env.VITE_RAZORPAY_KEY_ID, amount: order.amount, currency: order.currency,
+          name: "Buy Me a Coffee", description: "Support my work", order_id: order.orderId,
+          modal: { ondismiss: resolve },
+          handler: async (payment) => {
+            try {
+              const verified = await fetch(`${base}/api/payment/verify`, {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ...payment, checkoutToken: order.checkoutToken }),
+              });
+              const data = await verified.json();
+              if (!verified.ok) throw new Error(data.message || "Could not verify payment.");
+              resolve();
+            } catch (error) { reject(error); }
+          },
+          theme: { color: "#3B82F6" },
+        });
+        checkout.on("payment.failed", () => reject(new Error("Payment failed. Please try again.")));
+        checkout.open();
+      });
+    } catch (error) { setError(error.message); }
+    finally { running.current = false; setLoading(false); }
   };
 
   return (
+    <>
     <Motion.div
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
@@ -123,6 +119,8 @@ const BuyMeCoffeeButton = () => {
         </span>
       </Motion.button>
     </Motion.div>
+    {error && <p role="alert" className="mt-2 text-sm text-red-500">{error}</p>}
+    </>
   );
 };
 

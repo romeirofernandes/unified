@@ -3,7 +3,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/motion/tabs";
 import CodeBlock from "./CodeBlock";
 import { setupCommand } from "@/lib/integration-code";
 
-export default function PackageCommands({ automatic = false, projectId, uid }) {
+export default function PackageCommands({ automatic = false, projectId }) {
   const [manager, setManager] = useState("npm");
   const installs = { npm: "npm install unified-sdk", pnpm: "pnpm add unified-sdk", yarn: "yarn add unified-sdk", bun: "bun add unified-sdk" };
   return <div className="min-w-0 space-y-3">
@@ -12,6 +12,6 @@ export default function PackageCommands({ automatic = false, projectId, uid }) {
         {["npm", "pnpm", "yarn", "bun"].map((name) => <TabsTrigger key={name} value={name}>{name}</TabsTrigger>)}
       </TabsList>
     </Tabs>
-    <CodeBlock code={automatic ? setupCommand({ projectId, uid, manager }) : installs[manager]} label="Terminal" />
+    <CodeBlock code={automatic ? setupCommand({ projectId, manager }) : installs[manager]} label="Terminal" />
   </div>;
 }

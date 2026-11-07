@@ -5,6 +5,7 @@ const Feedback = require("../models/Feedback");
 const { generateForm } = require("../services/form-generation");
 const { validateAppearance } = require("../services/project-appearance");
 const { validateFields } = require("../services/project-fields");
+const lifecycle = require("../services/project-lifecycle");
 const generationInFlight = new Set();
 
 router.post("/generate-form", async (req, res) => {
@@ -88,7 +89,7 @@ router.post("/", async (req, res) => {
     const appearance = validateAppearance(req.body.appearance);
     const userId = req.user.id;
 
-    const project = new Project({
+    const project = await lifecycle.createProject({
       name,
       description,
       fields,
@@ -97,7 +98,6 @@ router.post("/", async (req, res) => {
       userId,
     });
 
-    await project.save();
     res.status(201).json(project);
   } catch (error) {
     res.status(error.status || 500).json({
@@ -212,14 +212,8 @@ router.put("/:id", async (req, res) => {
 // Delete project
 router.delete("/:id", async (req, res) => {
   try {
-    const project = await Project.findOne({
-      _id: req.params.id,
-      userId: req.user.id,
-    });
-    if (!project) return res.status(404).json({ message: "Project not found" });
-    // Keep the project available for a retry if feedback cleanup fails.
-    await Feedback.deleteMany({ projectId: project._id });
-    await Project.deleteOne({ _id: project._id, userId: req.user.id });
+    const deleted = await lifecycle.deleteProject({ _id: req.params.id, userId: req.user.id });
+    if (!deleted) return res.status(404).json({ message: "Project not found" });
     res.json({ message: "Project deleted successfully" });
   } catch (error) {
     res

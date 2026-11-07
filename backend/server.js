@@ -9,6 +9,9 @@ const paymentRoutes = require("./routes/payments");
 const authMiddleware = require("./middleware/auth");
 
 const app = express();
+const proxyHops = Number(process.env.TRUST_PROXY_HOPS || 0);
+if (!Number.isInteger(proxyHops) || proxyHops < 0 || proxyHops > 3) throw new Error("TRUST_PROXY_HOPS must be 0 through 3.");
+app.set("trust proxy", proxyHops);
 const PORT = process.env.PORT || 8000;
 
 connectDB().then(() => require("./services/digest-worker").startDigestWorker());
@@ -24,6 +27,7 @@ app.use(express.json());
 
 // Routes
 
+app.use("/api/widget", require("./routes/widget"));
 app.use("/api/submissions", require("./routes/submissions"));
 app.use("/api/auth", authRoutes);
 app.use("/api/slack", require("./routes/slack"));

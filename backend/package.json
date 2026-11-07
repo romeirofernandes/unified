@@ -16,6 +16,7 @@
     "crypto": "^1.0.1",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "jose": "^6.2.15",
     "mongoose": "^8.15.0",
     "nodemailer": "^10.3.1",
     "nodemon": "^3.1.10",
@@ -23,5 +24,8 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.3.0"
   }
 }

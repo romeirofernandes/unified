@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 import { createPlan, applyPlan } from "../cli/setup.mjs";
 import { parseEntry } from "../cli/transform.mjs";
 
-const options = { projectId: "507f1f77bcf86cd799439011", uid: "firebase-user" };
+const options = { projectId: "507f1f77bcf86cd799439011" };
 function fixture(t, files, pkg = {}) {
   const cwd = mkdtempSync(path.join(tmpdir(), "unified-setup-"));
   t.after(() => rmSync(cwd, { recursive: true, force: true }));
@@ -225,8 +225,6 @@ test("the published CLI entry accepts noninteractive flags", (t) => {
       f.cwd,
       "--project",
       options.projectId,
-      "--uid",
-      options.uid,
       "--skip-install",
       "--yes",
     ],

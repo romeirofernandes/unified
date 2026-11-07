@@ -21,7 +21,7 @@ function App() {return <main><h1 id="host-title">Consumer app</h1><button id="ho
 createRoot(document.getElementById('root')).render(<React.StrictMode><App /></React.StrictMode>);`);
   execFileSync("npm", ["install", "--no-audit", "--no-fund"], { cwd: app, stdio: "pipe" });
   execFileSync("node", ["--input-type=commonjs", "-e", "if(typeof require('unified-sdk').UnifiedFeedback !== 'function' && typeof require('unified-sdk').UnifiedFeedback !== 'object') process.exit(1)"], { cwd: app, stdio: "pipe" });
-  execFileSync(path.join(app, "node_modules/.bin/unified-sdk"), ["init", "--project", "test-project", "--uid", "test-owner", "--api-url", "https://feedback.test", "--yes"], { cwd: app, stdio: "pipe" });
+  execFileSync(path.join(app, "node_modules/.bin/unified-sdk"), ["init", "--project", "test-project", "--api-url", "https://feedback.test", "--yes"], { cwd: app, stdio: "pipe" });
   execFileSync(path.join(app, "node_modules/.bin/vite"), ["build"], { cwd: app, stdio: "pipe" });
   server = spawn(path.join(app, "node_modules/.bin/vite"), ["--host", "127.0.0.1", "--port", "4178", "--strictPort"], { cwd: app, stdio: "ignore" });
   for (let attempt = 0; ; attempt++) {
@@ -41,6 +41,9 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
       { _id: "email", type: "email", label: "Your email", required: true },
       { _id: "message", type: "textarea", label: "Your feedback", required: true },
     ] } });
+    assert.equal(route.request().headers()["firebase-uid"], undefined);
+    assert.equal(route.request().headers().authorization, undefined);
+    assert.match(route.request().url(), /\/api\/widget\/test-project$/);
     submissions++;
     submitted = route.request().postDataJSON();
     await new Promise(resolve => setTimeout(resolve, 250));

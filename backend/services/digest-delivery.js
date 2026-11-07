@@ -21,12 +21,13 @@ async function deliverDigest({ project, channel, summary, count, recipient, batc
   if (channel === "slack") {
     body = slackDigest({ project, summary, count, test });
     if (project.slackBotTokenEncrypted && project.slackChannelId) {
-      await slackApi(decrypt(project.slackBotTokenEncrypted), "chat.postMessage", { ...body, channel: project.slackChannelId, parse: "none" }, request);
+      const digestId = createHash("sha256").update(batchId || text).digest("hex");
+      await slackApi(decrypt(project.slackBotTokenEncrypted), "chat.postMessage", { ...body, channel: project.slackChannelId, client_msg_id: `${digestId.slice(0,8)}-${digestId.slice(8,12)}-4${digestId.slice(13,16)}-8${digestId.slice(17,20)}-${digestId.slice(20,32)}`, parse: "none" }, request);
       return;
     }
     url = validateSlackWebhook(decrypt(project.slackWebhookEncrypted));
   } else {
-    if (!emailReady()) throw new Error("Email delivery is not configured on the server.");
+    if (!emailReady()) throw Object.assign(new Error("Email delivery is not configured on the server."), { deliveryRejected: true });
     const subject = `${test ? "[Test] " : ""}${project.name.replace(/[\r\n]/g, " ").slice(0, 120)} · feedback digest`;
     if (emailTransport() === "smtp") return sendSmtp({ recipient, subject, text, html: digestHtml({ project, summary, count, test }), batchId });
     url = "https://api.resend.com/emails";
@@ -35,6 +36,6 @@ async function deliverDigest({ project, channel, summary, count, recipient, batc
     body = { from: emailFrom(), to: [recipient], subject, text, html: digestHtml({ project, summary, count, test }) };
   }
   const response = await request(url, { method: "POST", headers, body: JSON.stringify(body), signal: AbortSignal.timeout(20000), redirect: "error" });
-  if (!response.ok) throw new Error(`${channel === "slack" ? "Slack" : "Email"} delivery failed (${response.status}). Check the connection and try again.`);
+  if (!response.ok) throw Object.assign(new Error(`${channel === "slack" ? "Slack" : "Email"} delivery failed (${response.status}). Check the connection and try again.`), { deliveryRejected: response.status < 500 });
 }
 module.exports = { validateSlackWebhook, digestText, deliverDigest };

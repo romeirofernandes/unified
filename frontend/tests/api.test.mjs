@@ -1,3 +1,5 @@
+import { setAccessTokenProvider } from "../src/lib/access-token.js";
+setAccessTokenProvider(async () => "signed-test-token");
 import test from "node:test";
 import assert from "node:assert/strict";
 import { apiRequest } from "../src/lib/api.js";
@@ -9,7 +11,8 @@ test("API requests preserve cancellation, identity, method, and JSON payload", a
     globalThis.fetch = async (url, options) => {
       assert.equal(url, "http://localhost:8000/api/projects");
       assert.equal(options.method, "POST");
-      assert.equal(options.headers["firebase-uid"], "user");
+      assert.equal(options.headers.Authorization, "Bearer signed-test-token");
+      assert.equal(options.headers["firebase-uid"], undefined);
       assert.equal(options.headers["Content-Type"], "application/json");
       assert.equal(options.body, '{"name":"App"}');
       assert.equal(options.signal, controller.signal);
@@ -61,7 +64,8 @@ test("recordings are uploaded as binary audio without JSON conversion", async ()
     globalThis.fetch = async (_, options) => {
       assert.equal(options.body, audio);
       assert.equal(options.headers["Content-Type"], "audio/ogg");
-      assert.equal(options.headers["firebase-uid"], "user");
+      assert.equal(options.headers.Authorization, "Bearer signed-test-token");
+      assert.equal(options.headers["firebase-uid"], undefined);
       return {
         ok: true,
         status: 200,

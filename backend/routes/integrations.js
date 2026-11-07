@@ -58,7 +58,7 @@ router.put("/:id/:channel", async (req, res) => {
     const prefix = `notifications.${channel}`;
     const previous = project.notifications?.[channel] || {};
     const set = { [`${prefix}.enabled`]: disconnect ? false : enabled, [`${prefix}.cadence`]: cadence, [`${prefix}.error`]: "" };
-    const unset = { [`${prefix}.lockToken`]: 1, [`${prefix}.lockUntil`]: 1, [`${prefix}.pendingUntil`]: 1, [`${prefix}.pendingSummary`]: 1 };
+    const unset = { [`${prefix}.lockToken`]: 1, [`${prefix}.lockUntil`]: 1, ...(!enabled || disconnect ? { [`${prefix}.pendingUntil`]: 1, [`${prefix}.pendingSummary`]: 1 } : {}) };
     if (channel === "slack") {
       if (disconnect) { unset.slackWebhookEncrypted = 1; unset.slackBotTokenEncrypted = 1; unset.slackChannelId = 1; unset.slackWorkspace = 1; unset.slackChannel = 1; unset.slackOAuthStateHash = 1; unset.slackOAuthStateUntil = 1; }
       else if (webhook) { set.slackWebhookEncrypted = encrypt(validateSlackWebhook(webhook)); unset.slackBotTokenEncrypted = 1; unset.slackChannelId = 1; unset.slackWorkspace = 1; unset.slackChannel = 1; }

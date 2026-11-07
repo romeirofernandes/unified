@@ -1,4 +1,5 @@
 import { initializeApp } from "firebase/app";
+import { setAccessTokenProvider } from "./lib/access-token";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
@@ -25,5 +26,9 @@ if (typeof window !== "undefined") {
     });
 }
 const auth = getAuth(app);
+setAccessTokenProvider(async (uid) => {
+  const user = auth.currentUser;
+  return user && (!uid || user.uid === uid) ? user.getIdToken() : null;
+});
 
 export { auth, analytics };

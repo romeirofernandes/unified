@@ -19,10 +19,10 @@ this CLI is included in this branch but 2.2.0 must be published to npm before th
 from your Vite or Next.js frontend directory:
 
 ```bash
-npx unified-sdk@2.2.0 init --project YOUR_PROJECT_ID --uid YOUR_FIREBASE_UID --api-url https://YOUR_BACKEND_HOST
+npx unified-sdk@2.2.0 init --project YOUR_PROJECT_ID --api-url https://YOUR_BACKEND_HOST
 ```
 
-get both IDs from your project's **Preview & code** panel. omit the flags to enter them interactively. these are widget configuration values, not your LLM API keys.
+get project ID from your project's **Preview & code** panel. omit the flags to enter them interactively. these are widget configuration values, not your LLM API keys.
 
 setup checks package.json, React, and the app entry before it changes anything. it installs the SDK with your package manager, creates `components/unified-feedback-widget.jsx` (or `.tsx`), imports the stylesheet, and mounts the widget inside your existing app. Next.js layouts stay server components, the generated widget is a client component.
 
@@ -50,8 +50,8 @@ then run it against your frontend (use absolute paths):
 
 ```bash
 npm install /path/to/unified-sdk/unified-sdk-2.2.0.tgz
-npx unified-sdk init --project YOUR_PROJECT_ID --uid YOUR_FIREBASE_UID --dry-run
-npx unified-sdk init --project YOUR_PROJECT_ID --uid YOUR_FIREBASE_UID --api-url https://YOUR_BACKEND_HOST
+npx unified-sdk init --project YOUR_PROJECT_ID --dry-run
+npx unified-sdk init --project YOUR_PROJECT_ID --api-url https://YOUR_BACKEND_HOST
 ```
 
 this installs our SDK and writes the integration. it does not copy all widget source into your app like a shadcn registry does, widget updates come through the SDK dependency.
@@ -72,7 +72,6 @@ function App() {
   return (
     <UnifiedFeedback
       projectId="your-project-id"
-      firebaseUid="your-firebase-uid"
       apiUrl="https://YOUR_BACKEND_HOST"
       theme="light" // or "dark"
     />
@@ -85,14 +84,13 @@ function App() {
 | Prop        | Type              | Required | Description                                         |
 | ----------- | ----------------- | -------- | --------------------------------------------------- |
 | projectId   | string            | Yes      | Your project ID from Unified dashboard              |
-| firebaseUid | string            | Yes      | Firebase user ID for authentication                 |
 | theme       | "light" \| "dark" | No       | Theme for the feedback component (default: "light") |
 
 ## Usage
 
 1. Create a project in your [Unified Dashboard](https://unified-chi.vercel.app/dashboard)
 2. Set up your feedback form with custom fields
-3. Copy your project ID and Firebase UID
+3. Copy your project ID
 4. Add the component to your React app
 5. Start collecting feedback!
 
@@ -116,7 +114,6 @@ function App() {
       <h1>My Awesome App</h1>
       <UnifiedFeedback
         projectId={import.meta.env.UNIFIED_PROJECT_ID}
-        firebaseUid={import.meta.env.FIREBASE_UID}
         theme="dark"
       />
     </div>

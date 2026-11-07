@@ -3,7 +3,7 @@ const { randomUUID } = require("node:crypto");
 const router = express.Router();
 const Feedback = require("../models/Feedback");
 const Project = require("../models/Project");
-const { validateAnswers } = require("../services/submission-answers");
+const { submitFeedback } = require("../services/project-lifecycle");
 const { summarizeFeedback } = require("../services/feedback-summary");
 
 // Submit feedback
@@ -11,18 +11,7 @@ router.post("/", async (req, res) => {
   try {
     const { projectId, formAnswers } = req.body;
 
-    const project = await Project.findOne({
-      _id: projectId,
-      userId: req.user.id,
-    });
-    if (!project) return res.status(404).json({ message: "Project not found" });
-
-    const feedback = new Feedback({
-      projectId,
-      formAnswers: validateAnswers(project.fields, formAnswers),
-    });
-
-    await feedback.save();
+    const feedback = await submitFeedback({ _id: projectId, userId: req.user.id }, formAnswers);
     res.status(201).json(feedback);
   } catch (error) {
     res

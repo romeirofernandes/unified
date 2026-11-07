@@ -67,6 +67,7 @@ const digestChannelSchema = new mongoose.Schema({
 }, { _id: false });
 
 const projectSchema = new mongoose.Schema({
+  writeVersion: { type: Number, default: 0 },
   name: {
     type: String,
     required: true,

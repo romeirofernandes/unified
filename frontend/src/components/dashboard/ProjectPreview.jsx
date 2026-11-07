@@ -91,7 +91,7 @@ export function ProjectPreviewContent({ project, onEdit }) {
               The published SDK 2.1.2 supports manual setup below. Automatic setup requires the upcoming 2.2.0 release.
               It installs the SDK and mounts the widget for you.
             </p>
-            <PackageCommands automatic projectId={project._id} uid={user?.uid} />
+            <PackageCommands automatic projectId={project._id} />
             <p className="text-sm text-muted-foreground">
               For manual setup, install unified-sdk and add this component once.
             </p>
@@ -99,7 +99,6 @@ export function ProjectPreviewContent({ project, onEdit }) {
             <CodeBlock
               code={integrationCode({
                 projectId: project._id,
-                uid: user?.uid,
                 theme: project.theme,
               })}
               label="React component"
@@ -109,11 +108,7 @@ export function ProjectPreviewContent({ project, onEdit }) {
               label="Project ID"
               value={project._id}
             />
-            <InputCopy
-              className="rounded-md border border-border bg-muted/40 p-3"
-              label="Firebase UID"
-              value={user?.uid || ""}
-            />
+
 
           </section>
           </PreviewTabPanel>

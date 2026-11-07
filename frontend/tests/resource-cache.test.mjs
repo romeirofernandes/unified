@@ -1,3 +1,5 @@
+import { setAccessTokenProvider } from "../src/lib/access-token.js";
+setAccessTokenProvider(async () => "signed-test-token");
 import test from "node:test";
 import assert from "node:assert/strict";
 import { cacheResource, readResource, prefetchResource, forgetResource } from "../src/lib/resource-cache.js";
@@ -23,6 +25,7 @@ test("concurrent consumers share a request and old responses cannot overwrite sa
     const first = prefetchResource("/integrations/race", "race-user");
     assert.equal(prefetchResource("/integrations/race", "race-user"), first);
     cacheResource("/integrations/race", "race-user", { enabled: true });
+    while (!release) await new Promise(resolve => setImmediate(resolve));
     release();
     assert.deepEqual(await first, { enabled: true });
     assert.deepEqual(readResource("/integrations/race", "race-user").data, { enabled: true });

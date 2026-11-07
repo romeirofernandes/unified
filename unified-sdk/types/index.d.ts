@@ -1,7 +1,6 @@
 import type { ComponentType } from "react";
 export interface UnifiedFeedbackProps {
   projectId: string;
-  firebaseUid: string;
   /** API origin for your Unified backend. Required outside local development. */
   apiUrl?: string;
   position?: "bottom-left" | "bottom-right";

@@ -15,21 +15,20 @@ export function syncUser(firebaseUser) {
   if (pendingSyncs.has(firebaseUser.uid))
     return pendingSyncs.get(firebaseUser.uid);
   const request = (async () => {
+    const token = await firebaseUser.getIdToken();
     let response;
     try {
       response = await apiRequest("/auth/login", {
         method: "POST",
-        body: { firebaseUid: firebaseUser.uid },
+        token,
       });
     } catch (error) {
       if (error.status !== 404) throw error;
       response = await apiRequest("/auth/register", {
         method: "POST",
+        token,
         body: {
-          email: firebaseUser.email,
-          firebaseUid: firebaseUser.uid,
-          displayName: firebaseUser.displayName,
-          photoURL: firebaseUser.photoURL,
+
         },
       });
     }

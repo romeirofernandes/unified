@@ -1,22 +1,13 @@
 const User = require("../models/User");
+const identity = require("./identity");
 
-const authMiddleware = async (req, res, next) => {
+module.exports = (req, res, next) => identity(req, res, async () => {
   try {
-    const firebaseUid = req.headers["firebase-uid"];
-    if (!firebaseUid) {
-      return res.status(401).json({ message: "No authentication token" });
-    }
-
-    const user = await User.findOne({ firebaseUid });
-    if (!user) {
-      return res.status(401).json({ message: "User not found" });
-    }
-
+    const user = await User.findOne({ firebaseUid: req.auth.uid, deleting: { $ne: true } });
+    if (!user) return res.status(401).json({ message: "Account unavailable. Sign in again." });
     req.user = user;
     next();
-  } catch (error) {
-    res.status(401).json({ message: "Authentication failed" });
+  } catch {
+    res.status(503).json({ message: "Could not load your account. Please try again." });
   }
-};
-
-module.exports = authMiddleware;
+});

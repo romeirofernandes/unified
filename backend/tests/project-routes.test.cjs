@@ -89,55 +89,20 @@ test("project reads cannot cross the workspace ownership boundary", async () => 
   assert.equal(res.statusCode, 404);
 });
 
-test("project deletion removes feedback before the project and is scoped to its owner", async () => {
-  const calls = [];
-  const routes = loadRoutes("projects.js", {
-    "../models/Project": {
-      findOne: async () => ({ _id: "project" }),
-      deleteOne: async (filter) => {
-        assert.equal(filter.userId, "owner");
-        calls.push("project");
-      },
-    },
-    "../models/Feedback": {
-      deleteMany: async (filter) => {
-        assert.equal(filter.projectId, "project");
-        calls.push("feedback");
-      },
-    },
+for (const outcome of [true, false, "error"]) {
+  test(`project deletion delegates ownership to the transactional store: ${outcome}`, async () => {
+    const routes = loadRoutes("projects.js", {
+      "../services/project-lifecycle": { deleteProject: async (filter) => {
+        assert.equal(filter._id, "project"); assert.equal(filter.userId, "owner");
+        if (outcome === "error") throw new Error("Database unavailable");
+        return outcome;
+      } },
+    });
+    const res = response();
+    await routes.get("delete /:id")({ user: { id: "owner" }, params: { id: "project" } }, res);
+    assert.equal(res.statusCode, outcome === true ? 200 : outcome === false ? 404 : 500);
   });
-  const res = response();
-  await routes.get("delete /:id")(
-    { user: { id: "owner" }, params: { id: "project" } },
-    res,
-  );
-  assert.deepEqual(calls, ["feedback", "project"]);
-  assert.equal(res.statusCode, 200);
-});
-
-test("a failed feedback cleanup keeps the project available for retry", async () => {
-  let deleted = false;
-  const routes = loadRoutes("projects.js", {
-    "../models/Project": {
-      findOne: async () => ({ _id: "project" }),
-      deleteOne: async () => {
-        deleted = true;
-      },
-    },
-    "../models/Feedback": {
-      deleteMany: async () => {
-        throw new Error("Database unavailable");
-      },
-    },
-  });
-  const res = response();
-  await routes.get("delete /:id")(
-    { user: { id: "owner" }, params: { id: "project" } },
-    res,
-  );
-  assert.equal(res.statusCode, 500);
-  assert.equal(deleted, false);
-});
+}
 
 test("feedback reads refuse a project that the caller does not own", async () => {
   let queried = false;
@@ -195,36 +160,28 @@ for (const scenario of ["save", "reuse", "new", "locked"]) {
   });
 }
 
-test("submission endpoint authenticates a scoped key and saves dashboard feedback", async () => {
+test("submission endpoints pass scoped credentials and answers to the transactional store", async () => {
   const { createHash } = require("node:crypto");
   const key = `uf_${"a".repeat(64)}`;
-  let saved;
+  let saved = false;
   const routes = loadRoutes("submissions.js", {
-    "../models/Project": { findOne: async (filter) => {
+    "../services/project-lifecycle": { submitFeedback: async (filter, answers) => {
       assert.equal(filter.submissionKeyHash, createHash("sha256").update(key).digest("hex"));
-      return { _id: filter._id, fields: [{ _id: "question", type: "text", label: "Feedback", required: true }] };
+      assert.equal(answers.question, "Looks good"); saved = true; return { _id: "response" };
     } },
-    "../models/Feedback": { create: async (value) => { saved = value; return { _id: "response" }; } },
   });
-  const submit = routes.get("post /:projectId");
   const request = { headers: { authorization: `Bearer ${key}` }, params: { projectId: "507f1f77bcf86cd799439011" }, body: { formAnswers: { question: "Looks good" } } };
-  const res = response();
-  await submit(request, res);
-  assert.equal(res.statusCode, 201);
-  assert.equal(saved.formAnswers.question, "Looks good");
-  const denied = response();
-  await submit({ ...request, headers: {} }, denied);
-  assert.equal(denied.statusCode, 401);
+  const res = response(); await routes.get("post /:projectId")(request, res);
+  assert.equal(res.statusCode, 201); assert.equal(saved, true);
+  saved = false;
+  const denied = response(); await routes.get("post /:projectId")({ ...request, headers: {} }, denied);
+  assert.equal(denied.statusCode, 401); assert.equal(saved, false);
 });
-
-test("revoked submission keys cannot save responses", async () => {
-  const routes = loadRoutes("submissions.js", {
-    "../models/Project": { findOne: async () => null },
-    "../models/Feedback": { create: () => assert.fail("must not save") },
-  });
+test("a revoked submission key cannot bypass store rejection", async () => {
+  const routes = loadRoutes("submissions.js", { "../services/project-lifecycle": { submitFeedback: async () => { throw Object.assign(new Error("Project not found"), { status: 404 }); } } });
   const res = response();
   await routes.get("post /:projectId")({ headers: { authorization: `Bearer uf_${"b".repeat(64)}` }, params: { projectId: "507f1f77bcf86cd799439011" } }, res);
-  assert.equal(res.statusCode, 401);
+  assert.equal(res.statusCode, 404);
 });
 
 test("owners can retrieve encrypted submission keys without exposing the hash", async () => {
@@ -254,21 +211,17 @@ test("replacing a submission key updates its encrypted value and authentication 
   assert.equal(saved.submissionKeyHash, require("node:crypto").createHash("sha256").update(res.data.key).digest("hex"));
 });
 
-test("owner feedback cannot bypass the same answer validation as public submissions", async () => {
-  let saves = 0;
+test("owner feedback passes the verified owner filter to the shared store", async () => {
   const routes = loadRoutes("feedback.js", {
-    "../models/Project": { findOne: async () => ({ fields: [{ _id: "email", type: "email", label: "Email", required: true }] }) },
-    "../models/Feedback": class Feedback {
-      constructor(data) { Object.assign(this, data); }
-      async save() { saves++; }
-    },
+    "../services/project-lifecycle": { submitFeedback: async (filter, answers) => {
+      assert.equal(filter.userId, "owner"); assert.equal(filter._id, "project");
+      require("../services/submission-answers").validateAnswers([{ _id: "email", type: "email", label: "Email", required: true }], answers);
+      return { _id: "response" };
+    } },
   });
-  const invalid = response();
-  await routes.get("post /")({ user: { id: "owner" }, body: { projectId: "project", formAnswers: { email: "bad" } } }, invalid);
-  assert.equal(invalid.statusCode, 400);
-  assert.equal(saves, 0);
-  const valid = response();
-  await routes.get("post /")({ user: { id: "owner" }, body: { projectId: "project", formAnswers: { email: "person@example.com" } } }, valid);
-  assert.equal(valid.statusCode, 201);
-  assert.equal(saves, 1);
+  for (const [email, status] of [["bad", 400], ["person@example.com", 201]]) {
+    const res = response();
+    await routes.get("post /")({ user: { id: "owner" }, body: { projectId: "project", formAnswers: { email } } }, res);
+    assert.equal(res.statusCode, status);
+  }
 });

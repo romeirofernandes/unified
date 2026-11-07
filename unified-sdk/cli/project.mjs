@@ -92,7 +92,6 @@ export function packageManager(root, pkg, override) {
 export function createPlan({
   cwd = process.cwd(),
   projectId,
-  uid,
   theme = "project",
   apiUrl,
   entry,
@@ -100,7 +99,6 @@ export function createPlan({
 }) {
   for (const [name, value] of [
     ["project", projectId],
-    ["uid", uid],
   ])
     if (typeof value !== "string" || !value.trim() || value.length > 200)
       throw new Error(`Provide --${name} from the project integration panel.`);
@@ -179,7 +177,6 @@ export function createPlan({
   });
   const props = {
     projectId: projectId.trim(),
-    firebaseUid: uid.trim(),
     ...(apiUrl ? { apiUrl: apiUrl.replace(/\/$/, "") } : {}),
     ...(theme === "project" ? {} : { theme }),
   };

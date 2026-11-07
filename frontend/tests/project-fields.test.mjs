@@ -60,7 +60,7 @@ test("integration snippets keep the project settings and SDK stylesheet", () => 
     theme: "dark",
   });
   assert.match(code, /projectId="project-1"/);
-  assert.match(code, /firebaseUid="user-1"/);
+  assert.doesNotMatch(code, /firebaseUid/);
   assert.match(code, /theme="dark"/);
   assert.match(code, /unified-sdk\/dist\/unified-sdk.css/);
 });

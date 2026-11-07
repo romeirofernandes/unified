@@ -4,6 +4,7 @@ const Feedback = require("../models/Feedback");
 const User = require("../models/User");
 const { summarizeFeedback } = require("./feedback-summary");
 const { deliverDigest } = require("./digest-delivery");
+const { deliverOnce } = require("./deliver-once");
 const intervalMs = (cadence) => cadence === "hourly" ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
 
 function summaryHash(summary) {
@@ -40,7 +41,7 @@ async function processDigest(id, channel, dependencies = {}) {
         if (!user) throw new Error("The project owner is unavailable.");
         // Config edits clear the token, cancelling work which has not been delivered yet.
         if (!await models.Project.exists(owner)) return;
-        await (dependencies.deliverDigest || deliverDigest)({ project, channel, summary, count: feedback.length, recipient: user.email, batchId: `${id}:${channel}:${new Date(state.since).toISOString()}:${new Date(until).toISOString()}` });
+        await (dependencies.deliverOnce || deliverOnce)({ project, channel, summary, count: feedback.length, recipient: user.email, batchId: `${id}:${channel}:${new Date(state.since).toISOString()}:${new Date(until).toISOString()}` }, dependencies.deliverDigest || deliverDigest);
         sentHash = hash;
       }
     }
@@ -50,7 +51,7 @@ async function processDigest(id, channel, dependencies = {}) {
     });
   } catch (error) {
     // Provider payloads and credentials never enter user-visible errors.
-    const message = /delivery failed|not configured|owner is unavailable/.test(error.message) ? error.message : "Could not prepare or deliver the digest. We’ll retry in 15 minutes.";
+    const message = error.deliveryUncertain || /delivery failed|not configured|owner is unavailable/.test(error.message) ? error.message : "Could not prepare or deliver the digest. We’ll retry in 15 minutes.";
     await models.Project.updateOne(owner, { $set: { [`${prefix}.error`]: message, [`${prefix}.nextRunAt`]: new Date(Date.now() + 15 * 60 * 1000) }, $unset: { [`${prefix}.lockToken`]: 1, [`${prefix}.lockUntil`]: 1 } });
   }
 }

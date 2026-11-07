@@ -6,10 +6,10 @@ import FeedbackModal from "./FeedbackModal";
 
 // Changing identity remounts the session, including answers, timers and requests.
 const UnifiedFeedback = memo(function UnifiedFeedback(props) {
-  return <FeedbackSession key={JSON.stringify([props.projectId, props.firebaseUid, props.apiUrl])} {...props} />;
+  return <FeedbackSession key={JSON.stringify([props.projectId, props.apiUrl])} {...props} />;
 });
 
-function FeedbackSession({ projectId, theme, firebaseUid, apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000", position = "bottom-right" }) {
+function FeedbackSession({ projectId, theme, apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000", position = "bottom-right" }) {
   const [resource, setResource] = useState({ status: "loading", data: null });
   const [status, setStatus] = useState("closed");
   const [answers, setAnswers] = useState({});
@@ -22,11 +22,10 @@ function FeedbackSession({ projectId, theme, firebaseUid, apiUrl = import.meta.e
   const widgetTheme = theme || formData?.theme || "light";
 
   useEffect(() => {
-    if (!projectId || !firebaseUid) return;
+    if (!projectId) return;
     const controller = new AbortController();
-    fetch(`${baseUrl}/api/projects/${projectId}`, {
+    fetch(`${baseUrl}/api/widget/${projectId}`, {
       signal: controller.signal,
-      headers: { "firebase-uid": firebaseUid },
     }).then(async (response) => {
       if (!response.ok) throw new Error("Could not load feedback form.");
       const data = await response.json();
@@ -36,7 +35,7 @@ function FeedbackSession({ projectId, theme, firebaseUid, apiUrl = import.meta.e
       if (!controller.signal.aborted) setResource({ status: "error", data: null, error: error.message });
     });
     return () => controller.abort();
-  }, [projectId, firebaseUid, baseUrl]);
+  }, [projectId, baseUrl]);
 
   useEffect(() => () => request.current?.abort(), []);
   useEffect(() => {
@@ -65,11 +64,11 @@ function FeedbackSession({ projectId, theme, firebaseUid, apiUrl = import.meta.e
       if (field.type === "slider" && formAnswers[field._id] === undefined) formAnswers[field._id] = field.config?.min ?? 0;
     }
     try {
-      const response = await fetch(`${baseUrl}/api/feedback`, {
+      const response = await fetch(`${baseUrl}/api/widget/${projectId}`, {
         method: "POST",
         signal: controller.signal,
-        headers: { "Content-Type": "application/json", "firebase-uid": firebaseUid },
-        body: JSON.stringify({ projectId, formAnswers }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ formAnswers }),
       });
       if (!response.ok) throw new Error("Could not send feedback. Please try again.");
       if (!controller.signal.aborted) setStatus("success");

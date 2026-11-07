@@ -1,16 +1,18 @@
 const express = require("express");
 const router = express.Router();
+router.use(require("../middleware/identity"));
 const User = require("../models/User");
-const Project = require("../models/Project");
-const Feedback = require("../models/Feedback");
+const { deleteAccount } = require("../services/project-lifecycle");
 
 // Register endpoint
 router.post("/register", async (req, res) => {
   try {
-    const { email, firebaseUid, displayName, photoURL } = req.body;
+    const { uid: firebaseUid, email, name: displayName, picture: photoURL } = req.auth;
+    if (!email) return res.status(400).json({ message: "Your sign-in account needs an email address." });
 
     // Check if user exists by firebaseUid
     let user = await User.findOne({ firebaseUid });
+    if (user?.deleting) return res.status(409).json({ message: "Account deletion is in progress. Retry deletion from Settings." });
     if (user) {
       return res.status(200).json({
         message: "User already exists",
@@ -43,17 +45,17 @@ router.post("/register", async (req, res) => {
     });
   } catch (error) {
     console.error("Registration error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({ message: "Could not complete this account operation. Please retry." });
   }
 });
 
 // Login endpoint
 router.post("/login", async (req, res) => {
   try {
-    const { firebaseUid } = req.body;
+    const firebaseUid = req.auth.uid;
     const user = await User.findOne({ firebaseUid });
 
-    if (!user) {
+    if (!user || user.deleting) {
       return res.status(404).json({ message: "User not found" });
     }
 
@@ -68,35 +70,22 @@ router.post("/login", async (req, res) => {
     });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({ message: "Could not complete this account operation. Please retry." });
   }
 });
 
 // Delete user endpoint
 router.delete("/user", async (req, res) => {
   try {
-    const firebaseUid = req.headers["firebase-uid"];
+    if (Math.floor(Date.now() / 1000) - req.auth.auth_time > 300) return res.status(401).json({ message: "Confirm your identity again before deleting your account." });
+    const firebaseUid = req.auth.uid;
 
-    // Find and delete user's projects
-    const user = await User.findOne({ firebaseUid });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Delete all user's projects and associated feedback
-    const projects = await Project.find({ userId: user._id });
-    for (const project of projects) {
-      await Feedback.deleteMany({ projectId: project._id });
-      await Project.findByIdAndDelete(project._id);
-    }
-
-    // Delete the user
-    await User.findByIdAndDelete(user._id);
+    await deleteAccount(firebaseUid, req.idToken);
 
     res.json({ message: "Account deleted successfully" });
   } catch (error) {
     console.error("Delete account error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(error.status || 500).json({ message: error.status ? error.message : "Could not complete account deletion. Retry from Settings." });
   }
 });
 

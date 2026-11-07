@@ -4,7 +4,7 @@ import { createInterface } from "node:readline/promises";
 import path from "node:path";
 import { createPlan, applyPlan } from "./setup.mjs";
 
-const help = `unified-sdk init --project PROJECT_ID --uid FIREBASE_UID
+const help = `unified-sdk init --project PROJECT_ID
 
 Installs and mounts the widget in Vite or Next.js.
   --cwd PATH              App directory (default: current directory)
@@ -22,7 +22,6 @@ try {
     allowPositionals: true,
     options: {
       project: { type: "string" },
-      uid: { type: "string" },
       "api-url": { type: "string" },
       cwd: { type: "string" },
       entry: { type: "string" },
@@ -39,15 +38,13 @@ try {
     if (positionals.length !== 1 || positionals[0] !== "init")
       throw new Error("Use unified-sdk init. Run --help for options.");
     let projectId = values.project;
-    let uid = values.uid;
-    if ((!projectId || !uid) && process.stdin.isTTY && !values.yes) {
+    if (!projectId && process.stdin.isTTY && !values.yes) {
       const input = createInterface({
         input: process.stdin,
         output: process.stdout,
       });
       try {
         if (!projectId) projectId = await input.question("Project ID: ");
-        if (!uid) uid = await input.question("Firebase UID: ");
       } finally {
         input.close();
       }
@@ -55,7 +52,6 @@ try {
     const plan = createPlan({
       cwd: values.cwd,
       projectId,
-      uid,
       apiUrl: values["api-url"],
       theme: values.theme,
       entry: values.entry,

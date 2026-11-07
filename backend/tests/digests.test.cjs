@@ -74,6 +74,7 @@ function workerFixture({ feedback = [], failure = false, claimed = true, current
     Feedback: { find: (filter) => { query = filter; return { sort: () => ({ lean: async () => feedback }) }; } },
     User: { findById: () => ({ lean: async () => ({ email: "owner@example.com" }) }) },
     summarizeFeedback: async () => summary,
+    deliverOnce: async (input, send) => send(input),
     deliverDigest: async (input) => { deliveries.push(input); if (failure) throw new Error("Slack delivery failed (500). Check the connection and try again."); },
   };
   return { writes, deliveries, dependencies, query: () => query };
