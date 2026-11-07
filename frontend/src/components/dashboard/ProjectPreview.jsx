@@ -46,7 +46,7 @@ export default function ProjectPreview({ isOpen, onClose, project }) {
           </DialogDescription>
         </DialogHeader>
         <Tabs defaultValue="preview" variant="underline" className="min-w-0">
-          <TabsList aria-label="Project preview and setup">
+          <TabsList aria-label="Project preview and setup" className="w-full [&>button]:flex-1 [&>button]:justify-center">
             <TabsTrigger value="preview">Preview</TabsTrigger>
             <TabsTrigger value="sdk">React SDK</TabsTrigger>
             <TabsTrigger value="api">Custom form</TabsTrigger>
