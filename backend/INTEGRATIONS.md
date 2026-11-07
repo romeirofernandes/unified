@@ -27,17 +27,17 @@ SMTP_PORT=587
 SMTP_SECURE=false
 SMTP_USER=your-smtp-username
 SMTP_PASS=your-smtp-password
-DIGEST_EMAIL_FROM=Unified <feedback@your-domain.com>
+FROM_EMAIL=Unified <feedback@your-domain.com>
 ```
 
-use the host, port and credentials from your email provider. port 587 uses STARTTLS, port 465 normally uses `SMTP_SECURE=true`. Gmail may require an app password or a provider-specific authentication setup; your normal account password generally won't work. authorize the sender address and configure the provider’s required DNS records for your domain.
+use the host, port and credentials from your email provider. `FROM_EMAIL` is the visible sender, and `DIGEST_EMAIL_FROM` remains supported as an older alias. Gmail SMTP can send as your own Gmail account without a custom domain, using `smtp.gmail.com`, port `587`, and a Google app password. port 587 uses STARTTLS, port 465 normally uses `SMTP_SECURE=true`. Gmail may require an app password or a provider-specific authentication setup; your normal account password generally won't work. authorize the sender address and configure the provider’s required DNS records for your domain.
 
 for Resend:
 
 ```dotenv
 EMAIL_TRANSPORT=resend
 RESEND_API_KEY=your-sending-key
-DIGEST_EMAIL_FROM=Unified <feedback@your-verified-domain.com>
+FROM_EMAIL=Unified <feedback@your-verified-domain.com>
 ```
 
 Nodemailer is a sending library, not an email service with a free unlimited quota. SMTP keeps the provider configurable; its quotas, costs and deliverability rules still apply. Resend’s free transactional allowance is 3,000 emails/month with a 100/day cap at the time of implementation. test messages also count toward provider quotas.

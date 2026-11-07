@@ -1,4 +1,4 @@
-const { emailTransport, emailReady, sendSmtp } = require("./email-transport");
+const { emailFrom, emailTransport, emailReady, sendSmtp } = require("./email-transport");
 const { createHash } = require("node:crypto");
 const { decrypt } = require("./secret-storage");
 function validateSlackWebhook(value) {
@@ -31,7 +31,7 @@ async function deliverDigest({ project, channel, summary, count, recipient, batc
     url = "https://api.resend.com/emails";
     headers.Authorization = `Bearer ${process.env.RESEND_API_KEY}`;
     headers["Idempotency-Key"] = createHash("sha256").update(batchId).digest("hex");
-    body = { from: process.env.DIGEST_EMAIL_FROM, to: [recipient], subject, text };
+    body = { from: emailFrom(), to: [recipient], subject, text };
   }
   const response = await request(url, { method: "POST", headers, body: JSON.stringify(body), signal: AbortSignal.timeout(20000), redirect: "error" });
   if (!response.ok) throw new Error(`${channel === "slack" ? "Slack" : "Email"} delivery failed (${response.status}). Check the connection and try again.`);

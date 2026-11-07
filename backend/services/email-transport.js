@@ -3,8 +3,9 @@ const { createHash } = require("node:crypto");
 function emailTransport() {
   return process.env.EMAIL_TRANSPORT || (process.env.SMTP_HOST ? "smtp" : "resend");
 }
+const emailFrom = () => process.env.FROM_EMAIL || process.env.DIGEST_EMAIL_FROM;
 function emailReady() {
-  if (!process.env.DIGEST_EMAIL_FROM) return false;
+  if (!emailFrom()) return false;
   return emailTransport() === "smtp"
     ? !!(process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASS)
     : emailTransport() === "resend" && !!process.env.RESEND_API_KEY;
@@ -21,9 +22,9 @@ async function sendSmtp({ recipient, subject, text, batchId }, createTransport =
     disableFileAccess: true, disableUrlAccess: true,
   });
   try {
-    const result = await transport.sendMail({ from: process.env.DIGEST_EMAIL_FROM, to: recipient, subject, text, messageId: `<${createHash("sha256").update(batchId).digest("hex")}@unified.digest>` });
+    const result = await transport.sendMail({ from: emailFrom(), to: recipient, subject, text, messageId: `<${createHash("sha256").update(batchId).digest("hex")}@unified.digest>` });
     if (!result.accepted?.length || result.rejected?.length) throw new Error("SMTP recipient rejected");
   } catch { throw new Error("Email delivery failed. Check the SMTP connection and try again."); }
   finally { transport.close(); }
 }
-module.exports = { emailTransport, emailReady, sendSmtp };
+module.exports = { emailFrom, emailTransport, emailReady, sendSmtp };

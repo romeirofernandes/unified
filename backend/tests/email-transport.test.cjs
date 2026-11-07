@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { sendSmtp, emailReady, emailTransport } = require("../services/email-transport");
+const { sendSmtp, emailReady, emailTransport, emailFrom } = require("../services/email-transport");
 process.env.EMAIL_TRANSPORT = "smtp";
 process.env.SMTP_HOST = "smtp.example.com";
 process.env.SMTP_PORT = "587";
@@ -30,4 +30,12 @@ test("SMTP failures are safe to display and leave credentials out of errors", as
   await assert.rejects(sendSmtp(mail, () => ({ sendMail: async () => { throw new Error(process.env.SMTP_PASS); }, close() {} })), /Email delivery failed/);
   process.env.SMTP_PASS = "";
   assert.equal(emailReady(), false);
+});
+
+test("FROM_EMAIL supports a Gmail sender without a custom domain", () => {
+  process.env.FROM_EMAIL = "sender@gmail.com";
+  process.env.DIGEST_EMAIL_FROM = "legacy@example.com";
+  assert.equal(emailFrom(), "sender@gmail.com");
+  delete process.env.FROM_EMAIL;
+  assert.equal(emailFrom(), "legacy@example.com");
 });
