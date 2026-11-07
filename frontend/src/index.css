@@ -3,7 +3,7 @@
 @import "@fontsource-variable/inter/opsz.css";
 @import "@fontsource-variable/geist";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import "./styles/control-variants.css";
 
 @custom-variant dark (&:is(.dark *));
 

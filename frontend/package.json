@@ -25,7 +25,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cn": "^0.5.2",
-    "firebase": "^11.7.3",
+    "firebase": "^11.10.0",
     "geist": "^1.9.0",
     "lenis": "^1.3.27",
     "lucide-react": "^1.69.0",
@@ -36,7 +36,6 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.0",
-    "shadcn": "^4.23.0",
     "skullet": "^0.0.3",
     "tailwind-merge": "^3.7.0",
     "tailwindcss": "^4.1.7",
@@ -53,5 +52,8 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
     "vite": "^6.3.5"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "^1.14.7"
   }
 }
