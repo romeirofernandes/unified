@@ -45,7 +45,7 @@ export function ProjectPreviewContent({ project, onEdit }) {
         <Tabs value={tab} onValueChange={setTab} variant="underline" className="flex min-h-0 min-w-0 flex-1 flex-col">
           <div ref={headerRef} className="shrink-0">
           <DialogHeader className="mb-0 px-5 pb-0 pt-5 sm:px-6">
-            <div className="flex items-center justify-between gap-3 pe-8"><DialogTitle>{project.name}</DialogTitle>{onEdit && <Button variant="secondary" size="compact" onClick={onEdit}>Back to editor</Button>}</div>
+            <div className="flex items-center justify-between gap-3 pe-8"><DialogTitle>{project.name}</DialogTitle>{onEdit && <Button variant="secondary" size="compact" autoFocus onClick={onEdit}>Back to editor</Button>}</div>
             <DialogDescription>Try your questions, then copy the integration into your React app.</DialogDescription>
           <TabsList aria-label="Project preview and setup" className="mt-4 w-full gap-0 border-b border-border [&>button]:min-h-11 [&>button]:flex-1 [&>button]:justify-center [&>button]:px-2 [&>button]:pb-3 [&>button]:pt-2">
             <TabsTrigger value="preview">Preview</TabsTrigger>

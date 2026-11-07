@@ -104,7 +104,7 @@ export default function DashboardLayout({ children }) {
   return (
     <SidebarProvider
       width="248px"
-      className="min-h-svh bg-background text-foreground"
+      className={`${pathname.startsWith("/dashboard/docs") ? "h-dvh overflow-hidden" : "min-h-svh"} bg-background text-foreground`}
     >
       <a
         href="#workspace-content"
@@ -187,7 +187,7 @@ export default function DashboardLayout({ children }) {
         <div
           id="workspace-content"
           tabIndex={-1}
-          className={`w-full px-5 py-7 outline-none sm:px-8 sm:py-8 lg:py-10 ${pathname === "/dashboard/docs" ? "flex h-[calc(100dvh-4rem)] min-h-0 flex-col overflow-hidden" : "space-y-7"}`}
+          className={`w-full px-5 py-7 outline-none sm:px-8 sm:py-8 lg:py-10 ${pathname.startsWith("/dashboard/docs") ? "flex h-[calc(100dvh-4rem)] min-h-0 flex-col overflow-hidden" : "space-y-7"}`}
         >
           {children}
         </div>

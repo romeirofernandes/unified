@@ -46,6 +46,7 @@ export default function ProjectModal({
   const formId = useId();
   const headerRef = useRef(null);
   const modalRef = useRef(null);
+  const previewTrigger = useRef(null);
   const [previewing, setPreviewing] = useState(false);
   const [handoffHeight, setHandoffHeight] = useState(null);
   const [step, setStep] = useState(1);
@@ -131,7 +132,7 @@ export default function ProjectModal({
         size="xl"
         showCloseButton={!pending}
       >
-        {previewing && <ProjectPreviewContent project={project} onEdit={() => setPreviewing(false)} />}
+        {previewing && <ProjectPreviewContent project={project} onEdit={() => { setPreviewing(false); requestAnimationFrame(() => previewTrigger.current?.focus({ preventScroll: true })); }} />}
         <div className={previewing ? "hidden" : "flex min-h-0 flex-1 flex-col"}>
         <Tabs
           value={String(step)}
@@ -159,6 +160,7 @@ export default function ProjectModal({
                   {project && (
                     <Button
                       variant="secondary"
+                      ref={previewTrigger}
                       onClick={() => { setHandoffHeight(modalRef.current?.offsetHeight || null); setPreviewing(true); }}
                       disabled={pending}
                     >
