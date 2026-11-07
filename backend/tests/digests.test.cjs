@@ -134,3 +134,15 @@ test("retrying a batch uses its freshly generated frozen summary", async () => {
 test("summary comparisons ignore timestamps, whitespace, case and feature order", () => {
   assert.equal(summaryHash({ tldr: "Good docs", features: ["Fix form", "Add export"], timestamp: "old" }), summaryHash({ tldr: " GOOD   docs ", features: ["add export", "fix form"], timestamp: "new" }));
 });
+
+test("channel-capable Slack delivery posts structured blocks to the selected channel", async () => {
+  await deliverDigest({ project: { ...project, slackBotTokenEncrypted: encrypt("test-bot-token"), slackChannelId: "C123456" }, channel: "slack", count: 2, summary, batchId: "batch" }, async (url, options) => {
+    assert.equal(url, "https://slack.com/api/chat.postMessage");
+    assert.equal(options.headers.Authorization, "Bearer test-bot-token");
+    const body = JSON.parse(options.body);
+    assert.equal(body.channel, "C123456");
+    assert.equal(body.blocks[0].type, "header");
+    assert.equal(body.parse, "none");
+    return { ok: true, json: async () => ({ ok: true }) };
+  });
+});

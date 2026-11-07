@@ -22,7 +22,7 @@ router.get("/callback", async (req, res) => {
     if (typeof req.query.code !== "string" || req.query.code.length > 2000) throw new Error("Invalid authorization code.");
     const connection = await exchangeCode(req.query.code);
     // Connecting chooses a destination; users enable their delivery schedule separately.
-    const updated = await Project.updateOne({ _id: project._id, userId: project.userId }, { $set: { slackWebhookEncrypted: encrypt(connection.webhook), slackWorkspace: connection.workspace, slackChannel: connection.channel, ...(connection.channelId ? { slackChannelId: connection.channelId } : {}), ...(connection.token ? { slackBotTokenEncrypted: encrypt(connection.token) } : {}) }, $unset: { ...(!connection.token ? { slackBotTokenEncrypted: 1, slackChannelId: 1 } : {}), "notifications.slack.lockToken": 1, "notifications.slack.lockUntil": 1 } });
+    const updated = await Project.updateOne({ _id: project._id, userId: project.userId }, { $set: { slackWebhookEncrypted: encrypt(connection.webhook), slackWorkspace: connection.workspace, slackChannel: connection.channel, ...(connection.token && connection.channelId ? { slackChannelId: connection.channelId } : {}), ...(connection.token ? { slackBotTokenEncrypted: encrypt(connection.token) } : {}) }, $unset: { ...(!connection.token ? { slackBotTokenEncrypted: 1, slackChannelId: 1 } : {}), "notifications.slack.lockToken": 1, "notifications.slack.lockUntil": 1 } });
     if (!updated.matchedCount) throw new Error("Project unavailable.");
     destination.searchParams.set("slack", "connected");
     res.redirect(destination.toString());

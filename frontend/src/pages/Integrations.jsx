@@ -15,7 +15,7 @@ import SettingsSection from "@/components/settings/SettingsSection";
 
 function IntegrationSelect({ label, value, onChange, options, disabled = false }) {
   const id = useId();
-  return <div className="min-w-0 space-y-2">
+  return <div className="flex min-w-0 flex-col gap-2">
     <p id={id} className="text-sm text-muted-foreground">{label}</p>
     <Select value={value} onValueChange={onChange} disabled={disabled}>
       <SelectTrigger aria-labelledby={id} className="h-10 w-full rounded-md" />

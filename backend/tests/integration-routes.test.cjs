@@ -3,11 +3,11 @@ const assert = require("node:assert/strict");
 const vm = require("node:vm");
 const fs = require("node:fs");
 const path = require("node:path");
-function routes(model, deliver = async () => {}) {
+function routes(model, deliver = async () => {}, client = null) {
   const result = new Map();
   const router = Object.fromEntries(["get", "put", "post"].map((method) => [method, (url, handler) => result.set(`${method} ${url}`, handler)]));
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, "../routes/integrations.js"), "utf8"), {
-    require: (name) => name === "express" ? { Router: () => router } : name === "../models/Project" ? model : name === "../services/secret-storage" ? { encrypt: (value) => `encrypted:${value}` } : name === "../services/digest-worker" ? { intervalMs: () => 86400000 } : name === "../services/digest-delivery" ? { ...require("../services/digest-delivery"), deliverDigest: deliver } : require(name),
+    require: (name) => name === "express" ? { Router: () => router } : name === "../models/Project" ? model : name === "../services/slack-client" && client ? client : name === "../services/secret-storage" ? { encrypt: (value) => `encrypted:${value}`, decrypt: () => "test-bot-token" } : name === "../services/digest-worker" ? { intervalMs: () => 86400000 } : name === "../services/digest-delivery" ? { ...require("../services/digest-delivery"), deliverDigest: deliver } : require(name),
     module: { exports: {} }, process,
   });
   return result;
@@ -107,4 +107,34 @@ test("channel listing requires project ownership and a channel-capable install",
   const reconnect = response();
   await legacy.get("get /:id/slack/channels")({ ...request(), query: {} }, reconnect);
   assert.equal(reconnect.statusCode, 409);
+});
+
+test("saving email returns its enabled state and cadence intact", async () => {
+  process.env.EMAIL_TRANSPORT = "smtp";
+  process.env.SMTP_HOST = "smtp.example.com";
+  process.env.SMTP_PORT = "587";
+  process.env.SMTP_USER = "sender";
+  process.env.SMTP_PASS = "test-password";
+  process.env.FROM_EMAIL = "sender@example.com";
+  const handlers = routes({ findOne: () => query({ notifications: { email: { enabled: false } } }), findOneAndUpdate: (filter, update) => query({ notifications: { email: { enabled: update.$set["notifications.email.enabled"], cadence: update.$set["notifications.email.cadence"] } } }) });
+  const res = response();
+  await handlers.get("put /:id/:channel")(request("email", { enabled: true, cadence: "hourly" }), res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.data.email.enabled, true);
+  assert.equal(res.data.email.cadence, "hourly");
+  assert.equal(res.data.emailAddress, "owner@example.com");
+});
+
+test("saving a channel validates its destination and never returns its token", async () => {
+  let written;
+  const handlers = routes({ findOne: () => query({ slackBotTokenEncrypted: "encrypted", slackChannelId: "C123456", notifications: { slack: { enabled: true, since: new Date() } } }), findOneAndUpdate: (owner, update) => {
+    assert.equal(owner.userId, "owner"); written = update.$set;
+    return query({ slackBotTokenEncrypted: "encrypted", slackChannelId: written.slackChannelId, slackChannel: written.slackChannel, notifications: { slack: { enabled: true } } });
+  } }, async () => {}, { selectedChannel: async (token, id) => { assert.equal(token, "test-bot-token"); assert.equal(id, "C234567"); return { id, name: "#general" }; } });
+  const res = response();
+  await handlers.get("put /:id/:channel")(request("slack", { enabled: true, cadence: "daily", channelId: "C234567" }), res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.data.slackChannelId, "C234567");
+  assert.equal(res.data.slackChannel, "#general");
+  assert.equal(res.data.slackBotTokenEncrypted, undefined);
 });
