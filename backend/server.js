@@ -27,6 +27,7 @@ app.use("/api/submissions", require("./routes/submissions"));
 app.use("/api/auth", authRoutes);
 app.use("/api/slack", require("./routes/slack"));
 app.use("/api/integrations", authMiddleware, require("./routes/integrations"));
+app.use("/api/workbench", authMiddleware, require("./routes/workbench"));
 app.use("/api/projects", authMiddleware, projectRoutes);
 app.use("/api/feedback", authMiddleware, feedbackRoutes);
 app.use("/api/payment", paymentRoutes);
