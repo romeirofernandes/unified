@@ -59,7 +59,7 @@ function Channel({ channel, project, settings, uid, onSaved }) {
     } catch (error) { setError(error.message); }
     finally { setPending(false); }
   }
-  return <SettingsSection id={`digest-${channel}`} title={slack ? <span className="flex items-center gap-2"><img src="/logos/slack.svg" alt="" className="size-5" />Slack</span> : "Email"} description={slack ? "Keep your team up to date in a channel, with a digest of new feedback." : "Get a digest in your account’s inbox, without checking the dashboard."}>
+  return <SettingsSection id={`digest-${channel}`} title={slack ? <span className="flex items-center gap-2"><img src="/logos/slack.svg" alt="" className="size-5" />Slack</span> : <span className="flex items-center gap-2"><img src="/logos/gmail.svg" alt="" className="size-5" />Email</span>} description={slack ? "Keep your team up to date in a channel, with a digest of new feedback." : "Get a digest in your account’s inbox, without checking the dashboard."}>
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm font-medium">{slack ? settings.slackConnected ? `${settings.slackWorkspace || "Workspace connected"}${settings.slackChannel ? ` · ${settings.slackChannel}` : ""}` : "Connect a workspace" : settings.email}</p>

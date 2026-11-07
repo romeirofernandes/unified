@@ -1,4 +1,4 @@
-import { AlertDialog } from "@base-ui/react/alert-dialog";
+import { AlertDialog } from "@animate-ui/react/primitives/base-ui/alert-dialog";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Delete01Icon } from "@hugeicons/core-free-icons";
 import ToastNotice from "@/components/shared/ToastNotice";
@@ -46,14 +46,17 @@ export default function ProjectApi({ project, uid }) {
     <div className="flex flex-wrap gap-2">
       <Button disabled={pending || loading} onClick={() => changeKey()}>{hasKey ? "Replace key" : "Create key"}</Button>
     </div>
-    {hasKey && <div className="flex min-w-0 items-center gap-3 rounded-md border border-border bg-muted/50 p-4">
-      <div className="min-w-0 flex-1">{key ? <InputCopy label="Submission key" value={key} /> : <p className="text-sm text-muted-foreground">Replace this older key to make it copyable here.</p>}</div>
+    {hasKey && <div className="space-y-2 rounded-md border border-border bg-muted/50 p-4">
+      <p className="text-sm text-muted-foreground">Submission key</p>
+      <div className="flex min-w-0 items-center gap-3">
+      <div className="min-w-0 flex-1">{key ? <InputCopy label="Submission key" className="[&>span:first-child]:sr-only" value={key} /> : <p className="text-sm text-muted-foreground">Replace this older key to make it copyable here.</p>}</div>
       <Button variant="destructive" size="icon-compact" aria-label="Revoke submission key" title="Revoke key" disabled={pending} onClick={() => { setMessage(""); setConfirming(true); }}><HugeiconsIcon icon={Delete01Icon} size={16} aria-hidden="true" /></Button>
+      </div>
     </div>}
     {!confirming && <ErrorMessage>{message}</ErrorMessage>}
     <AlertDialog.Root open={confirming} onOpenChange={(open) => { if (!pending) setConfirming(open); }}>
       <AlertDialog.Portal>
-        <AlertDialog.Backdrop className="fixed inset-0 z-[70] bg-black/40" />
+        <AlertDialog.Backdrop className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm" />
         <AlertDialog.Popup className="fixed left-1/2 top-1/2 z-[71] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 space-y-4 rounded-md border border-border bg-background p-6 text-foreground shadow-xl">
           <AlertDialog.Title className="text-xl">Revoke submission key?</AlertDialog.Title>
           <AlertDialog.Description className="text-sm leading-6 text-muted-foreground">Forms using this key will stop sending feedback. You can create a new key and update your integration afterward.</AlertDialog.Description>

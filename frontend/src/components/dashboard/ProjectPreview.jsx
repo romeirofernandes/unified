@@ -1,7 +1,8 @@
+import { motion as Motion, useReducedMotion } from "motion/react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/motion/tabs";
 import PackageCommands from "@/components/shared/PackageCommands";
 import ProjectApi from "./ProjectApi";
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
 import PreviewModeToggle from "@/components/projects/PreviewModeToggle";
 import FormFont from "../../../../shared/FormFont";
@@ -20,8 +21,18 @@ import CodeBlock from "@/components/shared/CodeBlock";
 import { integrationCode } from "@/lib/integration-code";
 import { typeClass } from "@/lib/type-scale";
 
+function PreviewTabPanel({ value, active, children }) {
+  const reduced = useReducedMotion();
+  return <TabsContent value={value} className="m-0 px-1 pb-1 pt-5">
+    <Motion.div initial={false} animate={{ opacity: active ? 1 : 0, y: active ? 0 : 6 }} transition={{ duration: reduced ? 0 : 0.18, ease: [0.22, 1, 0.36, 1] }}>{children}</Motion.div>
+  </TabsContent>;
+}
+
 export default function ProjectPreview({ isOpen, onClose, project }) {
   const { user } = useAuth();
+  const [tab, setTab] = useState("preview");
+  const viewport = useRef(null);
+  useLayoutEffect(() => { if (viewport.current) viewport.current.scrollTop = 0; }, [tab]);
   const { resolvedTheme } = useTheme();
   const [mode, setMode] = useState(() =>
     resolvedTheme === "dark" ? "dark" : "light",
@@ -35,23 +46,24 @@ export default function ProjectPreview({ isOpen, onClose, project }) {
       }}
     >
       <DialogContent
-        className="max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-md border border-border bg-background text-foreground sm:max-w-[1060px]"
+        className="flex h-[min(820px,calc(100dvh-2rem))] max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-md border border-border bg-background text-foreground sm:max-w-[1060px]"
         size="xl"
       >
         <FormFont appearance={project.appearance} />
-        <DialogHeader>
+        <DialogHeader className="shrink-0">
           <DialogTitle>{project.name}</DialogTitle>
           <DialogDescription>
             Try your questions, then copy the integration into your React app.
           </DialogDescription>
         </DialogHeader>
-        <Tabs defaultValue="preview" variant="underline" className="min-w-0">
+        <Tabs value={tab} onValueChange={setTab} variant="underline" className="flex min-h-0 min-w-0 flex-1 flex-col">
           <TabsList aria-label="Project preview and setup" className="w-full [&>button]:flex-1 [&>button]:justify-center">
             <TabsTrigger value="preview">Preview</TabsTrigger>
             <TabsTrigger value="sdk">React SDK</TabsTrigger>
             <TabsTrigger value="api">Custom form</TabsTrigger>
           </TabsList>
-          <TabsContent value="preview" className="pt-5">
+          <div ref={viewport} className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
+          <PreviewTabPanel value="preview" active={tab === "preview"}>
           <section className="mx-auto w-full max-w-2xl min-w-0 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className={typeClass("title")}>Widget preview</h3>
@@ -79,8 +91,8 @@ export default function ProjectPreview({ isOpen, onClose, project }) {
               This preview doesn’t submit feedback.
             </p>
           </section>
-          </TabsContent>
-          <TabsContent value="sdk" className="pt-5">
+          </PreviewTabPanel>
+          <PreviewTabPanel value="sdk" active={tab === "sdk"}>
           <section className="min-w-0 space-y-4">
             <h3 className={typeClass("title")}>Integration</h3>
             <p className="text-sm text-muted-foreground">
@@ -112,8 +124,9 @@ export default function ProjectPreview({ isOpen, onClose, project }) {
             />
 
           </section>
-          </TabsContent>
-          <TabsContent value="api" className="pt-5"><ProjectApi project={project} uid={user?.uid} /></TabsContent>
+          </PreviewTabPanel>
+          <PreviewTabPanel value="api" active={tab === "api"}><ProjectApi project={project} uid={user?.uid} /></PreviewTabPanel>
+          </div>
         </Tabs>
       </DialogContent>
     </Dialog>

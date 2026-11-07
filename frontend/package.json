@@ -11,6 +11,7 @@
     "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
+    "@animate-ui/react": "^2.4.2",
     "@audio-ui/react": "^0.13.0",
     "@base-ui/react": "^1.9.0",
     "@daypicker/react": "~10.0.2",

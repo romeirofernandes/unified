@@ -10,6 +10,7 @@ export async function apiRequest(
     ...options,
     signal: options.signal || AbortSignal.timeout(20000),
     headers: {
+      ...(/\.ngrok-free\.app(?::\d+)?$/.test(new URL(API_URL).host) ? { "ngrok-skip-browser-warning": "true" } : {}),
       ...(uid ? { "firebase-uid": uid } : {}),
       ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
       ...headers,
