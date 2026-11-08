@@ -1,6 +1,8 @@
 import { prefetchResource } from "@/lib/resource-cache";
 import { preloadPage } from "@/lib/preload-page";
 import { useState } from "react";
+import { useReducedMotion } from "motion/react";
+import PixelTrail from "@/components/ui/PixelTrail";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -81,6 +83,7 @@ function WorkspaceNavigation() {
 }
 
 export default function DashboardLayout({ children }) {
+  const reducedMotion = useReducedMotion();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -146,7 +149,23 @@ export default function DashboardLayout({ children }) {
           </Button>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className="min-w-0">
+      <SidebarInset className="relative isolate min-w-0">
+        {reducedMotion === false && (
+          <PixelTrail
+            gridSize={80}
+            trailSize={0.05}
+            maxAge={400}
+            interpolate={3}
+            color="var(--fluid-accent)"
+            gooeyFilter={false}
+            gap={0.15}
+            shine={0.25}
+            glow={0.12}
+            dpr={1}
+            className="opacity-45 saturate-125 dark:opacity-40"
+            style={{ position: "absolute", inset: 0, zIndex: -1 }}
+          />
+        )}
         <SidebarInsetTopbar className="sticky top-0 z-20 h-16 border-b border-border bg-background/95 px-5 backdrop-blur-xl sm:px-8">
           <div className="flex w-full items-center gap-2 px-0">
             <nav aria-label="Breadcrumb" className="min-w-0">
