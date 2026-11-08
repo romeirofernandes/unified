@@ -158,7 +158,7 @@ export default function DashboardLayout({ children }) {
             aria-hidden="true"
             interactive={false}
             fontSize={12}
-            className="pointer-events-none text-fluid-accent opacity-60 dark:opacity-45"
+            className="pointer-events-none text-fluid-accent opacity-90 saturate-125 dark:opacity-75"
             style={{ position: "absolute", inset: 0, zIndex: -1 }}
           />
         )}
