@@ -3,6 +3,8 @@ import { preloadPage } from "@/lib/preload-page";
 import { useState } from "react";
 import { useReducedMotion } from "motion/react";
 import PixelTrail from "@/components/ui/PixelTrail";
+import { GlyphBackground } from "@/components/animate-ui/backgrounds/glyph";
+import { useWorkspaceBackground } from "@/hooks/use-workspace-background";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -84,6 +86,7 @@ function WorkspaceNavigation() {
 
 export default function DashboardLayout({ children }) {
   const reducedMotion = useReducedMotion();
+  const [background] = useWorkspaceBackground();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -150,7 +153,16 @@ export default function DashboardLayout({ children }) {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className="relative isolate min-w-0">
-        {reducedMotion === false && (
+        {background === "glyph" && (
+          <GlyphBackground
+            aria-hidden="true"
+            interactive={false}
+            fontSize={12}
+            className="pointer-events-none text-fluid-accent opacity-60 dark:opacity-45"
+            style={{ position: "absolute", inset: 0, zIndex: -1 }}
+          />
+        )}
+        {background === "cursor" && reducedMotion === false && (
           <PixelTrail
             gridSize={80}
             trailSize={0.05}
