@@ -1,6 +1,7 @@
 import { ProjectPreviewContent } from "./ProjectPreview";
 import { projectDraftKey } from "@/lib/project-draft";
 import { useTheme } from "next-themes";
+import { usePreviewTheme } from "@/hooks/use-preview-theme";
 import AnimatedEditorBody from "@/components/projects/AnimatedEditorBody";
 import {
   Tabs,
@@ -43,6 +44,7 @@ export default function ProjectModal({
   project,
 }) {
   const { resolvedTheme } = useTheme();
+  const [previewTheme, setPreviewTheme] = usePreviewTheme(isOpen);
   const formId = useId();
   const headerRef = useRef(null);
   const modalRef = useRef(null);
@@ -324,7 +326,7 @@ export default function ProjectModal({
                         <FormAppearance
                           appearance={appearance}
                           onChange={setAppearance}
-                          mode={theme}
+                          mode={previewTheme}
                         />
                       </Suspense>
                     )}
@@ -335,9 +337,9 @@ export default function ProjectModal({
                   <ProjectFormPreview
                     name={name}
                     fields={fields}
-                    theme={theme}
+                    theme={previewTheme}
                     appearance={appearance}
-                    onThemeChange={setTheme}
+                    onThemeChange={(mode) => { setPreviewTheme(mode); setTheme(mode); }}
                     disabled={pending}
                   />
                 </div>

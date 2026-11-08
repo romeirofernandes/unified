@@ -4,7 +4,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/motion/ta
 import PackageCommands from "@/components/shared/PackageCommands";
 import ProjectApi from "./ProjectApi";
 import { useRef, useState } from "react";
-import { useTheme } from "next-themes";
+import { usePreviewTheme } from "@/hooks/use-preview-theme";
 import PreviewModeToggle from "@/components/projects/PreviewModeToggle";
 import FormFont from "../../../../shared/FormFont";
 import {
@@ -30,14 +30,11 @@ function PreviewTabPanel({ value, active, children }) {
   </TabsContent>;
 }
 
-export function ProjectPreviewContent({ project, onEdit }) {
+export function ProjectPreviewContent({ project, onEdit, isOpen = true }) {
   const { user } = useAuth();
   const [tab, setTab] = useState("preview");
   const headerRef = useRef(null);
-  const { resolvedTheme } = useTheme();
-  const [mode, setMode] = useState(() =>
-    resolvedTheme === "dark" ? "dark" : "light",
-  );
+  const [mode, setMode] = usePreviewTheme(isOpen);
   if (!project) return null;
   return (
     <>
@@ -122,7 +119,7 @@ export function ProjectPreviewContent({ project, onEdit }) {
 export default function ProjectPreview({ isOpen, onClose, project }) {
   return <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
     <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-md border border-border bg-background p-0 text-foreground sm:max-w-[1060px]" size="xl">
-      <ProjectPreviewContent project={project} />
+      <ProjectPreviewContent project={project} isOpen={isOpen} />
     </DialogContent>
   </Dialog>;
 }

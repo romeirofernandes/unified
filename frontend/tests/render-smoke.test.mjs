@@ -16,6 +16,8 @@ const fixture = {
 };
 const source = `
 import React from "react";
+import { usePreviewTheme } from "./src/hooks/use-preview-theme";
+import { setFixtureTheme } from "next-themes";
 import { renderToString } from "react-dom/server";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { FluidRoot } from "./src/components/fluid-root";
@@ -29,6 +31,14 @@ import Integrations from "./src/pages/Integrations";
 import Workbench from "./src/pages/Workbench";
 import NotFound from "./src/pages/NotFound";
 export { documentationMarkdown } from "./src/components/docs/Quickstart";
+function PreviewThemeProbe() {
+  const [mode] = usePreviewTheme();
+  return <output>{mode}</output>;
+}
+export function renderPreviewTheme(theme) {
+  setFixtureTheme(theme);
+  return renderToString(<PreviewThemeProbe />);
+}
 const pages = { Workbench, Integrations, Login, Signup, Dashboard, Feedbacks, Settings, Docs, NotFound };
 export function render(name, url) {
   const Page = pages[name];
@@ -50,6 +60,11 @@ const result = await build({
     {
       name: "page-fixtures",
       setup(builder) {
+        builder.onResolve({ filter: /^next-themes$/ }, () => ({ path: "theme-fixture", namespace: "theme-fixture" }));
+        builder.onLoad({ filter: /.*/, namespace: "theme-fixture" }, () => ({
+          loader: "js",
+          contents: 'let resolvedTheme; export function setFixtureTheme(value) { resolvedTheme = value; } export const useTheme = () => ({ resolvedTheme, theme: resolvedTheme, setTheme() {} });',
+        }));
         builder.onResolve({ filter: /^@\/hooks\/use-auth$/ }, () => ({
           path: "auth-fixture",
           namespace: "fixture",
@@ -84,7 +99,13 @@ new Function("require", "module", "exports", result.outputFiles[0].text)(
   module,
   module.exports,
 );
-const { render } = module.exports;
+const { render, renderPreviewTheme } = module.exports;
+
+test("fresh previews use the app theme, including dark mode", () => {
+  assert.equal(renderPreviewTheme("dark"), "<output>dark</output>");
+  assert.equal(renderPreviewTheme("light"), "<output>light</output>");
+  assert.equal(renderPreviewTheme(undefined), "<output>light</output>");
+});
 
 for (const [name, url, expected] of [
   ["Login", "/login", "Welcome back"],
