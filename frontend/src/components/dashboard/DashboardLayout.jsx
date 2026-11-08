@@ -174,7 +174,7 @@ export default function DashboardLayout({ children }) {
             shine={0.25}
             glow={0.12}
             dpr={1}
-            className="opacity-65 saturate-125 dark:opacity-60"
+            className="opacity-45 saturate-125 dark:opacity-40"
             style={{ position: "absolute", inset: 0, zIndex: -1 }}
           />
         )}
