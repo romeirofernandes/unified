@@ -1,9 +1,12 @@
+import { useState } from "react";
+import AppearanceColorPicker from "./AppearanceColorPicker";
 import FeedbackLauncher from "../../../../shared/FeedbackLauncher";
 import { formThemeStyle, resolveFormTheme } from "../../../../shared/form-theme.mjs";
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 
 export default function LauncherAppearance({ appearance, onChange, mode }) {
+  const [colorToken, setColorToken] = useState("background");
   const launcher = appearance.launcher || {};
   const palette = resolveFormTheme(appearance, mode);
   function update(patch) { onChange({ ...appearance, launcher: { ...launcher, ...patch } }); }
@@ -38,12 +41,27 @@ export default function LauncherAppearance({ appearance, onChange, mode }) {
     </div>
     <div className="space-y-3">
       <p className="text-xs font-medium">Button colors · {mode}</p>
-      <div className="grid grid-cols-2 gap-3">
-        {[["background", "Background", palette.accent], ["text", "Text & icon", palette.accentText]].map(([key, label, fallback]) => <label key={key} className="flex cursor-pointer items-center gap-3 rounded-lg border border-border p-3 text-xs">
-          <input type="color" aria-label={`Button ${label.toLowerCase()} color`} value={launcher.colors?.[mode]?.[key] || fallback} onChange={event => color(key, event.target.value)} className="size-7 cursor-pointer border-0 bg-transparent p-0" />
-          <span>{label}<span className="mt-1 block font-mono text-[10px] text-muted-foreground">{launcher.colors?.[mode]?.[key] || fallback}</span></span>
-        </label>)}
+      <div className="grid grid-cols-2 gap-2" role="group" aria-label="Button color to edit">
+        {[["background", "Background", palette.accent], ["text", "Text & icon", palette.accentText]].map(([key, label, fallback]) => (
+          <button
+            key={key}
+            type="button"
+            aria-pressed={colorToken === key}
+            onClick={() => setColorToken(key)}
+            className={`flex min-h-10 items-center gap-2 rounded-md border px-3 text-left text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring ${colorToken === key ? "border-fluid-accent bg-fluid-accent/10" : "border-border"}`}
+          >
+            <span aria-hidden="true" className="size-4 shrink-0 rounded-sm border border-border" style={{ background: launcher.colors?.[mode]?.[key] || fallback }} />
+            {label}
+          </button>
+        ))}
       </div>
+      <AppearanceColorPicker
+        key={`${mode}-${colorToken}`}
+        label={colorToken === "background" ? "Button background" : "Button text & icon"}
+        mode={mode}
+        value={launcher.colors?.[mode]?.[colorToken] || (colorToken === "background" ? palette.accent : palette.accentText)}
+        onChange={value => color(colorToken, value)}
+      />
       <Button variant="ghost" size="sm" onClick={() => update({ colors: { ...launcher.colors, [mode]: {} } })}>Use theme colors</Button>
     </div>
   </fieldset>;

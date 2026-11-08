@@ -8,13 +8,7 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  ColorPicker,
-  ColorPickerArea,
-  ColorPickerHue,
-  ColorPickerHexInput,
-  ColorPickerEyeDropper,
-} from "@/components/motion/color-picker";
+import AppearanceColorPicker from "./AppearanceColorPicker";
 import {
   colorTokens,
   contrastRatio,
@@ -58,7 +52,7 @@ export default function FormAppearance({ appearance, onChange, mode }) {
           </SelectContent>
         </Select>
       </div>
-      <fieldset className="space-y-3">
+      <fieldset className="space-y-5">
         <legend className="text-sm font-medium">Theme preset</legend>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {formPresets.map((preset) => (
@@ -95,88 +89,77 @@ export default function FormAppearance({ appearance, onChange, mode }) {
             </label>
           ))}
         </div>
-      </fieldset>
-      <LauncherAppearance appearance={appearance} onChange={onChange} mode={mode} />
-      <div className="space-y-4 border-t border-border pt-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h3 className="text-sm font-medium">Your colors</h3>
-          <Button
-            variant="secondary"
-            onClick={() => setCustomize((value) => !value)}
-          >
-            {customize ? "Hide controls" : "Customize colors"}
-          </Button>
-        </div>
-        {customize && (
-          <>
-            <div
-              className="grid grid-cols-2 gap-2"
-              role="group"
-              aria-label="Color to edit"
-            >
-              {colorTokens.map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  aria-pressed={key === token}
-                  onClick={() => setToken(key)}
-                  className={`flex min-h-10 items-center gap-2 rounded-md border px-3 text-left text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring ${key === token ? "border-fluid-accent bg-fluid-accent/10" : "border-border"}`}
-                >
-                  <span
-                    aria-hidden="true"
-                    className="size-4 shrink-0 rounded-sm border border-border"
-                    style={{ background: palette[key] }}
-                  />
-                  {tokenLabels[key]}
-                </button>
-              ))}
-            </div>
-            <ColorPicker
-              key={`${mode}-${token}`}
-              value={palette[token]}
-              onValueChange={(value) =>
-                onChange({
-                  ...appearance,
-                  colors: {
-                    ...appearance.colors,
-                    [mode]: { ...appearance.colors?.[mode], [token]: value },
-                  },
-                })
-              }
-              alpha={false}
-              aria-label={`${tokenLabels[token]} color for ${mode} mode`}
-              className="max-w-none space-y-3 rounded-md border border-border bg-background p-3"
-            >
-              <p className="text-xs text-muted-foreground">
-                {tokenLabels[token]} · {mode} mode
-              </p>
-              <ColorPickerArea className="h-36 rounded-md" />
-              <ColorPickerHue />
-              <div className="flex items-center gap-3">
-                <ColorPickerEyeDropper />
-                <ColorPickerHexInput className="min-w-0 flex-1" />
-              </div>
-            </ColorPicker>
-            {contrastRatio(palette.text, palette.background) < 4.5 && (
-              <p role="status" className="text-xs text-destructive">
-                The text and background have low contrast. Use a lighter or
-                darker text color.
-              </p>
-            )}
+        <div className="space-y-4 border-t border-border pt-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h3 className="text-sm font-medium">Your colors</h3>
             <Button
-              variant="ghost"
-              onClick={() =>
-                onChange({
-                  ...appearance,
-                  colors: { ...appearance.colors, [mode]: {} },
-                })
-              }
+              variant="secondary"
+              onClick={() => setCustomize((value) => !value)}
             >
-              Reset {mode} colors
+              {customize ? "Hide controls" : "Customize colors"}
             </Button>
-          </>
-        )}
-      </div>
+          </div>
+          {customize && (
+            <>
+              <div
+                className="grid grid-cols-2 gap-2"
+                role="group"
+                aria-label="Color to edit"
+              >
+                {colorTokens.map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    aria-pressed={key === token}
+                    onClick={() => setToken(key)}
+                    className={`flex min-h-10 items-center gap-2 rounded-md border px-3 text-left text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring ${key === token ? "border-fluid-accent bg-fluid-accent/10" : "border-border"}`}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="size-4 shrink-0 rounded-sm border border-border"
+                      style={{ background: palette[key] }}
+                    />
+                    {tokenLabels[key]}
+                  </button>
+                ))}
+              </div>
+              <AppearanceColorPicker
+                key={`${mode}-${token}`}
+                label={tokenLabels[token]}
+                mode={mode}
+                value={palette[token]}
+                onChange={(value) =>
+                  onChange({
+                    ...appearance,
+                    colors: {
+                      ...appearance.colors,
+                      [mode]: { ...appearance.colors?.[mode], [token]: value },
+                    },
+                  })
+                }
+              />
+              {contrastRatio(palette.text, palette.background) < 4.5 && (
+                <p role="status" className="text-xs text-destructive">
+                  The text and background have low contrast. Use a lighter or
+                  darker text color.
+                </p>
+              )}
+              <Button
+                variant="ghost"
+                onClick={() =>
+                  onChange({
+                    ...appearance,
+                    colors: { ...appearance.colors, [mode]: {} },
+                  })
+                }
+              >
+                Reset {mode} colors
+              </Button>
+            </>
+          )}
+        </div>
+        <LauncherAppearance appearance={appearance} onChange={onChange} mode={mode} />
+      </fieldset>
     </div>
   );
 }
