@@ -20,9 +20,9 @@ export function morphTransitions(open, reduced) {
     surface: {
       layout: { duration: open ? 0.4 : 0.28, ease: open ? surfaceEase : contentEase },
       borderRadius: { duration: open ? 0.4 : 0.28, ease: open ? surfaceEase : contentEase },
-      backgroundColor: { duration: open ? 0.4 : 0.28, ease: open ? surfaceEase : contentEase },
+      backgroundColor: { duration: 0, delay: open ? 0 : 0.28 },
     },
     content,
-    trigger: open ? content : { opacity: { duration: 0.18, delay: 0.1, ease: contentEase } },
+    trigger: open ? content : { opacity: { duration: 0.12, delay: 0.28, ease: contentEase } },
   };
 }

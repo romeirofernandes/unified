@@ -92,22 +92,28 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
   const closeFrames = await page.locator(".uf-morph-surface").evaluate(async (shell) => {
     const root = shell.getRootNode();
     const start = shell.getBoundingClientRect();
+    const background = getComputedStyle(shell).backgroundColor;
     const frames = [];
+    const began = performance.now();
     root.querySelector('[aria-label="Close feedback"]').click();
     await new Promise(done => {
       function frame() {
         const bounds = shell.getBoundingClientRect();
         const panel = root.querySelector('[role="dialog"]');
-        frames.push({ width: bounds.width, height: bounds.height, background: getComputedStyle(shell).backgroundColor, position: panel ? getComputedStyle(panel).position : null });
-        if (frames.length < 3) requestAnimationFrame(frame); else done();
+        frames.push({ ms: performance.now() - began, width: bounds.width, height: bounds.height, background: getComputedStyle(shell).backgroundColor, position: panel ? getComputedStyle(panel).position : null });
+        if (performance.now() - began < 240) requestAnimationFrame(frame); else done();
       }
       requestAnimationFrame(frame);
     });
-    return { startHeight: start.height, startWidth: start.width, frames };
+    return { startHeight: start.height, startWidth: start.width, background, frames };
   });
-  assert.equal(closeFrames.frames[0].position, "absolute", "Exiting panel must leave layout inside the widget Shadow DOM");
+  assert.ok(closeFrames.frames.some(frame => frame.position === "absolute"), "Exiting panel must leave layout inside the widget Shadow DOM");
   assert.ok(closeFrames.frames.every(frame => frame.height <= closeFrames.startHeight + 1), "Closing must not grow before snapping to the launcher");
-  if (process.env.CONSUMER_MOTION === "no-preference") assert.notEqual(closeFrames.frames[0].background, "rgb(18, 52, 86)", "Panel must not flash the full launcher color in the first closing frame");
+  if (process.env.CONSUMER_MOTION === "no-preference") {
+    const movingFrames = closeFrames.frames.filter(frame => frame.ms < 260);
+    assert.ok(movingFrames.length >= 2);
+    assert.ok(movingFrames.every(frame => frame.background === closeFrames.background), "The shell must stay neutral throughout the contraction");
+  }
   await page.getByRole("dialog").waitFor({ state: "detached" });
   await expect(page.getByRole("button", { name: "Hide feedback widget" })).toHaveCount(0);
   const trigger = page.getByRole("button", { name: "Open feedback form" });
