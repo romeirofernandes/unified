@@ -101,7 +101,7 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
         const bounds = shell.getBoundingClientRect();
         const panel = root.querySelector('[role="dialog"]');
         frames.push({ ms: performance.now() - began, width: bounds.width, height: bounds.height, background: getComputedStyle(shell).backgroundColor, position: panel ? getComputedStyle(panel).position : null });
-        if (performance.now() - began < 240) requestAnimationFrame(frame); else done();
+        if (performance.now() - began < 440) requestAnimationFrame(frame); else done();
       }
       requestAnimationFrame(frame);
     });
@@ -113,6 +113,8 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
     const movingFrames = closeFrames.frames.filter(frame => frame.ms < 260);
     assert.ok(movingFrames.length >= 2);
     assert.ok(movingFrames.every(frame => frame.background === closeFrames.background), "The shell must stay neutral throughout the contraction");
+    assert.ok(closeFrames.frames.some(frame => frame.ms > 280 && frame.background !== closeFrames.background && frame.background !== "rgb(18, 52, 86)"), "Button color must fade back after the contraction rather than snap");
+    assert.equal(closeFrames.frames.at(-1).background, "rgb(18, 52, 86)");
   }
   await page.getByRole("dialog").waitFor({ state: "detached" });
   await expect(page.getByRole("button", { name: "Hide feedback widget" })).toHaveCount(0);

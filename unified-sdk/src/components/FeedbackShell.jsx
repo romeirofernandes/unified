@@ -42,12 +42,13 @@ export default function FeedbackShell({ open, onOpen, onClose, onCloseComplete, 
     if (open) { wasOpen.current = true; return; }
     if (!wasOpen.current) return;
     const closing = morphTransitions(false, reduced);
-    // The content exits first; wait for the shell before restoring focus or unmounting.
+    // Wait for the final button color and label reveal before restoring focus or unmounting.
+    const completeAfter = Math.max(closing.surface.layout?.duration ?? 0, (closing.trigger.opacity.delay ?? 0) + closing.trigger.opacity.duration);
     const timer = setTimeout(() => {
       wasOpen.current = false;
       trigger.current?.focus({ preventScroll: true });
       onCloseComplete?.();
-    }, (closing.surface.layout?.duration ?? closing.content.opacity.duration) * 1000);
+    }, completeAfter * 1000);
     return () => clearTimeout(timer);
   }, [open, reduced, onCloseComplete]);
   if (phase === "dismissed") return null;

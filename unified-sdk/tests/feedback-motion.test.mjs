@@ -9,7 +9,8 @@ test("opening keeps the beUI morph while closing settles without a reversed over
   assert.deepEqual(opening.content.x, { duration: 0.4, ease: contentEase });
   assert.deepEqual(closing.surface.layout, { duration: 0.28, ease: contentEase });
   assert.deepEqual(opening.surface.backgroundColor, { duration: 0, delay: 0 });
-  assert.deepEqual(closing.surface.backgroundColor, { duration: 0, delay: closing.surface.layout.duration });
+  assert.deepEqual(closing.surface.backgroundColor, closing.trigger.opacity);
+  assert.ok(closing.surface.backgroundColor.duration > 0);
   assert.equal(closing.content.opacity.duration, 0.12);
   assert.equal(closing.content.opacity.delay, undefined);
   assert.equal(closing.trigger.opacity.delay, closing.surface.layout.duration);
