@@ -13,9 +13,12 @@
 .unified-feedback-root[data-theme="dark"] { color-scheme: dark; }
 .uf-position { position: fixed; right: max(20px, env(safe-area-inset-right)); bottom: max(20px, env(safe-area-inset-bottom)); z-index: 2147483003; font-family: var(--uf-font, Inter, system-ui, sans-serif); }
 .uf-position-left { right: auto; left: max(20px, env(safe-area-inset-left)); }
-.uf-panel { position: absolute; right: 0; bottom: 62px; box-sizing: border-box; width: min(380px, calc(100vw - 40px)); max-height: calc(100dvh - 104px); overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--uf-border); border-radius: 20px; background: var(--uf-background); color: var(--uf-text); box-shadow: 0 16px 56px -20px rgb(0 0 0 / .25), 0 2px 8px rgb(0 0 0 / .05); scrollbar-width: thin; }
+.uf-panel { box-sizing: border-box; width: min(380px, calc(100vw - 40px)); max-height: calc(100dvh - 40px); overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--uf-border); border-radius: 20px; background: var(--uf-background); color: var(--uf-text); box-shadow: 0 16px 56px -20px rgb(0 0 0 / .25), 0 2px 8px rgb(0 0 0 / .05); scrollbar-width: thin; }
 .unified-feedback-root[data-theme="dark"] .uf-panel { box-shadow: 0 18px 64px -16px rgb(0 0 0 / .55), 0 0 0 1px rgb(255 255 255 / .02); }
-.uf-position-left .uf-panel { right: auto; left: 0; }
+.uf-morph-surface { position: relative; overflow: hidden; }
+.uf-launcher-surface { background: var(--uf-launcher-bg, var(--uf-accent)); color: var(--uf-launcher-text, var(--uf-accentText)); box-shadow: 0 6px 18px -4px rgb(0 0 0 / .18); }
+.uf-launcher-content { display: inline-flex; align-items: center; justify-content: center; gap: 10px; }
+.unified-feedback-root { --primary: var(--uf-accent); --primary-foreground: var(--uf-accentText); --foreground: var(--uf-text); --background: var(--uf-background); --muted-foreground: var(--uf-muted); --ring: var(--uf-accent); --color-primary: var(--uf-accent); --color-primary-foreground: var(--uf-accentText); --color-foreground: var(--uf-text); --color-background: var(--uf-background); --color-muted-foreground: var(--uf-muted); --color-ring: var(--uf-accent); }
 .uf-form-content { padding: 24px; }
 .uf-heading-row, .uf-eyebrow, .uf-question-meta, .uf-form-footer { display: flex; align-items: center; justify-content: space-between; }
 .uf-eyebrow { justify-content: flex-start; gap: 8px; color: var(--uf-muted); font-size: 12px; font-weight: 500; line-height: 20px; }

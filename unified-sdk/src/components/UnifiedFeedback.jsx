@@ -18,7 +18,7 @@ function FeedbackSession({ projectId, theme, apiUrl = import.meta.env.VITE_API_U
   const request = useRef(null);
   const baseUrl = apiUrl.replace(/\/$/, "");
   const pending = status === "sending";
-  const success = status === "success";
+  const success = status === "success" || status === "success-closing";
   const formData = resource.data;
   const { mode: widgetTheme, anchorRef } = useHostTheme(theme, formData?.theme);
 
@@ -40,14 +40,14 @@ function FeedbackSession({ projectId, theme, apiUrl = import.meta.env.VITE_API_U
 
   useEffect(() => () => request.current?.abort(), []);
   useEffect(() => {
-    if (!success) return;
-    const timer = setTimeout(() => setStatus("dismissed"), 1800);
+    if (status !== "success") return;
+    const timer = setTimeout(() => setStatus("success-closing"), 1800);
     return () => clearTimeout(timer);
-  }, [success]);
+  }, [status]);
 
   const handleClose = useCallback(() => {
     if (request.current) return;
-    setStatus((current) => current === "success" ? "dismissed" : "closed");
+    setStatus((current) => current === "success" || current === "success-closing" ? "success-closing" : "closed");
   }, []);
   const handleInputChange = useCallback((id, value) => {
     setAnswers((previous) => ({ ...previous, [id]: value }));
@@ -86,7 +86,7 @@ function FeedbackSession({ projectId, theme, apiUrl = import.meta.env.VITE_API_U
   return (
     <>
     <span ref={anchorRef} hidden aria-hidden="true" />
-    {resource.status === "ready" && status !== "dismissed" && <FeedbackShell open={status !== "closed"} onOpen={() => setStatus("editing")} onClose={handleClose}
+    {resource.status === "ready" && status !== "dismissed" && <FeedbackShell open={status !== "closed" && status !== "success-closing"} onCloseComplete={status === "success-closing" ? () => setStatus("dismissed") : undefined} onOpen={() => setStatus("editing")} onClose={handleClose}
       storageKey={`unified-feedback:dismissed:${baseUrl}:${projectId}`} launcher={{ ...formData.appearance?.launcher, ...(triggerStyle ? { style: triggerStyle } : {}) }} pending={pending} success={success} position={position || formData.appearance?.launcher?.position} theme={widgetTheme} style={formThemeStyle(formData.appearance, widgetTheme)}>
       <FormFont appearance={formData.appearance} />
       <FeedbackModal isOpen onClose={handleClose} formData={formData} theme={widgetTheme}

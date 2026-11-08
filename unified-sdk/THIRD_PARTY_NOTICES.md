@@ -1,6 +1,6 @@
 # third-party notices
 
-## beUI Feedback Widget
+## beUI Feedback Widget, Radio and Checkbox
 
 MIT License
 
