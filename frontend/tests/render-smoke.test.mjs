@@ -133,5 +133,8 @@ for (const [name, url, expected] of [
 
 test("copy page includes the full integration contract and every package manager", () => {
   const markdown = module.exports.documentationMarkdown;
+  assert.doesNotMatch(markdown, /must be published|requires SDK .* to be published|after its npm release/);
+  const sdkVersion = createRequire(import.meta.url)("../../unified-sdk/package.json").version;
+  assert.ok(markdown.includes(`unified-sdk@${sdkVersion}`));
   for (const text of ["# Unified documentation", "## Connect your own form", "YOUR_BACKEND_URL/api/submissions/YOUR_PROJECT_ID", "Bearer YOUR_SUBMISSION_KEY", "QUESTION_ID", "HTTP 201", "required", "npm install unified-sdk", "pnpm add unified-sdk", "yarn add unified-sdk", "bun add unified-sdk", "pnpm dlx", "bunx", "Get feedback digests"]) assert.ok(markdown.includes(text), `Missing ${text}`);
 });

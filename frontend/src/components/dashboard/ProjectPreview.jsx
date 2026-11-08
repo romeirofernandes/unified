@@ -19,7 +19,7 @@ import { InputCopy } from "@/components/ui/input-copy";
 import { useAuth } from "@/hooks/use-auth";
 import PreviewField from "@/components/projects/PreviewField";
 import CodeBlock from "@/components/shared/CodeBlock";
-import { integrationCode } from "@/lib/integration-code";
+import { integrationCode, sdkVersion } from "@/lib/integration-code";
 import { Button } from "@/components/ui/button";
 import { typeClass } from "@/lib/type-scale";
 
@@ -85,7 +85,7 @@ export function ProjectPreviewContent({ project, onEdit, isOpen = true }) {
           <section className="min-w-0 space-y-4">
             <h3 className={typeClass("title")}>Integration</h3>
             <p className="text-sm text-muted-foreground">
-              This backend requires SDK 2.2.0 or newer. Update older widget installations when deploying it.
+              Install SDK {sdkVersion} for the latest widget. This backend requires SDK 2.2.0 or newer.
               It installs the SDK and mounts the widget for you.
             </p>
             <PackageCommands automatic projectId={project._id} />

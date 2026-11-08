@@ -7,7 +7,7 @@ import { BounceSidebar } from "@/components/motion/bounce-sidebar";
 import { Link } from "react-router-dom";
 import CodeBlock from "@/components/shared/CodeBlock";
 import { Button } from "@/components/ui/button";
-import { integrationCode, setupCommand } from "@/lib/integration-code";
+import { integrationCode, setupCommand, sdkVersion } from "@/lib/integration-code";
 
 const customFormCode = `const response = await fetch("YOUR_BACKEND_URL/api/submissions/YOUR_PROJECT_ID", {
   method: "POST",
@@ -39,7 +39,7 @@ const steps = [
   {
     id: "install",
     title: "Set up the SDK",
-    description: "From SDK 2.2.0 (after its npm release), run this in your Vite or Next.js app. The CLI checks your React entry, installs the SDK, adds its stylesheet, and mounts the widget. Add --dry-run to inspect the changes first.",
+    description: `Run this in your Vite or Next.js app. The CLI checks your React entry, installs SDK ${sdkVersion}, adds its stylesheet, and mounts the widget. Add --dry-run to inspect the changes first.`,
     label: "Terminal",
   },
   {
@@ -91,7 +91,7 @@ const steps = [
 
 const managers = ["npm", "pnpm", "yarn", "bun"];
 const automaticMarkdown = managers.map((manager) => `### ${manager}\n\n\`\`\`sh\n${setupCommand({ manager })}\n\`\`\``).join("\n\n");
-export const documentationMarkdown = "# Unified documentation\n\n" + steps.map((step) => `## ${step.title}\n\n${step.description}\n\n${step.id === "install" ? automaticMarkdown + "\n\n" : ""}${(step.items || []).map((item) => `- ${item}`).join("\n")}${step.code ? `\n\n\`\`\`${step.label === "Terminal" ? "sh" : "jsx"}\n${step.code}\n\`\`\`` : ""}`).join("\n\n") + "\n\n## SDK installation\n\n```sh\n# npm\nnpm install unified-sdk\n# pnpm\npnpm add unified-sdk\n# Yarn\nyarn add unified-sdk\n# Bun\nbun add unified-sdk\n```\n\nAutomatic setup requires SDK 2.2.0 to be published. Yarn automatic setup requires Yarn 2 or newer. This backend requires SDK 2.2.0 or newer. Replace project placeholders with values from Preview. Keep project submission keys server-side.\n";
+export const documentationMarkdown = "# Unified documentation\n\n" + steps.map((step) => `## ${step.title}\n\n${step.description}\n\n${step.id === "install" ? automaticMarkdown + "\n\n" : ""}${(step.items || []).map((item) => `- ${item}`).join("\n")}${step.code ? `\n\n\`\`\`${step.label === "Terminal" ? "sh" : "jsx"}\n${step.code}\n\`\`\`` : ""}`).join("\n\n") + "\n\n## SDK installation\n\n```sh\n# npm\nnpm install unified-sdk\n# pnpm\npnpm add unified-sdk\n# Yarn\nyarn add unified-sdk\n# Bun\nbun add unified-sdk\n```\n\nYarn automatic setup requires Yarn 2 or newer. This backend requires SDK 2.2.0 or newer. Replace project placeholders with values from Preview. Keep project submission keys server-side.\n";
 
 export default function Quickstart() {
   const contentRef = useRef(null);
@@ -159,7 +159,7 @@ export default function Quickstart() {
                   ))}
                 </ul>
               )}
-              {step.id === "install" && <><p className="text-sm text-muted-foreground">These commands require SDK 2.2.0 to be published. Older widget installations must update to use this secured backend. Yarn commands require Yarn 2 or newer.</p><PackageCommands automatic /></>}
+              {step.id === "install" && <><p className="text-sm text-muted-foreground">These commands install SDK {sdkVersion}. Older widget installations must update to use this secured backend. Yarn commands require Yarn 2 or newer.</p><PackageCommands automatic /></>}
               {step.id === "integrate" && <PackageCommands />}
               {step.code && <CodeBlock code={step.code} label={step.label} />}
               {step.id === "integrate" && (

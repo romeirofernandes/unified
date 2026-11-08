@@ -5,7 +5,8 @@ import {
   validateFields,
   serializeFields,
 } from "../src/lib/project-fields.js";
-import { integrationCode } from "../src/lib/integration-code.js";
+import { readFileSync } from "node:fs";
+import { integrationCode, setupCommand } from "../src/lib/integration-code.js";
 
 test("field drafts have independent identities and nested data", () => {
   const first = createField();
@@ -76,4 +77,11 @@ test("editing a project preserves field IDs used by existing feedback", () => {
 test("projects require at least one question, with no mandatory email type", () => {
   assert.match(validateFields([]), /at least one question/);
   assert.equal(validateFields([{ ...createField("text"), label: "Feedback" }]), "");
+});
+
+test("setup commands use the release version for every package manager and quote project settings", () => {
+  const version = JSON.parse(readFileSync(new URL("../../unified-sdk/package.json", import.meta.url))).version;
+  for (const [manager, runner] of Object.entries({ npm: "npx --yes", pnpm: "pnpm dlx", yarn: "yarn dlx", bun: "bunx" })) {
+    assert.equal(setupCommand({ manager, projectId: "project-1", apiUrl: "https://api.example.com" }), `${runner} unified-sdk@${version} init --project 'project-1' --api-url 'https://api.example.com' --package-manager ${manager}`);
+  }
 });

@@ -1,3 +1,7 @@
+import sdkPackage from "../../../unified-sdk/package.json" with { type: "json" };
+
+export const sdkVersion = sdkPackage.version;
+
 export function integrationCode({
   projectId = "YOUR_PROJECT_ID",
   theme = "auto",
@@ -23,6 +27,6 @@ export function setupCommand({
   apiUrl = import.meta.env?.VITE_BACKEND_URL || "http://localhost:8000",
 } = {}) {
   const quote = (value) => "'" + String(value).replaceAll("'", "'\\''") + "'";
-  const runners = { npm: "npx --yes unified-sdk@2.2.1", pnpm: "pnpm dlx unified-sdk@2.2.1", yarn: "yarn dlx unified-sdk@2.2.1", bun: "bunx unified-sdk@2.2.1" };
-  return `${runners[manager]} init --project ${quote(projectId)} --api-url ${quote(apiUrl)} --package-manager ${manager}`;
+  const runners = { npm: "npx --yes", pnpm: "pnpm dlx", yarn: "yarn dlx", bun: "bunx" };
+  return `${runners[manager]} unified-sdk@${sdkVersion} init --project ${quote(projectId)} --api-url ${quote(apiUrl)} --package-manager ${manager}`;
 }
