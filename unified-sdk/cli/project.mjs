@@ -93,6 +93,7 @@ export function createPlan({
   cwd = process.cwd(),
   projectId,
   theme = "auto",
+  triggerStyle = "pill",
   apiUrl,
   entry,
   manager,
@@ -104,6 +105,8 @@ export function createPlan({
       throw new Error(`Provide --${name} from the project integration panel.`);
   if (!["auto", "project", "light", "dark"].includes(theme))
     throw new Error("Theme must be auto, project, light, or dark.");
+  if (!["pill", "rounded", "icon", "text", "tab"].includes(triggerStyle))
+    throw new Error("Trigger style must be pill, rounded, icon, text, or tab.");
   if (apiUrl && !/^https?:\/\/[^\s]+$/.test(apiUrl)) throw new Error("Provide an http(s) --api-url.");
   const root = realpathSync(cwd);
   const manifestFile = safeTarget(root, "package.json");
@@ -179,6 +182,7 @@ export function createPlan({
     projectId: projectId.trim(),
     ...(apiUrl ? { apiUrl: apiUrl.replace(/\/$/, "") } : {}),
     ...(theme === "auto" ? {} : { theme }),
+    ...(triggerStyle === "pill" ? {} : { triggerStyle }),
   };
   const generated = `"use client";\n${marker}\nimport { createElement } from "react";\nimport { UnifiedFeedback } from "unified-sdk";\n\nexport default function UnifiedFeedbackWidget() {\n  return createElement(UnifiedFeedback, ${JSON.stringify(props, null, 2).replace(/\n/g, "\n  ")});\n}\n`;
   pkg.dependencies = {

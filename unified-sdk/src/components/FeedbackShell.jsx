@@ -1,101 +1,85 @@
-// Adapted from beUI Feedback Widget (MIT): https://beui.dev/r/feedback-widget/raw
-import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+// Motion inspired by beUI Feedback Widget (MIT): https://beui.dev/r/feedback-widget/raw
+import { useEffect, useId, useRef, useState } from "react";
 import { AnimatePresence, animate, motion as Motion, useMotionValue, useReducedMotion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { BubbleChatIcon, Cancel01Icon, Delete02Icon, Tick02Icon } from "@hugeicons/core-free-icons";
+import { Delete02Icon, Tick02Icon } from "@hugeicons/core-free-icons";
+import FeedbackLauncher from "../../../shared/FeedbackLauncher";
 import WidgetPortal from "./WidgetPortal";
-import Disintegrate from "./Disintegrate";
 
-const ease = [0.22, 1, 0.36, 1];
-export default function FeedbackShell({ open, onOpen, onClose, pending, style, children, success, theme, position = "bottom-right" }) {
+const spring = { type: "spring", stiffness: 420, damping: 36, mass: 0.8 };
+export default function FeedbackShell({ open, onOpen, onClose, pending, style, children, success, theme, position = "bottom-right", launcher = {}, storageKey }) {
   const reduced = useReducedMotion();
-  const themeRoot = useRef(null);
   const dragX = useMotionValue(0), dragY = useMotionValue(0);
   const root = useRef(null), trigger = useRef(null), trash = useRef(null);
-  const wasOpen = useRef(false);
-  const [panelVisible, setPanelVisible] = useState(open);
+  const dragged = useRef(false);
   const [dragging, setDragging] = useState(false);
-  const [phase, setPhase] = useState("visible");
-  const [rect, setRect] = useState(null);
+  const [overTrash, setOverTrash] = useState(false);
+  const [phase, setPhase] = useState(() => {
+    try { return localStorage.getItem(storageKey) === "1" ? "dismissed" : "visible"; } catch { return "visible"; }
+  });
   const panelId = useId();
-  useLayoutEffect(() => {
-    const node = themeRoot.current;
-    if (!node) return;
-    node.classList.add("uf-theme-swap");
-    void getComputedStyle(node).color;
-    const frame = requestAnimationFrame(() => node.classList.remove("uf-theme-swap"));
-    return () => { cancelAnimationFrame(frame); node.classList.remove("uf-theme-swap"); };
-  }, [theme]);
+  const left = position === "bottom-left";
+  function isOver(point) {
+    const bounds = trash.current?.getBoundingClientRect();
+    return Boolean(bounds && point.x >= bounds.left && point.x <= bounds.right && point.y >= bounds.top && point.y <= bounds.bottom);
+  }
   useEffect(() => {
-    if (open) setPanelVisible(true);
     if (!open) return;
-    const key = (event) => { if (event.key === "Escape" && !event.defaultPrevented && !pending) onClose(); };
-    const outside = (event) => { if (!pending && !event.composedPath().includes(root.current)) onClose(); };
+    const key = event => { if (event.key === "Escape" && !event.defaultPrevented && !pending) onClose(); };
+    const outside = event => { if (!pending && !event.composedPath().includes(root.current)) onClose(); };
     document.addEventListener("keydown", key);
     document.addEventListener("pointerdown", outside);
     return () => { document.removeEventListener("keydown", key); document.removeEventListener("pointerdown", outside); };
   }, [open, pending, onClose]);
-  useEffect(() => {
-    if (phase !== "hidden") return;
-    const timer = setTimeout(() => setPhase("dismissed"), 6000);
-    return () => clearTimeout(timer);
-  }, [phase]);
-  function destroy() {
-    if (pending || !trigger.current) return;
-    setRect(trigger.current.getBoundingClientRect());
-    setPhase("disintegrating");
-    setDragging(false);
-    dragX.set(0); dragY.set(0);
-  }
-  const left = position === "bottom-left";
+  if (phase === "dismissed") return null;
   return <WidgetPortal>
-    <div ref={themeRoot} className="unified-feedback-root" data-theme={theme} style={style}>
+    <div className="unified-feedback-root" data-theme={theme} style={style}>
       <div ref={root} className={`uf-position ${left ? "uf-position-left" : ""}`}>
-        {phase === "visible" && <Motion.div layout initial={false} className={open || panelVisible ? "uf-panel" : "uf-trigger-wrap"}
-          style={{ transformOrigin: left ? "bottom left" : "bottom right" }}
-          transition={{ layout: { duration: reduced ? 0 : 0.28, ease } }}>
-          <AnimatePresence initial={false} mode="wait" onExitComplete={() => {
-            if (!open) setPanelVisible(false);
-            if (!open && wasOpen.current) { requestAnimationFrame(() => trigger.current?.focus({ preventScroll: true })); wasOpen.current = false; }
-          }}>
-            {open ? <Motion.div key="panel" id={panelId} role="dialog" aria-label="Feedback form" aria-busy={pending || undefined}
-              initial={{ opacity: 0, y: reduced ? 0 : 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: reduced ? 0 : 4 }}
-              transition={{ duration: reduced ? 0.12 : 0.18, ease }}
-              onAnimationComplete={() => {
-                wasOpen.current = true;
-                root.current?.querySelector('input:not(:disabled), textarea:not(:disabled), [role="slider"], [data-success-close]')?.focus({ preventScroll: true });
-              }}>
-              {success ? <div role="status" className="uf-success">
-                <div className="uf-success-icon"><HugeiconsIcon icon={Tick02Icon} size={24} aria-hidden="true" /></div>
-                <h2>Thank you!</h2><p>Your feedback has been sent.</p>
-                <button data-success-close type="button" onClick={onClose} className="uf-button uf-button-primary">Done</button>
-              </div> : children}
-            </Motion.div> : <Motion.div key="trigger" className="uf-trigger-controls" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.12 }}>
-              <Motion.div drag dragMomentum={false} onDragStart={() => setDragging(true)}
-                onDragEnd={(_, info) => {
-                  const bounds = trash.current?.getBoundingClientRect();
-                  if (bounds && info.point.x >= bounds.left - 20 && info.point.x <= bounds.right + 20 && info.point.y >= bounds.top - 20 && info.point.y <= bounds.bottom + 20) destroy();
-                  else {
-                    setDragging(false);
-                    animate(dragX, 0, { duration: reduced ? 0 : 0.2, ease });
-                    animate(dragY, 0, { duration: reduced ? 0 : 0.2, ease });
-                  }
-                }}
-                className="uf-drag-handle" style={{ touchAction: "none", x: dragX, y: dragY }}>
-                <button ref={trigger} type="button" className="uf-trigger" aria-label="Open feedback form" aria-haspopup="dialog" aria-controls={panelId} aria-expanded={false} onClick={onOpen}>
-                  <HugeiconsIcon icon={BubbleChatIcon} size={18} aria-hidden="true" /><span>Feedback</span>
-                </button>
-              </Motion.div>
-              {!dragging && <button type="button" className="uf-hide" aria-label="Hide feedback widget" title="Hide feedback widget" onClick={destroy}><HugeiconsIcon icon={Cancel01Icon} size={12} aria-hidden="true" /></button>}
-            </Motion.div>}
-          </AnimatePresence>
-        </Motion.div>}
-        {phase === "hidden" && <div className="uf-undo" role="status"><span>Feedback hidden</span><button type="button" onClick={() => { setPhase("visible"); requestAnimationFrame(() => trigger.current?.focus({ preventScroll: true })); }}>Undo</button></div>}
+        <AnimatePresence onExitComplete={() => { if (!open) trigger.current?.focus({ preventScroll: true }); }}>
+          {open && <Motion.div key="panel" className="uf-panel" id={panelId} role="dialog" aria-label="Feedback form" aria-busy={pending || undefined}
+            style={{ transformOrigin: left ? "bottom left" : "bottom right" }}
+            initial={{ opacity: 0, y: reduced ? 0 : 10, scale: reduced ? 1 : 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: reduced ? 0 : 6, scale: reduced ? 1 : 0.98 }}
+            transition={reduced ? { duration: 0 } : { ...spring, opacity: { duration: 0.16 } }}
+            onAnimationComplete={() => {
+              if (open) root.current?.querySelector('input:not(:disabled), textarea:not(:disabled), [role="slider"], [data-success-close]')?.focus({ preventScroll: true });
+            }}>
+            {success ? <div role="status" className="uf-success">
+              <div className="uf-success-icon"><HugeiconsIcon icon={Tick02Icon} size={24} aria-hidden="true" /></div>
+              <h2>Thank you!</h2><p>Your feedback has been sent.</p>
+              <button data-success-close type="button" onClick={onClose} className="uf-button uf-button-primary">Done</button>
+            </div> : children}
+          </Motion.div>}
+        </AnimatePresence>
+        <Motion.div drag={!open && !pending} dragMomentum={false}
+          onDragStart={() => { dragged.current = true; setDragging(true); }}
+          onDrag={(_, info) => setOverTrash(isOver(info.point))}
+          onDragEnd={(_, info) => {
+            if (isOver(info.point)) {
+              try { localStorage.setItem(storageKey, "1"); } catch { /* Storage can be disabled. */ }
+              setPhase("dismissed");
+            } else {
+              animate(dragX, 0, reduced ? { duration: 0 } : spring);
+              animate(dragY, 0, reduced ? { duration: 0 } : spring);
+            }
+            setDragging(false); setOverTrash(false);
+          }}
+          className="uf-drag-handle" style={{ touchAction: "none", x: dragX, y: dragY }}
+          animate={{ scale: overTrash ? 0.9 : 1 }} transition={reduced ? { duration: 0 } : spring}>
+          <button ref={trigger} type="button" className={`uf-trigger uf-trigger-${launcher.style || "pill"}`} aria-label="Open feedback form" aria-haspopup="dialog" aria-controls={panelId} aria-expanded={open}
+            onPointerDown={() => { dragged.current = false; }}
+            onClick={() => { if (!dragged.current) { if (open) { if (!pending) onClose(); } else onOpen(); } }}>
+            <FeedbackLauncher launcher={launcher} />
+          </button>
+        </Motion.div>
       </div>
-      <AnimatePresence>{dragging && <Motion.div ref={trash} className="uf-delete-zone" role="region" aria-label="Drop here to hide feedback" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-        <HugeiconsIcon icon={Delete02Icon} size={20} aria-hidden="true" /><span>Drop to hide</span>
+      <AnimatePresence>{dragging && <Motion.div key="delete" className="uf-delete-dock" initial={{ opacity: 0, y: reduced ? 0 : 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: reduced ? 0 : 10 }} transition={reduced ? { duration: 0 } : spring}>
+        <div ref={trash} className="uf-delete-zone" data-active={overTrash || undefined} role="region" aria-label="Drop here to remove feedback">
+          <span className="uf-delete-icon"><HugeiconsIcon icon={Delete02Icon} size={20} aria-hidden="true" /></span>
+          <span>{overTrash ? "Release to remove" : "Drop to remove"}</span>
+        </div>
       </Motion.div>}</AnimatePresence>
-      {phase === "disintegrating" && <Disintegrate rect={rect} reduced={reduced} onComplete={() => setPhase("hidden")} />}
     </div>
   </WidgetPortal>;
 }

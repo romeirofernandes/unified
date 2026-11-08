@@ -1,3 +1,4 @@
+import FeedbackLauncher from "../../../../shared/FeedbackLauncher";
 import FormFont from "../../../../shared/FormFont";
 import PreviewModeToggle from "./PreviewModeToggle";
 import { previewThemeStyle } from "../../../../shared/form-theme.mjs";
@@ -45,6 +46,11 @@ export default function ProjectFormPreview({
         >
           Submit feedback
         </button>
+      </div>
+      <div className={`flex ${appearance?.launcher?.position === "bottom-left" ? "justify-start" : "justify-end"} py-3`} style={previewThemeStyle(appearance, theme)}>
+        <span className="inline-flex h-12 items-center justify-center gap-2.5 px-5 text-sm font-medium shadow-sm" style={{ background: "var(--uf-launcher-bg)", color: "var(--uf-launcher-text)", borderRadius: ["rounded", "tab"].includes(appearance?.launcher?.style) ? 14 : 99 }}>
+          <FeedbackLauncher launcher={appearance?.launcher} />
+        </span>
       </div>
       <p className="text-xs text-muted-foreground">
         Preview only. No feedback is sent.

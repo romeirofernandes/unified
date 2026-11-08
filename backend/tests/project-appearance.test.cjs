@@ -66,3 +66,30 @@ test("form fonts are validated and saved with the project", () => {
   project.appearance.font = "unknown";
   assert.ok(project.validateSync());
 });
+
+test("launcher choices and paired colors survive validation and Mongo serialization", () => {
+  const Project = require("../models/Project");
+  const appearance = validateAppearance({
+    preset: "unified",
+    launcher: { style: "rounded", icon: "mail", label: " Talk to us ", position: "bottom-left",
+      colors: { light: { background: "#12ABCD", text: "#171717" }, dark: { background: "#171717", text: "#FFFFFF" } },
+      unknown: "ignored",
+    },
+  });
+  assert.equal(appearance.launcher.label, "Talk to us");
+  assert.equal(appearance.launcher.colors.light.background, "#12abcd");
+  assert.equal(appearance.launcher.unknown, undefined);
+  const project = new Project({ name: "Launcher", userId: "507f1f77bcf86cd799439011", fields: [{ type: "text", label: "Feedback" }], appearance });
+  assert.equal(project.validateSync(), undefined);
+  assert.deepEqual(project.toObject().appearance.launcher, appearance.launcher);
+  project.appearance.launcher.icon = "missing";
+  assert.ok(project.validateSync());
+});
+
+test("invalid launcher configuration is rejected", () => {
+  for (const launcher of [null, [], { style: "unknown" }, { icon: "missing" }, { label: " " }, { label: "a".repeat(33) },
+    { position: "top" }, { style: "icon", icon: "none" }, { colors: [] }, { colors: { light: [] } },
+    { colors: { dark: { background: "red" } } }, { colors: { light: { text: "url(unsafe)" } } }]) {
+    assert.throws(() => validateAppearance({ preset: "unified", launcher }));
+  }
+});

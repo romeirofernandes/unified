@@ -10,6 +10,7 @@ Installs and mounts the widget in Vite or Next.js.
   --cwd PATH              App directory (default: current directory)
   --api-url URL           Unified backend origin (default: localhost:8000)
   --entry PATH            Custom entry, relative to the app directory
+  --trigger-style pill|rounded|icon|text|tab  Default: pill
   --theme auto|project|light|dark  Default: follow the host app
   --package-manager NAME  npm, pnpm, yarn, or bun (auto-detected)
   --dry-run               Show the plan without changing files
@@ -26,6 +27,7 @@ try {
       cwd: { type: "string" },
       entry: { type: "string" },
       theme: { type: "string" },
+      "trigger-style": { type: "string" },
       "package-manager": { type: "string" },
       "dry-run": { type: "boolean" },
       "skip-install": { type: "boolean" },
@@ -54,6 +56,7 @@ try {
       projectId,
       apiUrl: values["api-url"],
       theme: values.theme,
+      triggerStyle: values["trigger-style"],
       entry: values.entry,
       manager: values["package-manager"],
     });

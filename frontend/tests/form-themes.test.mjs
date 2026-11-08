@@ -38,3 +38,15 @@ test("saved fonts apply consistently to the SDK and previews with a safe fallbac
   }
   assert.equal(formThemeStyle({ font: "unknown" }, "light").fontFamily, '"Inter", sans-serif');
 });
+
+test("launcher colors are independent of form colors and isolated by mode", () => {
+  const appearance = { preset: "unified", launcher: { colors: { light: { background: "#112233", text: "#ffffff" }, dark: { background: "#aabbcc", text: "#171717" } } } };
+  const light = formThemeStyle(appearance, "light");
+  const dark = previewThemeStyle(appearance, "dark");
+  assert.equal(light["--uf-launcher-bg"], "#112233");
+  assert.equal(dark["--uf-launcher-bg"], "#aabbcc");
+  assert.equal(light["--uf-launcher-text"], "#ffffff");
+  assert.equal(dark["--uf-launcher-text"], "#171717");
+  assert.notEqual(light["--uf-background"], "#112233");
+  assert.equal(formThemeStyle({ preset: "unified", launcher: { colors: { light: { background: "invalid" } } } }, "light")["--uf-launcher-bg"], light["--uf-accent"]);
+});

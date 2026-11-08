@@ -241,3 +241,14 @@ test("backend origin is preserved in generated consumer configuration", (t) => {
   assert.match(app.read("src/components/unified-feedback-widget.jsx"), /"apiUrl": "https:\/\/feedback.example.com"/);
   assert.throws(() => app.plan({ apiUrl: "javascript:alert(1)" }), /http/);
 });
+
+test("launcher styles are validated and included in generated consumer props", (t) => {
+  for (const triggerStyle of ["pill", "icon", "text", "tab"]) {
+    const f = fixture(t, { "src/main.jsx": vite });
+    applyPlan(f.plan({ triggerStyle }), { skipInstall: true });
+    const generated = f.read("src/components/unified-feedback-widget.jsx");
+    if (triggerStyle !== "pill") assert.ok(generated.includes(`"triggerStyle": "${triggerStyle}"`));
+  }
+  const f = fixture(t, { "src/main.jsx": vite });
+  assert.throws(() => f.plan({ triggerStyle: "unknown" }), /Trigger style/);
+});

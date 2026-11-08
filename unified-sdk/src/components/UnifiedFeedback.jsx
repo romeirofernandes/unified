@@ -10,7 +10,7 @@ const UnifiedFeedback = memo(function UnifiedFeedback(props) {
   return <FeedbackSession key={JSON.stringify([props.projectId, props.apiUrl])} {...props} />;
 });
 
-function FeedbackSession({ projectId, theme, apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000", position = "bottom-right" }) {
+function FeedbackSession({ projectId, theme, apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000", position, triggerStyle }) {
   const [resource, setResource] = useState({ status: "loading", data: null });
   const [status, setStatus] = useState("closed");
   const [answers, setAnswers] = useState({});
@@ -87,7 +87,7 @@ function FeedbackSession({ projectId, theme, apiUrl = import.meta.env.VITE_API_U
     <>
     <span ref={anchorRef} hidden aria-hidden="true" />
     {resource.status === "ready" && status !== "dismissed" && <FeedbackShell open={status !== "closed"} onOpen={() => setStatus("editing")} onClose={handleClose}
-      pending={pending} success={success} position={position} theme={widgetTheme} style={formThemeStyle(formData.appearance, widgetTheme)}>
+      storageKey={`unified-feedback:dismissed:${baseUrl}:${projectId}`} launcher={{ ...formData.appearance?.launcher, ...(triggerStyle ? { style: triggerStyle } : {}) }} pending={pending} success={success} position={position || formData.appearance?.launcher?.position} theme={widgetTheme} style={formThemeStyle(formData.appearance, widgetTheme)}>
       <FormFont appearance={formData.appearance} />
       <FeedbackModal isOpen onClose={handleClose} formData={formData} theme={widgetTheme}
         answers={answers} onSubmit={handleSubmit} pending={pending} error={error} onChange={handleInputChange} />

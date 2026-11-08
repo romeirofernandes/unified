@@ -30,6 +30,7 @@ setup checks package.json, React, and the app entry before it changes anything. 
 - `--api-url URL` selects your deployed Unified backend (default: localhost:8000).
 - `--cwd ./frontend` selects an app in a monorepo.
 - `--entry src/main.tsx` selects a custom entry.
+- `--trigger-style icon` selects the launcher: `pill` (default), `icon`, `text`, or `tab`.
 - `--theme light` or `--theme dark` overrides the saved project mode.
 - `--skip-install` writes the integration but leaves installation to you.
 - `--package-manager pnpm` overrides package manager detection.
@@ -137,4 +138,4 @@ For issues and feature requests, please visit our [GitHub repository](https://gi
 For more information on how to use the Unified SDK, check out our [documentation](https://unified-chi.vercel.app/docs).
 
 
-The widget embeds its own styles in a Shadow DOM. It follows host theme classes, data attributes, color-scheme and system preference by default. Remove a hard-coded `theme="light"` to enable automatic mode. Drag the trigger to the trash target or use its hide button to dismiss it, with a short Undo option. Reduced motion uses a fade.
+The widget embeds its own styles in a Shadow DOM. It follows host theme classes, data attributes, color-scheme and system preference by default. Remove a hard-coded `theme="light"` to enable automatic mode. Drag the trigger onto the red delete target to remove it. Removal is saved in local storage per API origin and project and persists across refreshes. Clearing site storage restores it. Set `triggerStyle="pill"`, `"rounded"`, `"icon"`, `"text"`, or `"tab"` on `UnifiedFeedback` to choose the launcher. Reduced motion disables the panel animation. Project Appearance settings control the launcher icon, label, shape, position, and light/dark colors. Explicit `triggerStyle` and `position` props override the saved project choices.

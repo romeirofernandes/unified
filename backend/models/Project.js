@@ -45,6 +45,18 @@ const appearanceSchema = new mongoose.Schema(
     },
     font: { type: String, enum: require("../../shared/form-fonts.json") },
     colors: { light: paletteSchema, dark: paletteSchema },
+    launcher: {
+      type: new mongoose.Schema({
+        style: { type: String, enum: require("../../shared/feedback-launcher.json").styles },
+        icon: { type: String, enum: require("../../shared/feedback-launcher.json").icons },
+        label: { type: String, trim: true, minlength: 1, maxlength: 32 },
+        position: { type: String, enum: require("../../shared/feedback-launcher.json").positions },
+        colors: {
+          light: new mongoose.Schema({ background: { type: String, match: /^#[0-9a-f]{6}$/i }, text: { type: String, match: /^#[0-9a-f]{6}$/i } }, { _id: false }),
+          dark: new mongoose.Schema({ background: { type: String, match: /^#[0-9a-f]{6}$/i }, text: { type: String, match: /^#[0-9a-f]{6}$/i } }, { _id: false }),
+        },
+      }, { _id: false }),
+    },
   },
   { _id: false },
 );

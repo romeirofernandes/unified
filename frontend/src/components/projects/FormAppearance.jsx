@@ -1,3 +1,4 @@
+import LauncherAppearance from "./LauncherAppearance";
 import fonts from "../../../../shared/form-fonts.json";
 import {
   Select,
@@ -95,6 +96,7 @@ export default function FormAppearance({ appearance, onChange, mode }) {
           ))}
         </div>
       </fieldset>
+      <LauncherAppearance appearance={appearance} onChange={onChange} mode={mode} />
       <div className="space-y-4 border-t border-border pt-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-sm font-medium">Your colors</h3>

@@ -1,0 +1,5 @@
+{
+  "styles": ["pill", "rounded", "icon", "text", "tab"],
+  "icons": ["chat", "mail", "star", "none"],
+  "positions": ["bottom-right", "bottom-left"]
+}

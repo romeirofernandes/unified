@@ -49,6 +49,8 @@ export function formThemeStyle(appearance, mode) {
     ...Object.fromEntries(
       Object.entries(palette).map(([key, value]) => [`--uf-${key}`, value]),
     ),
+    "--uf-launcher-bg": isHexColor(appearance?.launcher?.colors?.[mode]?.background) ? appearance.launcher.colors[mode].background : palette.accent,
+    "--uf-launcher-text": isHexColor(appearance?.launcher?.colors?.[mode]?.text) ? appearance.launcher.colors[mode].text : palette.accentText,
     fontFamily: `"${font}", sans-serif`,
     "--uf-font": `"${font}", sans-serif`,
   };

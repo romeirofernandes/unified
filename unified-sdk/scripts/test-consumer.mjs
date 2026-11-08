@@ -38,9 +38,10 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
   let submissions = 0;
   let submitted;
   let allFields = false;
+  let launcher = { style: "rounded", icon: "mail", label: "Talk to us", colors: { light: { background: "#123456", text: "#ffffff" } } };
   await page.route("https://feedback.test/**", async route => {
     if (route.request().method() === "OPTIONS") return route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "*" } });
-    if (route.request().method() === "GET") return route.fulfill({ json: { _id: "test-project", name: "Tell us", theme: "light", fields: allFields ? [
+    if (route.request().method() === "GET") return route.fulfill({ json: { _id: "test-project", name: "Tell us", theme: "light", appearance: { preset: "unified", launcher }, fields: allFields ? [
       { _id: "date", type: "date", label: "Visit date", required: true },
       { _id: "choice", type: "mcq", label: "Would you return?", required: true, options: [{ label: "Yes", value: "yes" }, { label: "No", value: "no" }] },
       { _id: "rating", type: "slider", label: "Rating", required: true, config: { min: 0, max: 10, step: 1 } },
@@ -60,6 +61,7 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
   await page.goto("http://127.0.0.1:4178");
   const widget = page.locator(".unified-feedback-root");
   await expect(widget).toHaveAttribute("data-theme", "light");
+  await expect(page.getByRole("button", { name: "Open feedback form" })).toContainText(launcher.label || "Feedback");
   await page.getByRole("button", { name: "Open feedback form" }).click();
   await page.getByRole("textbox", { name: "Your email" }).waitFor();
   await expect(page.getByRole("textbox", { name: "Your email" })).toBeFocused();
@@ -87,24 +89,8 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
   assert.equal(await page.getByRole("textbox", { name: "Your email" }).evaluate(el => getComputedStyle(el).fontSize), "14px");
   await page.keyboard.press("Escape");
   await page.getByRole("dialog").waitFor({ state: "detached" });
-  await page.getByRole("button", { name: "Hide feedback widget" }).click();
-  if (process.env.CONSUMER_MOTION === "no-preference") {
-    await expect(page.locator(".uf-fragment")).toHaveCount(48);
-    if (process.env.CONSUMER_CAPTURE) await page.screenshot({ path: process.env.CONSUMER_CAPTURE.replace(/\.png$/, "-disintegrating.png") });
-  }
-  else await expect(page.locator(".uf-fragment")).toHaveCount(0);
-  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Hide feedback widget" })).toHaveCount(0);
   const trigger = page.getByRole("button", { name: "Open feedback form" });
-  const start = await trigger.boundingBox();
-  await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(start.x + start.width / 2 - 20, start.y + start.height / 2 - 30, { steps: 8 });
-  const zone = page.getByRole("region", { name: "Drop here to hide feedback" });
-  await zone.waitFor();
-  const drop = await zone.boundingBox();
-  await page.mouse.move(drop.x + drop.width / 2, drop.y + drop.height / 2, { steps: 12 });
-  await page.mouse.up();
-  await page.getByRole("button", { name: "Undo", exact: true }).click();
   await trigger.click();
   await page.getByRole("textbox", { name: "Your email" }).waitFor();
   await page.getByRole("button", { name: "Continue", exact: true }).click();
@@ -148,8 +134,42 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
   assert.equal(submitted.formAnswers.rating, 1);
   assert.match(submitted.formAnswers.date, /^\d{4}-\d{2}-\d{2}$/);
   assert.equal(submitted.formAnswers.name, "Ada");
+  await page.getByRole("dialog").waitFor({ state: "detached" });
+  await page.reload();
+  await trigger.waitFor();
+  for (const style of ["pill", "rounded", "icon", "text", "tab"]) {
+    launcher = { style, icon: "star", label: "Share an idea", colors: { light: { background: "#123456", text: "#ffffff" } } };
+    await page.reload();
+    await expect(trigger).toHaveClass(new RegExp(`uf-trigger-${style}`));
+    await expect(trigger.locator("svg")).toHaveCount(style === "text" ? 0 : 1);
+    await expect(trigger.locator("span")).toHaveCount(style === "icon" ? 0 : 1);
+    assert.equal(await trigger.evaluate(el => getComputedStyle(el).backgroundColor), "rgb(18, 52, 86)");
+    assert.equal(await trigger.evaluate(el => getComputedStyle(el).color), "rgb(255, 255, 255)");
+    await trigger.click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await page.getByRole("dialog").waitFor({ state: "detached" });
+    await expect(trigger).toBeFocused();
+  }
+  const start = await trigger.boundingBox();
+  await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(start.x + start.width / 2 - 20, start.y + start.height / 2 - 30, { steps: 8 });
+  const zone = page.getByRole("region", { name: "Drop here to remove feedback" });
+  await zone.waitFor();
+  const drop = await zone.boundingBox();
+  assert.ok(drop.height >= 100);
+  assert.ok(Number(await trigger.evaluate(el => getComputedStyle(el.closest(".uf-position")).zIndex)) > Number(await zone.evaluate(el => getComputedStyle(el.closest(".uf-delete-dock")).zIndex)));
+  await page.mouse.move(drop.x + drop.width / 2, drop.y + drop.height / 2, { steps: 12 });
+  await page.mouse.up();
+  await expect(trigger).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Undo", exact: true })).toHaveCount(0);
+  await Promise.all([page.waitForResponse(response => response.url().includes("/api/widget/test-project")), page.reload()]);
+  await expect(widget).toHaveCount(0);
+  await expect(trigger).toHaveCount(0);
+  assert.equal(await page.evaluate(() => localStorage.getItem("unified-feedback:dismissed:https://feedback.test:test-project")), "1");
   assert.deepEqual(errors, []);
-  console.log(`Packed SDK installed with its CLI, built and passed validation, retry, theme switching, Shadow DOM isolation, hide/undo and drag-to-trash checks (React ${process.env.CONSUMER_REACT_VERSION || "19.1.0"}).`);
+  console.log(`Packed SDK installed with its CLI, built and passed validation, retry, theme switching, Shadow DOM isolation, persistent drag-to-delete checks (React ${process.env.CONSUMER_REACT_VERSION || "19.1.0"}).`);
 } finally {
   await browser?.close();
   server?.kill();

@@ -3,6 +3,7 @@ export interface UnifiedFeedbackProps {
   projectId: string;
   /** API origin for your Unified backend. Required outside local development. */
   apiUrl?: string;
+  triggerStyle?: "pill" | "rounded" | "icon" | "text" | "tab";
   position?: "bottom-left" | "bottom-right";
   /** Auto follows the host app and OS. Project uses the saved project mode. */
   theme?: "auto" | "project" | "light" | "dark";

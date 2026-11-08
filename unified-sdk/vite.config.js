@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   css: { postcss: { plugins: [scopeStyles()] } },
   resolve: {
-    dedupe: ["react", "react-dom", "motion", "clsx", "tailwind-merge"],
+    dedupe: ["react", "react-dom", "motion", "clsx", "tailwind-merge", "@hugeicons/react", "@hugeicons/core-free-icons"],
   },
   build: {
     lib: {

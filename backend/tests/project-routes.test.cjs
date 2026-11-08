@@ -225,3 +225,28 @@ test("owner feedback passes the verified owner filter to the shared store", asyn
     assert.equal(res.statusCode, status);
   }
 });
+
+test("saved launcher configuration reaches the public widget endpoint", async () => {
+  const appearance = { preset: "unified", colors: {}, launcher: { style: "rounded", icon: "mail", label: "Talk to us", colors: { light: { background: "#123456", text: "#ffffff" } } } };
+  let stored;
+  const projectRoutes = loadRoutes("projects.js", {
+    "../models/Project": { findOneAndUpdate: async (filter, update) => {
+      assert.equal(filter.userId, "owner");
+      stored = { ...update, userId: "owner" };
+      return stored;
+    } },
+  });
+  const saved = response();
+  await projectRoutes.get("put /:id")({ user: { id: "owner" }, params: { id: "507f1f77bcf86cd799439011" }, body: { name: "Demo", fields: [{ type: "text", label: "Feedback" }], appearance } }, saved);
+  assert.equal(saved.statusCode, 200);
+  assert.deepEqual(stored.appearance, appearance);
+  const widgetRoutes = loadRoutes("widget.js", {
+    "../models/Project": { findOne: () => ({ select: () => ({ lean: async () => stored }) }) },
+    "../models/User": { exists: async () => true },
+  });
+  const publicForm = response();
+  await widgetRoutes.get("get /:projectId")({ params: { projectId: "507f1f77bcf86cd799439011" } }, publicForm);
+  assert.equal(publicForm.statusCode, 200);
+  assert.deepEqual(publicForm.data.appearance, appearance);
+  assert.equal(publicForm.data.userId, undefined);
+});
