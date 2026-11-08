@@ -87,6 +87,7 @@ function WorkspaceNavigation() {
 export default function DashboardLayout({ children }) {
   const reducedMotion = useReducedMotion();
   const [background] = useWorkspaceBackground();
+  const Background = background === "glyph" ? GlyphBackground : "div";
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -153,78 +154,75 @@ export default function DashboardLayout({ children }) {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className="relative isolate min-w-0">
-        {background === "glyph" && (
-          <GlyphBackground
-            aria-hidden="true"
-            interactive={false}
-            fontSize={12}
-            className="pointer-events-none text-fluid-accent opacity-90 saturate-125 dark:opacity-75"
-            style={{ position: "absolute", inset: 0, zIndex: -1 }}
-          />
-        )}
-        {background === "cursor" && reducedMotion === false && (
-          <PixelTrail
-            gridSize={80}
-            trailSize={0.05}
-            maxAge={400}
-            interpolate={3}
-            color="var(--fluid-accent)"
-            gooeyFilter={false}
-            gap={0.15}
-            shine={0.25}
-            glow={0.12}
-            dpr={1}
-            className="opacity-45 saturate-125 dark:opacity-40"
-            style={{ position: "absolute", inset: 0, zIndex: -1 }}
-          />
-        )}
-        <SidebarInsetTopbar className="sticky top-0 z-20 h-16 border-b border-border bg-background/95 px-5 backdrop-blur-xl sm:px-8">
-          <div className="flex w-full items-center gap-2 px-0">
-            <nav aria-label="Breadcrumb" className="min-w-0">
-              <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
-                <li>
-                  <Link
-                    to="/dashboard"
-                    className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-                  >
-                    Workspace
-                  </Link>
-                </li>
-                <li aria-hidden="true" className="text-muted-foreground/60">
-                  /
-                </li>
-                {pathname.startsWith("/project/") && (
-                  <>
-                    <li>
-                      <Link
-                        to="/dashboard"
-                        className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-                      >
-                        Projects
-                      </Link>
-                    </li>
-                    <li aria-hidden="true" className="text-muted-foreground/60">
-                      /
-                    </li>
-                  </>
-                )}
-                <li aria-current="page" className="text-foreground">
-                  {pathname.startsWith("/project/") ? "Responses" : title}
-                </li>
-              </ol>
-            </nav>
-            <div className="ml-auto">
-              <ThemeToggle />
-            </div>
-          </div>
-        </SidebarInsetTopbar>
-        <div
-          id="workspace-content"
-          tabIndex={-1}
-          className={`w-full px-5 py-7 outline-none sm:px-8 sm:py-8 lg:py-10 ${bounded ? "flex h-[calc(100dvh-4rem)] min-h-0 flex-col gap-7 overflow-hidden" : "space-y-7"}`}
+        <Background
+          className="relative isolate flex min-h-0 w-full flex-1 flex-col [&>canvas]:-z-10 [&>canvas]:opacity-90 [&>canvas]:saturate-125 dark:[&>canvas]:opacity-75"
+          style={{ overflow: "visible" }}
+          {...(background === "glyph" ? { fontSize: 12, glowColor: "#7C99D7", shapeColor: "#7C99D7" } : {})}
         >
-          {children}
-        </div>
+          {background === "cursor" && reducedMotion === false && (
+            <PixelTrail
+              gridSize={80}
+              trailSize={0.05}
+              maxAge={400}
+              interpolate={3}
+              color="var(--fluid-accent)"
+              gooeyFilter={false}
+              gap={0.15}
+              shine={0.25}
+              glow={0.12}
+              dpr={1}
+              className="opacity-45 saturate-125 dark:opacity-40"
+              style={{ position: "absolute", inset: 0, zIndex: -1 }}
+            />
+          )}
+          <SidebarInsetTopbar className="sticky top-0 z-20 h-16 border-b border-border bg-background/95 px-5 backdrop-blur-xl sm:px-8">
+            <div className="flex w-full items-center gap-2 px-0">
+              <nav aria-label="Breadcrumb" className="min-w-0">
+                <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                  <li>
+                    <Link
+                      to="/dashboard"
+                      className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                    >
+                      Workspace
+                    </Link>
+                  </li>
+                  <li aria-hidden="true" className="text-muted-foreground/60">
+                    /
+                  </li>
+                  {pathname.startsWith("/project/") && (
+                    <>
+                      <li>
+                        <Link
+                          to="/dashboard"
+                          className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                        >
+                          Projects
+                        </Link>
+                      </li>
+                      <li aria-hidden="true" className="text-muted-foreground/60">
+                        /
+                      </li>
+                    </>
+                  )}
+                  <li aria-current="page" className="text-foreground">
+                    {pathname.startsWith("/project/") ? "Responses" : title}
+                  </li>
+                </ol>
+              </nav>
+              <div className="ml-auto">
+                <ThemeToggle />
+              </div>
+            </div>
+          </SidebarInsetTopbar>
+          <div
+            id="workspace-content"
+            tabIndex={-1}
+            className={`w-full px-5 py-7 outline-none sm:px-8 sm:py-8 lg:py-10 ${bounded ? "flex h-[calc(100dvh-4rem)] min-h-0 flex-col gap-7 overflow-hidden" : "space-y-7"}`}
+          >
+            {children}
+          </div>
+        </Background>
       </SidebarInset>
     </SidebarProvider>
   );
