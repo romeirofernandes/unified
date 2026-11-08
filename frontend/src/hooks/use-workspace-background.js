@@ -9,7 +9,7 @@ export function useWorkspaceBackground() {
   const background = useSyncExternalStore(
     subscribeWorkspaceBackground,
     getWorkspaceBackground,
-    () => "cursor",
+    () => "glyph",
   );
   return [background, setWorkspaceBackground];
 }

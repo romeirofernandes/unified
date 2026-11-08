@@ -16,7 +16,7 @@ test("background selection persists, rejects invalid values, and synchronizes su
     },
   });
   try {
-    assert.equal(getWorkspaceBackground(), "cursor");
+    assert.equal(getWorkspaceBackground(), "glyph");
     let updates = 0;
     const unsubscribe = subscribeWorkspaceBackground(() => updates++);
     for (const value of ["glyph", "plain", "cursor"]) {
@@ -27,14 +27,14 @@ test("background selection persists, rejects invalid values, and synchronizes su
     setWorkspaceBackground("invalid");
     assert.equal(updates, 3);
     storage.set("unified:workspace-background", "invalid");
-    assert.equal(getWorkspaceBackground(), "cursor");
+    assert.equal(getWorkspaceBackground(), "glyph");
     storage.set("unified:workspace-background", "glyph");
     target.dispatchEvent(Object.assign(new Event("storage"), { key: "unified:workspace-background" }));
     assert.equal(updates, 4);
     assert.equal(getWorkspaceBackground(), "glyph");
     storage.clear();
     target.dispatchEvent(Object.assign(new Event("storage"), { key: null }));
-    assert.equal(getWorkspaceBackground(), "cursor");
+    assert.equal(getWorkspaceBackground(), "glyph");
     target.localStorage = {
       getItem: () => { throw new Error("blocked"); },
       setItem: () => { throw new Error("blocked"); },

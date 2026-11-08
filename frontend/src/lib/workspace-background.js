@@ -6,7 +6,7 @@ export const backgroundOptions = [
 
 const storageKey = "unified:workspace-background";
 const changeEvent = "workspace-background-change";
-let current = "cursor";
+let current = "glyph";
 
 function valid(value) {
   return backgroundOptions.some((option) => option.value === value);
@@ -15,7 +15,7 @@ function valid(value) {
 export function getWorkspaceBackground() {
   try {
     const saved = window.localStorage.getItem(storageKey);
-    if (saved !== null) return valid(saved) ? saved : "cursor";
+    if (saved !== null) return valid(saved) ? saved : "glyph";
   } catch {
     // Keep the preference usable when browser storage is unavailable.
   }
@@ -36,7 +36,7 @@ export function setWorkspaceBackground(value) {
 export function subscribeWorkspaceBackground(listener) {
   const onStorage = (event) => {
     if (event.key === storageKey || event.key === null) {
-      current = "cursor";
+      current = "glyph";
       listener();
     }
   };
