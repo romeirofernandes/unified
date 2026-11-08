@@ -69,12 +69,13 @@ export default function FeedbackShell({ open, onOpen, onClose, onCloseComplete, 
             setDragging(false); setOverTrash(false);
           }}
           className={`uf-morph-surface ${open ? "uf-panel" : "uf-launcher-surface"}`}
-          animate={{ borderRadius: open ? 20 : ["rounded", "tab"].includes(launcher.style) ? 14 : 40 }}
+          animate={{ borderRadius: open ? 20 : ["rounded", "tab"].includes(launcher.style) ? 14 : 40, backgroundColor: open ? "var(--uf-background)" : "var(--uf-launcher-bg, var(--uf-accent))" }}
           transition={transitions.surface}
           style={{ transformOrigin: left ? "bottom left" : "bottom right", x: dragX, y: dragY }}>
-          <AnimatePresence initial={false} mode="popLayout">
+          {/* Exit-positioning rules must live inside the widget’s Shadow DOM. */}
+          <AnimatePresence initial={false} mode="popLayout" root={root.current?.getRootNode()}>
             {open ? <Motion.div key="panel" id={panelId} role="dialog" aria-label="Feedback form" aria-busy={pending || undefined}
-              style={{ transformOrigin: left ? "bottom left" : "bottom right" }}
+              style={{ transformOrigin: left ? "bottom left" : "bottom right", color: "var(--uf-text)" }}
               initial={reduced ? { opacity: 0 } : { opacity: 0, x: contentOffset, scale: 0.97, filter: "blur(2px)" }}
               animate={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
               exit={{ opacity: 0, transition: morphTransitions(false, reduced).content }}
@@ -89,7 +90,7 @@ export default function FeedbackShell({ open, onOpen, onClose, onCloseComplete, 
                 <button data-success-close type="button" onClick={onClose} className="uf-button uf-button-primary">Done</button>
                 </div> : children}
               </Motion.div>
-            </Motion.div> : <Motion.div key="trigger" className="uf-drag-handle" style={{ touchAction: "none" }}
+            </Motion.div> : <Motion.div key="trigger" layout="position" className="uf-drag-handle" style={{ touchAction: "none" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
             exit={{ ...(reduced ? { opacity: 0 } : { opacity: 0, x: -contentOffset, filter: "blur(2px)" }), transition: morphTransitions(true, reduced).content }}

@@ -47,6 +47,8 @@
 
 .uf-drag-handle { width: fit-content; }
 .uf-trigger { display: inline-flex; align-items: center; justify-content: center; gap: 10px; box-sizing: border-box; min-width: 48px; height: 48px; border: 1px solid rgb(0 0 0 / .06); border-radius: 999px; padding: 0 20px; background: var(--uf-launcher-bg, var(--uf-accent)); color: var(--uf-launcher-text, var(--uf-accentText)); font: 550 13px/1 var(--uf-font, Inter, system-ui, sans-serif); letter-spacing: -.01em; box-shadow: 0 2px 4px rgb(0 0 0 / .04), 0 6px 18px -4px rgb(0 0 0 / .18), inset 0 1px 0 rgb(255 255 255 / .12); cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+/* The morphing surface owns its paint; avoid a second accent patch underneath. */
+.uf-morph-surface .uf-trigger { background: transparent; box-shadow: none; }
 .uf-trigger > svg { flex: none; }
 .uf-trigger-rounded, .uf-trigger-tab { border-radius: 14px; }
 .uf-trigger-icon { width: 48px; padding: 0; }

@@ -89,7 +89,25 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
   await page.addStyleTag({ content: "body button { padding: 70px !important; background: magenta !important; font-size: 40px !important; } body input { height: 200px !important; font-size: 40px !important; }" });
   assert.equal(await page.getByRole("textbox", { name: "Your email" }).evaluate(el => getComputedStyle(el).height), "44px", "Host CSS cannot change widget geometry");
   assert.equal(await page.getByRole("textbox", { name: "Your email" }).evaluate(el => getComputedStyle(el).fontSize), "14px");
-  await page.keyboard.press("Escape");
+  const closeFrames = await page.locator(".uf-morph-surface").evaluate(async (shell) => {
+    const root = shell.getRootNode();
+    const start = shell.getBoundingClientRect();
+    const frames = [];
+    root.querySelector('[aria-label="Close feedback"]').click();
+    await new Promise(done => {
+      function frame() {
+        const bounds = shell.getBoundingClientRect();
+        const panel = root.querySelector('[role="dialog"]');
+        frames.push({ width: bounds.width, height: bounds.height, background: getComputedStyle(shell).backgroundColor, position: panel ? getComputedStyle(panel).position : null });
+        if (frames.length < 3) requestAnimationFrame(frame); else done();
+      }
+      requestAnimationFrame(frame);
+    });
+    return { startHeight: start.height, startWidth: start.width, frames };
+  });
+  assert.equal(closeFrames.frames[0].position, "absolute", "Exiting panel must leave layout inside the widget Shadow DOM");
+  assert.ok(closeFrames.frames.every(frame => frame.height <= closeFrames.startHeight + 1), "Closing must not grow before snapping to the launcher");
+  if (process.env.CONSUMER_MOTION === "no-preference") assert.notEqual(closeFrames.frames[0].background, "rgb(18, 52, 86)", "Panel must not flash the full launcher color in the first closing frame");
   await page.getByRole("dialog").waitFor({ state: "detached" });
   await expect(page.getByRole("button", { name: "Hide feedback widget" })).toHaveCount(0);
   const trigger = page.getByRole("button", { name: "Open feedback form" });
@@ -157,7 +175,8 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
     await expect(trigger).toHaveClass(new RegExp(`uf-trigger-${style}`));
     await expect(trigger.locator("svg")).toHaveCount(style === "text" ? 0 : 1);
     await expect(trigger.locator(".uf-launcher-content > span")).toHaveCount(style === "icon" ? 0 : 1);
-    assert.equal(await trigger.evaluate(el => getComputedStyle(el).backgroundColor), "rgb(18, 52, 86)");
+    assert.equal(await trigger.evaluate(el => getComputedStyle(el.closest(".uf-morph-surface")).backgroundColor), "rgb(18, 52, 86)");
+    await expect(trigger).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
     assert.equal(await trigger.evaluate(el => getComputedStyle(el).color), "rgb(255, 255, 255)");
     await trigger.click();
     await expect(page.getByRole("dialog")).toBeVisible();
