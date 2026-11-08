@@ -8,6 +8,7 @@ export function morphTransitions(open, reduced) {
     surface: { duration: 0 },
     content: { opacity: { duration: 0.18 } },
     trigger: { opacity: { duration: 0.18 } },
+    paint: { duration: 0.18 },
   };
   const content = {
     x: { duration: open ? 0.4 : 0.2, ease: contentEase },
@@ -20,9 +21,9 @@ export function morphTransitions(open, reduced) {
     surface: {
       layout: { duration: open ? 0.4 : 0.28, ease: open ? surfaceEase : contentEase },
       borderRadius: { duration: open ? 0.4 : 0.28, ease: open ? surfaceEase : contentEase },
-      backgroundColor: open ? { duration: 0, delay: 0 } : { duration: 0.12, delay: 0.28, ease: contentEase },
     },
     content,
-    trigger: open ? content : { opacity: { duration: 0.12, delay: 0.28, ease: contentEase } },
+    paint: open ? { duration: 0 } : { duration: 0.12, delay: 0.08, ease: contentEase },
+    trigger: open ? content : { opacity: { duration: 0.12, delay: 0.08, ease: contentEase } },
   };
 }

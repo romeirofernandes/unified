@@ -100,7 +100,10 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
       function frame() {
         const bounds = shell.getBoundingClientRect();
         const panel = root.querySelector('[role="dialog"]');
-        frames.push({ ms: performance.now() - began, width: bounds.width, height: bounds.height, background: getComputedStyle(shell).backgroundColor, position: panel ? getComputedStyle(panel).position : null });
+        const paint = root.querySelector(".uf-surface-paint");
+        const trigger = root.querySelector(".uf-drag-handle");
+        const button = root.querySelector(".uf-trigger");
+        frames.push({ paintOpacity: paint ? Number(getComputedStyle(paint).opacity) : 0, triggerOpacity: trigger ? Number(getComputedStyle(trigger).opacity) : 0, buttonBackground: button ? getComputedStyle(button).backgroundColor : null, buttonHeight: button?.offsetHeight, ms: performance.now() - began, width: bounds.width, height: bounds.height, background: getComputedStyle(shell).backgroundColor, position: panel ? getComputedStyle(panel).position : null });
         if (performance.now() - began < 440) requestAnimationFrame(frame); else done();
       }
       requestAnimationFrame(frame);
@@ -110,11 +113,10 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
   assert.ok(closeFrames.frames.some(frame => frame.position === "absolute"), "Exiting panel must leave layout inside the widget Shadow DOM");
   assert.ok(closeFrames.frames.every(frame => frame.height <= closeFrames.startHeight + 1), "Closing must not grow before snapping to the launcher");
   if (process.env.CONSUMER_MOTION === "no-preference") {
-    const movingFrames = closeFrames.frames.filter(frame => frame.ms < 260);
-    assert.ok(movingFrames.length >= 2);
-    assert.ok(movingFrames.every(frame => frame.background === closeFrames.background), "The shell must stay neutral throughout the contraction");
-    assert.ok(closeFrames.frames.some(frame => frame.ms > 280 && frame.background !== closeFrames.background && frame.background !== "rgb(18, 52, 86)"), "Button color must fade back after the contraction rather than snap");
-    assert.equal(closeFrames.frames.at(-1).background, "rgb(18, 52, 86)");
+    assert.ok(closeFrames.frames.every(frame => frame.background === "rgba(0, 0, 0, 0)"), "Only the button-sized launcher may paint accent");
+    const buttonSizedFrames = closeFrames.frames.filter(frame => frame.height <= frame.buttonHeight + 3);
+    assert.ok(buttonSizedFrames.length >= 2);
+    assert.ok(buttonSizedFrames.every(frame => frame.triggerOpacity > 0.9 && frame.paintOpacity < 0.1 && frame.buttonBackground === "rgb(18, 52, 86)"), "There must never be an empty neutral pill once the shell reaches button size");
   }
   await page.getByRole("dialog").waitFor({ state: "detached" });
   await expect(page.getByRole("button", { name: "Hide feedback widget" })).toHaveCount(0);
@@ -183,8 +185,7 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
     await expect(trigger).toHaveClass(new RegExp(`uf-trigger-${style}`));
     await expect(trigger.locator("svg")).toHaveCount(style === "text" ? 0 : 1);
     await expect(trigger.locator(".uf-launcher-content > span")).toHaveCount(style === "icon" ? 0 : 1);
-    assert.equal(await trigger.evaluate(el => getComputedStyle(el.closest(".uf-morph-surface")).backgroundColor), "rgb(18, 52, 86)");
-    await expect(trigger).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    assert.equal(await trigger.evaluate(el => getComputedStyle(el).backgroundColor), "rgb(18, 52, 86)");
     assert.equal(await trigger.evaluate(el => getComputedStyle(el).color), "rgb(255, 255, 255)");
     await trigger.click();
     await expect(page.getByRole("dialog")).toBeVisible();

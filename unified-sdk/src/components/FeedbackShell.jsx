@@ -70,9 +70,11 @@ export default function FeedbackShell({ open, onOpen, onClose, onCloseComplete, 
             setDragging(false); setOverTrash(false);
           }}
           className={`uf-morph-surface ${open ? "uf-panel" : "uf-launcher-surface"}`}
-          animate={{ borderRadius: open ? 20 : ["rounded", "tab"].includes(launcher.style) ? 14 : 40, backgroundColor: open ? "var(--uf-background)" : "var(--uf-launcher-bg, var(--uf-accent))" }}
+          animate={{ borderRadius: open ? 20 : ["rounded", "tab"].includes(launcher.style) ? 14 : 40 }}
           transition={transitions.surface}
-          style={{ transformOrigin: left ? "bottom left" : "bottom right", x: dragX, y: dragY }}>
+          style={{ backgroundColor: "transparent", transformOrigin: left ? "bottom left" : "bottom right", x: dragX, y: dragY }}>
+          <Motion.div className="uf-surface-paint" aria-hidden="true" initial={false}
+            animate={{ opacity: open ? 1 : 0 }} transition={transitions.paint} />
           {/* Exit-positioning rules must live inside the widget’s Shadow DOM. */}
           <AnimatePresence initial={false} mode="popLayout" root={root.current?.getRootNode()}>
             {open ? <Motion.div key="panel" id={panelId} role="dialog" aria-label="Feedback form" aria-busy={pending || undefined}
@@ -91,7 +93,7 @@ export default function FeedbackShell({ open, onOpen, onClose, onCloseComplete, 
                 <button data-success-close type="button" onClick={onClose} className="uf-button uf-button-primary">Done</button>
                 </div> : children}
               </Motion.div>
-            </Motion.div> : <Motion.div key="trigger" layout="position" className="uf-drag-handle" style={{ touchAction: "none" }}
+            </Motion.div> : <Motion.div key="trigger" layout="position" className="uf-drag-handle" style={{ touchAction: "none", transformOrigin: left ? "bottom left" : "bottom right" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
             exit={{ ...(reduced ? { opacity: 0 } : { opacity: 0, x: -contentOffset, filter: "blur(2px)" }), transition: morphTransitions(true, reduced).content }}
