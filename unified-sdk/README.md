@@ -12,14 +12,14 @@ A beautiful and customizable feedback component for React applications. Collect,
 - 💫 Smooth animations
 - 🎭 Elegant UI components
 
-## automatic setup (2.2.1)
+## automatic setup (2.3.0)
 
-this CLI is included in this branch but 2.2.1 must be published to npm before the command below works publicly.
+install the SDK and add the feedback widget from your frontend directory.
 
 from your Vite or Next.js frontend directory:
 
 ```bash
-npx unified-sdk@2.2.1 init --project YOUR_PROJECT_ID --api-url https://YOUR_BACKEND_HOST
+npx unified-sdk@2.3.0 init --project YOUR_PROJECT_ID --api-url https://YOUR_BACKEND_HOST
 ```
 
 get project ID from your project's **Preview & code** panel. omit the flags to enter them interactively. the project ID is public widget configuration, not an owner authentication credential.
@@ -30,14 +30,14 @@ setup checks package.json, React, and the app entry before it changes anything. 
 - `--api-url URL` selects your deployed Unified backend (default: localhost:8000).
 - `--cwd ./frontend` selects an app in a monorepo.
 - `--entry src/main.tsx` selects a custom entry.
-- `--trigger-style icon` selects the launcher: `pill` (default), `icon`, `text`, or `tab`.
+- `--trigger-style icon` selects the launcher: `pill` (default), `rounded`, `icon`, `text`, or `tab`.
 - `--theme light` or `--theme dark` overrides the saved project mode.
 - `--skip-install` writes the integration but leaves installation to you.
 - `--package-manager pnpm` overrides package manager detection.
 
 running it again does not add a second widget. existing manual mounts and unmanaged files are left alone with an explanation. if installation fails, setup restores the files and lockfile it changed.
 
-### try the unreleased CLI locally
+### try the CLI locally
 
 build and pack this SDK first:
 
@@ -50,7 +50,7 @@ npm pack
 then run it against your frontend (use absolute paths):
 
 ```bash
-npm install /path/to/unified-sdk/unified-sdk-2.2.1.tgz
+npm install /path/to/unified-sdk/unified-sdk-2.3.0.tgz
 npx unified-sdk init --project YOUR_PROJECT_ID --dry-run
 npx unified-sdk init --project YOUR_PROJECT_ID --api-url https://YOUR_BACKEND_HOST
 ```
