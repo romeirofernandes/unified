@@ -1,3 +1,4 @@
+import { RadioGroup, RadioGroupItem } from "../../../shared/controls/radio";
 import { RangeField } from "../../../shared/controls/range-field";
 import { DateInput } from "../../../shared/controls/date-input";
 import { answerPlaceholder } from "../../../shared/form-fields.mjs";
@@ -35,27 +36,15 @@ const Field = memo(({ field, value, onChange, idPrefix = "uf" }) => {
       );
     case "mcq":
       return (
-        <div
-          role="radiogroup"
+        <RadioGroup
+          value={value ?? ""}
+          onValueChange={(next) => onChange(field._id, next)}
           aria-labelledby={`${idPrefix}-label-${field._id}`}
-          className="uf-choices"
         >
           {field.options?.map((option, idx) => (
-            <label key={idx} className="uf-choice" data-selected={value === option.value || undefined}>
-              <input
-                type="radio"
-                name={`${idPrefix}-${field._id}`}
-                value={option.value}
-                checked={value === option.value}
-                onChange={(e) => onChange(field._id, e.target.value)}
-                required={field.required}
-          maxLength={12000}
-                className="uf-radio"
-              />
-              <span>{option.label}</span>
-            </label>
+            <RadioGroupItem key={option._id || idx} value={option.value} label={option.label} />
           ))}
-        </div>
+        </RadioGroup>
       );
     case "date":
       return (
@@ -63,7 +52,6 @@ const Field = memo(({ field, value, onChange, idPrefix = "uf" }) => {
           id={`${idPrefix}-field-${field._id}`}
           label={field.label}
           required={field.required}
-          maxLength={12000}
           value={value ?? ""}
           onValueChange={(next) => onChange(field._id, next)}
         />

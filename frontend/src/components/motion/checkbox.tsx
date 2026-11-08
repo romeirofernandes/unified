@@ -3,11 +3,10 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useId } from "react";
-import { EASE_OUT, SPRING_PRESS } from "@/lib/ease";
+import Checkmark from "../../../../shared/controls/checkmark";
+import { SPRING_PRESS } from "@/lib/ease";
 import { cn } from "@/lib/utils";
 
-const CHECK_PATH = "M5 13l4 4L19 7";
-const INDETERMINATE_PATH = "M6 12h12";
 
 export interface CheckboxProps {
   checked: boolean;
@@ -40,7 +39,6 @@ export function Checkbox({
   const id = idProp ?? autoId;
   const reduce = useReducedMotion();
   const showMark = checked || indeterminate;
-  const path = indeterminate ? INDETERMINATE_PATH : CHECK_PATH;
   const descriptionId = description ? `${id}-description` : undefined;
   // The wrapping <label> would fold the description into the name, so name from the label text alone.
   const labelId = description && label && !ariaLabel ? `${id}-label` : undefined;
@@ -83,44 +81,7 @@ export function Checkbox({
       >
         <AnimatePresence initial={false}>
           {showMark ? (
-            <motion.svg
-              key={indeterminate ? "indeterminate" : "checked"}
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={3}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              initial={reduce ? { opacity: 1 } : { opacity: 0, scale: 0.5 }}
-              animate={reduce ? { opacity: 1 } : { opacity: 1, scale: 1 }}
-              exit={
-                reduce
-                  ? { opacity: 0 }
-                  : { opacity: 0, scale: 0.5, filter: "blur(4px)" }
-              }
-              transition={
-                reduce ? { duration: 0 } : { duration: 0.16, ease: EASE_OUT }
-              }
-              aria-hidden
-            >
-              <title>{indeterminate ? "Partially selected" : "Selected"}</title>
-              <motion.path
-                d={path}
-                initial={reduce ? { pathLength: 1 } : { pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={
-                  reduce
-                    ? { duration: 0 }
-                    : {
-                        duration: indeterminate ? 0.2 : 0.3,
-                        ease: EASE_OUT,
-                        delay: 0.04,
-                      }
-                }
-              />
-            </motion.svg>
+            <Checkmark key={indeterminate ? "indeterminate" : "checked"} indeterminate={indeterminate} />
           ) : null}
         </AnimatePresence>
       </motion.button>

@@ -20,6 +20,11 @@ const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose, formData, t
       form.current.getRootNode().getElementById(`${instanceId}-field-${current._id}`)?.focus();
       return;
     }
+    if (current.type === "mcq" && current.required && !current.options?.some(option => option.value === answers[current._id])) {
+      setFieldError("Choose an option to continue.");
+      form.current.querySelector('[role="radio"]')?.focus();
+      return;
+    }
     setFieldError("");
     if (currentStep === total - 1) onSubmit(event);
     else setCurrentStep(value => value + 1);
