@@ -75,3 +75,7 @@
 @keyframes uf-spin { to { transform: rotate(360deg); } }
 
 .unified-feedback-root.uf-theme-swap *, .unified-feedback-root.uf-theme-swap *::before, .unified-feedback-root.uf-theme-swap *::after { transition: none !important; }
+
+.uf-fragment { position: fixed; z-index: 2147483004; overflow: hidden; pointer-events: none; }
+.uf-fragment-face { position: absolute; max-width: none; box-shadow: none; pointer-events: none; }
+.uf-dust-fallback { position: fixed; z-index: 2147483004; pointer-events: none; }

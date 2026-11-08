@@ -1,27 +1,23 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { morphTransitions, reverseEase, surfaceEase, contentEase, morphDuration } from "../src/components/feedback-motion.mjs";
+import { morphTransitions, contentEase } from "../src/components/feedback-motion.mjs";
 
-test("opening matches beUI and closing reflects every track on the same timeline", () => {
+test("opening keeps the beUI morph while closing settles without a reversed overshoot", () => {
   const opening = morphTransitions(true, false);
   const closing = morphTransitions(false, false);
-  assert.equal(morphDuration, 0.4);
   assert.deepEqual(opening.surface.layout, { duration: 0.4, ease: [0.34, 1.25, 0.64, 1] });
-  assert.deepEqual(opening.content.x, { duration: 0.4, ease: [0.22, 1, 0.36, 1] });
-  for (const key of ["layout", "borderRadius"]) {
-    assert.equal(closing.surface[key].duration, opening.surface[key].duration);
-    assert.deepEqual(closing.surface[key].ease, reverseEase(surfaceEase));
-  }
-  for (const key of ["x", "scale", "rotate", "opacity", "filter"]) {
-    assert.equal(closing.content[key].duration, opening.content[key].duration);
-    assert.deepEqual(closing.content[key].ease, reverseEase(contentEase));
-    assert.ok(Math.abs((closing.content[key].delay || 0) - (0.4 - opening.content[key].duration)) < 1e-9);
-  }
+  assert.deepEqual(opening.content.x, { duration: 0.4, ease: contentEase });
+  assert.deepEqual(closing.surface.layout, { duration: 0.28, ease: contentEase });
+  assert.equal(closing.content.opacity.duration, 0.12);
+  assert.equal(closing.content.opacity.delay, undefined);
+  assert.equal(closing.trigger.opacity.delay, 0.1);
+  assert.ok(closing.trigger.opacity.delay + closing.trigger.opacity.duration <= closing.surface.layout.duration + 1e-9);
+  assert.deepEqual(Object.keys(closing.trigger), ["opacity"]);
 });
 
-test("reduced motion keeps only a fade", () => {
-  const { surface, content } = morphTransitions(true, true);
+test("reduced motion keeps only fades", () => {
+  const { surface, content, trigger } = morphTransitions(false, true);
   assert.equal(surface.duration, 0);
   assert.deepEqual(Object.keys(content), ["opacity"]);
-  assert.deepEqual(morphTransitions(false, true), morphTransitions(true, true));
+  assert.deepEqual(Object.keys(trigger), ["opacity"]);
 });

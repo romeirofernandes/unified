@@ -6,6 +6,7 @@ import { Delete02Icon } from "@hugeicons/core-free-icons";
 import Checkmark from "../../../shared/controls/checkmark";
 import FeedbackLauncher from "../../../shared/FeedbackLauncher";
 import WidgetPortal from "./WidgetPortal";
+import Disintegrate from "./Disintegrate";
 import { morphTransitions } from "./feedback-motion.mjs";
 
 const spring = { type: "spring", stiffness: 420, damping: 36, mass: 0.8 };
@@ -14,11 +15,13 @@ export default function FeedbackShell({ open, onOpen, onClose, onCloseComplete, 
   const dragX = useMotionValue(0), dragY = useMotionValue(0);
   const root = useRef(null), trigger = useRef(null), trash = useRef(null);
   const dragged = useRef(false);
+  const wasOpen = useRef(open);
   const [dragging, setDragging] = useState(false);
   const [overTrash, setOverTrash] = useState(false);
   const [phase, setPhase] = useState(() => {
     try { return localStorage.getItem(storageKey) === "1" ? "dismissed" : "visible"; } catch { return "visible"; }
   });
+  const [destructionRect, setDestructionRect] = useState(null);
   const panelId = useId();
   const left = position === "bottom-left";
   const transitions = morphTransitions(open, reduced);
@@ -35,17 +38,30 @@ export default function FeedbackShell({ open, onOpen, onClose, onCloseComplete, 
     document.addEventListener("pointerdown", outside);
     return () => { document.removeEventListener("keydown", key); document.removeEventListener("pointerdown", outside); };
   }, [open, pending, onClose]);
+  useEffect(() => {
+    if (open) { wasOpen.current = true; return; }
+    if (!wasOpen.current) return;
+    const closing = morphTransitions(false, reduced);
+    // The content exits first; wait for the shell before restoring focus or unmounting.
+    const timer = setTimeout(() => {
+      wasOpen.current = false;
+      trigger.current?.focus({ preventScroll: true });
+      onCloseComplete?.();
+    }, (closing.surface.layout?.duration ?? closing.content.opacity.duration) * 1000);
+    return () => clearTimeout(timer);
+  }, [open, reduced, onCloseComplete]);
   if (phase === "dismissed") return null;
   return <WidgetPortal>
     <div className="unified-feedback-root" data-theme={theme} style={style}>
-      <div ref={root} className={`uf-position ${left ? "uf-position-left" : ""}`}>
+      {phase === "visible" && <div ref={root} className={`uf-position ${left ? "uf-position-left" : ""}`}>
         <Motion.div layout initial={false} drag={!open && !pending} dragMomentum={false}
           onDragStart={() => { dragged.current = true; setDragging(true); }}
           onDrag={(_, info) => setOverTrash(isOver(info.point))}
           onDragEnd={(_, info) => {
             if (isOver(info.point)) {
               try { localStorage.setItem(storageKey, "1"); } catch { /* Storage can be disabled. */ }
-              setPhase("dismissed");
+              setDestructionRect(trigger.current.getBoundingClientRect());
+              setPhase("disintegrating");
             } else {
               animate(dragX, 0, reduced ? { duration: 0 } : spring);
               animate(dragY, 0, reduced ? { duration: 0 } : spring);
@@ -56,12 +72,12 @@ export default function FeedbackShell({ open, onOpen, onClose, onCloseComplete, 
           animate={{ borderRadius: open ? 20 : ["rounded", "tab"].includes(launcher.style) ? 14 : 40 }}
           transition={transitions.surface}
           style={{ transformOrigin: left ? "bottom left" : "bottom right", x: dragX, y: dragY }}>
-          <AnimatePresence initial={false} mode="popLayout" onExitComplete={() => { if (!open) { trigger.current?.focus({ preventScroll: true }); onCloseComplete?.(); } }}>
+          <AnimatePresence initial={false} mode="popLayout">
             {open ? <Motion.div key="panel" id={panelId} role="dialog" aria-label="Feedback form" aria-busy={pending || undefined}
               style={{ transformOrigin: left ? "bottom left" : "bottom right" }}
               initial={reduced ? { opacity: 0 } : { opacity: 0, x: contentOffset, scale: 0.97, filter: "blur(2px)" }}
               animate={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
-              exit={{ ...(reduced ? { opacity: 0 } : { opacity: 0, x: contentOffset, scale: 0.97, filter: "blur(2px)" }), transition: morphTransitions(false, reduced).content }}
+              exit={{ opacity: 0, transition: morphTransitions(false, reduced).content }}
               transition={transitions.content}
               onAnimationComplete={() => {
                 if (open) root.current?.querySelector('input:not(:disabled), textarea:not(:disabled), [role="radio"], [role="slider"], [data-success-close]')?.focus({ preventScroll: true });
@@ -74,28 +90,29 @@ export default function FeedbackShell({ open, onOpen, onClose, onCloseComplete, 
                 </div> : children}
               </Motion.div>
             </Motion.div> : <Motion.div key="trigger" className="uf-drag-handle" style={{ touchAction: "none" }}
-            initial={reduced ? { opacity: 0 } : { opacity: 0, x: -contentOffset, filter: "blur(2px)" }}
+            initial={{ opacity: 0 }}
             animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
             exit={{ ...(reduced ? { opacity: 0 } : { opacity: 0, x: -contentOffset, filter: "blur(2px)" }), transition: morphTransitions(true, reduced).content }}
-            transition={transitions.content}>
+            transition={transitions.trigger}>
             <button ref={trigger} type="button" className={`uf-trigger uf-trigger-${launcher.style || "pill"}`} aria-label="Open feedback form" aria-haspopup="dialog" aria-controls={panelId} aria-expanded={open}
               onPointerDown={() => { dragged.current = false; }}
               onClick={() => { if (!dragged.current) { if (open) { if (!pending) onClose(); } else onOpen(); } }}>
-              <Motion.span className="uf-launcher-content" initial={reduced ? false : { rotate: 45, scale: 0.97 }}
-                animate={{ rotate: 0, scale: 1 }} exit={{ rotate: 45, scale: 0.97, transition: morphTransitions(true, reduced).content }} transition={transitions.content}>
+              <Motion.span className="uf-launcher-content" initial={false}
+                animate={{ rotate: 0, scale: 1 }} exit={{ rotate: 45, scale: 0.97, transition: morphTransitions(true, reduced).content }} transition={transitions.trigger}>
                 <FeedbackLauncher launcher={launcher} />
               </Motion.span>
             </button>
           </Motion.div>}
           </AnimatePresence>
         </Motion.div>
-      </div>
+      </div>}
       <AnimatePresence>{dragging && <Motion.div key="delete" className="uf-delete-dock" initial={{ opacity: 0, y: reduced ? 0 : 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: reduced ? 0 : 10 }} transition={reduced ? { duration: 0 } : spring}>
         <div ref={trash} className="uf-delete-zone" data-active={overTrash || undefined} role="region" aria-label="Drop here to remove feedback">
           <span className="uf-delete-icon"><HugeiconsIcon icon={Delete02Icon} size={20} aria-hidden="true" /></span>
           <span>{overTrash ? "Release to remove" : "Drop to remove"}</span>
         </div>
       </Motion.div>}</AnimatePresence>
+      {phase === "disintegrating" && <Disintegrate rect={destructionRect} reduced={reduced} launcher={launcher} onComplete={() => setPhase("dismissed")} />}
     </div>
   </WidgetPortal>;
 }

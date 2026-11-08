@@ -177,6 +177,16 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
   await page.mouse.move(drop.x + drop.width / 2, drop.y + drop.height / 2, { steps: 12 });
   await page.mouse.up();
   await expect(trigger).toHaveCount(0);
+  if (process.env.CONSUMER_MOTION === "no-preference") {
+    await expect(page.locator(".uf-fragment")).toHaveCount(48);
+    await expect(page.locator(".uf-fragment-face").first()).toHaveClass(/uf-trigger-tab/);
+    await expect(page.locator(".uf-fragment-face").first()).toContainText("Share an idea");
+    await expect(page.locator(".uf-fragment-face").first()).toHaveCSS("background-color", "rgb(18, 52, 86)");
+    if (process.env.CONSUMER_CAPTURE) await page.screenshot({ path: process.env.CONSUMER_CAPTURE.replace(/\.png$/, "-disintegrating.png") });
+  } else {
+    await expect(page.locator(".uf-fragment")).toHaveCount(0);
+  }
+  await expect(page.locator("[data-disintegrating], .uf-dust-fallback")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Undo", exact: true })).toHaveCount(0);
   await Promise.all([page.waitForResponse(response => response.url().includes("/api/widget/test-project")), page.reload()]);
   await expect(widget).toHaveCount(0);

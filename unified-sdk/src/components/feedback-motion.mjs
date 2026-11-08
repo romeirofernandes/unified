@@ -1,26 +1,27 @@
-// beUI Feedback Widget timings, with the closing timeline reflected exactly.
+// Opening follows beUI; closing clears the form before the surface contracts.
 export const morphDuration = 0.4;
 export const surfaceEase = [0.34, 1.25, 0.64, 1];
 export const contentEase = [0.22, 1, 0.36, 1];
-export const reverseEase = ([x1, y1, x2, y2]) => [1 - x2, 1 - y2, 1 - x1, 1 - y1];
 
 export function morphTransitions(open, reduced) {
   if (reduced) return {
     surface: { duration: 0 },
     content: { opacity: { duration: 0.18 } },
+    trigger: { opacity: { duration: 0.18 } },
   };
-  const easing = open ? contentEase : reverseEase(contentEase);
+  const content = {
+    x: { duration: open ? 0.4 : 0.2, ease: contentEase },
+    scale: { duration: open ? 0.4 : 0.2, ease: contentEase },
+    rotate: { duration: open ? 0.4 : 0.2, ease: contentEase },
+    opacity: { duration: open ? 0.22 : 0.12, ease: contentEase },
+    filter: { duration: open ? 0.22 : 0.12, ease: contentEase },
+  };
   return {
     surface: {
-      layout: { duration: morphDuration, ease: open ? surfaceEase : reverseEase(surfaceEase) },
-      borderRadius: { duration: morphDuration, ease: open ? surfaceEase : reverseEase(surfaceEase) },
+      layout: { duration: open ? 0.4 : 0.28, ease: open ? surfaceEase : contentEase },
+      borderRadius: { duration: open ? 0.4 : 0.28, ease: open ? surfaceEase : contentEase },
     },
-    content: {
-      x: { duration: morphDuration, ease: easing },
-      scale: { duration: morphDuration, ease: easing },
-      rotate: { duration: morphDuration, ease: easing },
-      opacity: { duration: 0.22, delay: open ? 0 : morphDuration - 0.22, ease: easing },
-      filter: { duration: 0.22, delay: open ? 0 : morphDuration - 0.22, ease: easing },
-    },
+    content,
+    trigger: open ? content : { opacity: { duration: 0.18, delay: 0.1, ease: contentEase } },
   };
 }
