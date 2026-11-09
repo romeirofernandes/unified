@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import RepositoryConnection from "@/components/pull-requests/RepositoryConnection";
 import ExecutionTrace from "@/components/pull-requests/ExecutionTrace";
+import FileLogo from "@/components/pull-requests/FileLogo";
 import CodeBlock from "@/components/pull-requests/CodeBlock";
 import FixPipeline from "@/components/pull-requests/FixPipeline";
 import PageHeader from "@/components/shared/PageHeader";
@@ -30,7 +31,7 @@ function StageDetail({ stage, run }) {
     {stage.id === "scope" && <>
       {run.assessment?.plan?.length > 0 && <ol className="list-decimal space-y-2 ps-5">{run.assessment.plan.map((step, index) => <li key={index}>{step}</li>)}</ol>}
       <div><h3 className="mb-1 font-semibold">Expected result</h3><p className="whitespace-pre-wrap break-words text-muted-foreground">{run.acceptance}</p></div>
-      {run.files?.length > 0 && <div><h3 className="mb-2 font-semibold">Source files</h3><ul className="space-y-2">{run.files.map(file => <li key={file.path} className="break-all font-mono text-xs">{file.path}<span className="mt-1 block text-muted-foreground">{file.sha?.slice(0, 12)}</span></li>)}</ul><p className="mt-3 break-all font-mono text-xs text-muted-foreground">{run.baseBranch} · {run.baseSha?.slice(0, 12)}</p></div>}
+      {run.files?.length > 0 && <div><h3 className="mb-2 font-semibold">Source files</h3><ul className="space-y-2">{run.files.map(file => <li key={file.path} className="flex items-start gap-2 font-mono text-xs"><FileLogo path={file.path} /><span className="min-w-0 break-all">{file.path}<span className="mt-1 block text-muted-foreground">{file.sha?.slice(0, 12)}</span></span></li>)}</ul><p className="mt-3 break-all font-mono text-xs text-muted-foreground">{run.baseBranch} · {run.baseSha?.slice(0, 12)}</p></div>}
     </>}
     {stage.id === "patch" && run.patch?.map((edit, index) => <CodeBlock key={index} filename={edit.path} before={edit.before} after={edit.after} />)}
     {["pr", "review"].includes(stage.id) && run.prUrl && <Button asChild variant="secondary"><a href={run.prUrl} target="_blank" rel="noreferrer">Open pull request #{run.prNumber}</a></Button>}

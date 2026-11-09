@@ -22,8 +22,7 @@
 .fix-node { width: 248px; height: 166px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); color: var(--foreground); box-shadow: 0 2px 8px rgb(0 0 0 / 4%); }
 .fix-node.state-active { border-color: var(--fluid-accent); background: color-mix(in srgb, var(--fluid-accent) 10%, var(--card)); }
 .fix-node.state-active .fix-node-icon { color: var(--fluid-accent); }
-.fix-node.state-complete { border-color: color-mix(in srgb, var(--success) 65%, var(--border)); background: color-mix(in srgb, var(--success) 8%, var(--card)); }
-.fix-node.state-complete .fix-node-icon { color: color-mix(in srgb, var(--success) 65%, var(--foreground)); }
+.fix-node.state-complete { border-color: color-mix(in srgb, var(--success) 65%, var(--border)); }
 .fix-node.state-failed { border-color: var(--destructive); background: color-mix(in srgb, var(--destructive) 8%, var(--card)); }
 .fix-node.is-selected { outline: 2px solid var(--ring); outline-offset: 3px; box-shadow: none; }
 .fix-node.state-failed .fix-node-icon { color: var(--destructive); }
