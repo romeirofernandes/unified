@@ -39,7 +39,7 @@ function DraggableCard({ issue, pending, onEdit, onDelete, onMove, canOpen, redu
 }
 function Stage({ column, children, count }) {
   const { setNodeRef } = useDroppable({ id: column.id });
-  return <section ref={setNodeRef} data-stage={column.id} aria-label={column.label} className="flex h-full min-h-0 w-[82vw] shrink-0 flex-col rounded-xl border border-border bg-muted/30 sm:w-80 lg:w-auto lg:min-w-0 lg:flex-1">
+  return <section ref={setNodeRef} data-stage={column.id} aria-label={column.label} className="flex h-full min-h-0 w-[82vw] shrink-0 flex-col rounded-xl border border-border bg-card sm:w-80 lg:w-auto lg:min-w-0 lg:flex-1">
     <header className="flex shrink-0 items-center gap-2 p-4"><span aria-hidden="true" className={`size-2 rounded-full ${column.color}`} /><h2 className="text-sm font-medium">{column.label}</h2><span className="text-xs tabular-nums text-muted-foreground">{count}</span></header>
     <Motion.div layoutScroll className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-3 pb-3">{children}</Motion.div>
   </section>;
