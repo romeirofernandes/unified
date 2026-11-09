@@ -37,6 +37,7 @@ export function useWorkspaceBackground(){return ['none'];}
 `;
 const source = `import React from 'react';import {createRoot} from 'react-dom/client';import {MemoryRouter} from 'react-router-dom';import {FluidRoot} from './src/components/fluid-root';import DashboardLayout from './src/components/dashboard/DashboardLayout';import PullRequests from './src/pages/PullRequests';createRoot(document.getElementById('root')).render(<MemoryRouter initialEntries={['/dashboard/pull-requests?project=project-1&issue=issue-1'+(location.search?'&'+location.search.slice(1):'')]}><FluidRoot><DashboardLayout><PullRequests/></DashboardLayout></FluidRoot></MemoryRouter>);`;
 const result = await build({ stdin: { contents: source, resolveDir: path.join(root, "frontend"), loader: "jsx" }, bundle: true, nodePaths: [path.join(root, "frontend/node_modules")], jsx: "automatic", platform: "browser", format: "iife", write: false, loader: { ".css": "empty" }, alias: { "@": path.join(root, "frontend/src") }, define: { "import.meta.env": "{}", "process.env.NODE_ENV": '"test"' }, plugins: [{ name: "fixtures", setup(builder) {
+  builder.onLoad({ filter: /[\/]FixPipeline\.jsx$/ }, args => ({ contents: readFileSync(args.path, "utf8").replace('export default function FixPipeline({ run, selectedStage, onSelect }) {', 'export default function FixPipeline({ run, selectedStage, onSelect }) { window.pipelineRenders = (window.pipelineRenders || 0) + 1;'), loader: "jsx", resolveDir: path.dirname(args.path) }));
   builder.onResolve({ filter: /^(?:@\/hooks\/(?:use-auth|use-api-resource|use-workspace-background)|@\/lib\/(?:api|access-token)|next-themes)$/ }, () => ({ path: "fixture", namespace: "fixture" }));
   builder.onLoad({ filter: /.*/, namespace: "fixture" }, () => ({ contents: fixture, loader: "jsx", resolveDir: path.join(root, "frontend") }));
 } }] });
@@ -58,6 +59,8 @@ try {
   await expect(page.locator(".react-flow__node")).toHaveCount(6);
   assert.match(await page.locator('.fix-pipeline .react-flow').evaluate(node => getComputedStyle(node).backgroundImage), /repeating-linear-gradient/);
   const movable = page.locator('.react-flow__node[data-id="patch"]');
+  await page.waitForTimeout(100);
+  const renderCount = await page.evaluate(() => window.pipelineRenders);
   const beforeDrag = await movable.boundingBox();
   await page.mouse.move(beforeDrag.x + 100, beforeDrag.y + 60);
   await page.mouse.down();
@@ -65,6 +68,11 @@ try {
   await page.mouse.up();
   assert.ok((await movable.boundingBox()).x > beforeDrag.x + 30, 'Pipeline nodes can be moved');
   await expect(page.getByRole('dialog')).toHaveCount(0);
+  assert.equal(await page.evaluate(() => window.pipelineRenders), renderCount, 'Dragging does not rerender the whole pipeline');
+  const afterDrag = await movable.boundingBox();
+  await page.evaluate(() => window.dispatchEvent(new Event('fixture')));
+  await page.waitForTimeout(100);
+  assert.ok(Math.abs((await movable.boundingBox()).x - afterDrag.x) < 2, 'Polling preserves moved node positions');
   await page.waitForTimeout(100);
   await page.locator('.react-flow__node[data-id="scope"]').focus();
   await page.keyboard.press("Enter");
@@ -95,6 +103,7 @@ try {
   await page.evaluate(() => { window.prFixture.run.failedStage='review'; window.prFixture.run.message='Build failed: missing export.'; window.prFixture.update('needs_attention'); });
   await expect(page.locator('.react-flow__node[data-id="review"] .state-failed')).toHaveCount(1);
   await page.getByRole("button", { name: "View details", exact: true }).click();
+  await expect(page.getByRole("button", {name:'Step details',exact:true})).toHaveCount(0);
   await expect(page.getByRole("dialog")).toContainText('Build failed: missing export.');
   await page.getByRole("button", { name: "Close", exact: true }).click();
   await page.evaluate(() => window.prFixture.update("merged"));

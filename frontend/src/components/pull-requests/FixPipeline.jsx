@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { ReactFlow, Controls, Handle, Position, useReactFlow } from "@xyflow/react";
 import { useTheme } from "next-themes";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -10,7 +10,7 @@ import "./fix-pipeline.css";
 const icons = { scope: Search01Icon, patch: CodeIcon, pr: GitPullRequestIcon, review: CheckmarkCircle01Icon, ship: Rocket01Icon, notify: Mail01Icon };
 const positions = { top: Position.Top, right: Position.Right, bottom: Position.Bottom, left: Position.Left };
 const stateLabels = { waiting: "Waiting", active: "In progress", complete: "Complete", failed: "Needs attention", stopped: "Stopped", skipped: "Skipped" };
-function PipelineNode({ data, selected }) {
+const PipelineNode = memo(function PipelineNode({ data, selected }) {
   return <div className={`fix-node ${selected ? "is-selected" : ""} state-${data.state}`}>
     {data.input && <Handle type="target" position={positions[data.input]} id="in" isConnectable={false} />}
     <div className="flex items-center justify-between gap-3"><span className="fix-node-icon"><HugeiconsIcon icon={icons[data.id]} size={19} aria-hidden="true" /></span><span className="text-[11px] font-medium">{stateLabels[data.state]}</span></div>
@@ -19,7 +19,7 @@ function PipelineNode({ data, selected }) {
     {data.prUrl && <a className="nodrag nopan mt-2 inline-block text-xs font-medium underline underline-offset-4" href={data.prUrl} target="_blank" rel="noreferrer" onClick={event => event.stopPropagation()}>Open PR #{data.prNumber || ""}</a>}
     {data.output && <Handle type="source" position={positions[data.output]} id="out" isConnectable={false} />}
   </div>;
-}
+});
 const nodeTypes = { pipeline: PipelineNode };
 function FitLayout({ columns, width, height }) {
   const { setViewport, viewportInitialized } = useReactFlow();
@@ -33,11 +33,23 @@ function FitLayout({ columns, width, height }) {
   }, [columns, width, height, setViewport, viewportInitialized]);
   return null;
 }
+function SyncNodes({ nodes, columns }) {
+  const { setNodes } = useReactFlow();
+  const previousColumns = useRef(columns);
+  useEffect(() => {
+    const relayout = previousColumns.current !== columns;
+    previousColumns.current = columns;
+    setNodes(current => nodes.map(node => {
+      const existing = current.find(item => item.id === node.id);
+      return existing && !relayout ? { ...node, position: existing.position } : node;
+    }));
+  }, [nodes, columns, setNodes]);
+  return null;
+}
 export default function FixPipeline({ run, selectedStage, onSelect }) {
   const { resolvedTheme } = useTheme();
   const container = useRef(null);
   const [width, setWidth] = useState(0);
-  const [moved, setMoved] = useState({ columns: 0, positions: {} });
   const columns = width && width < 480 ? 1 : width && width < 800 ? 2 : 3;
   const height = columns === 1 ? 1270 : columns === 2 ? 690 : 480;
   useEffect(() => {
@@ -45,12 +57,7 @@ export default function FixPipeline({ run, selectedStage, onSelect }) {
     resize.observe(container.current); return () => resize.disconnect();
   }, []);
   const states = useMemo(() => pipelineStates(run), [run]);
-  const nodes = useMemo(() => pipelineLayout(columns).map((layout, index) => ({ id: layout.id, type: "pipeline", position: moved.columns === columns ? moved.positions[layout.id] || layout.position : layout.position, selected: selectedStage === layout.id, draggable: true, deletable: false, ariaRole: "button", ariaLabel: `${states[index].label}: ${stateLabels[states[index].state]}. ${states[index].detail}`, style: { width: 248, height: 166 }, data: { ...states[index], ...layout, ...(["pr", "review"].includes(layout.id) && run?.prUrl ? { prUrl: run.prUrl, prNumber: run.prNumber } : {}) } })), [columns, moved, states, selectedStage, run?.prUrl, run?.prNumber]);
-  function changeNodes(changes) {
-    const positions = changes.filter(change => change.type === "position" && change.position);
-    if (!positions.length) return;
-    setMoved(previous => ({ columns, positions: { ...(previous.columns === columns ? previous.positions : {}), ...Object.fromEntries(positions.map(change => [change.id, change.position])) } }));
-  }
+  const nodes = useMemo(() => pipelineLayout(columns).map((layout, index) => ({ id: layout.id, type: "pipeline", position: layout.position, selected: selectedStage === layout.id, draggable: true, deletable: false, ariaRole: "button", ariaLabel: `${states[index].label}: ${stateLabels[states[index].state]}. ${states[index].detail}`, style: { width: 248, height: 166 }, data: { ...states[index], ...layout, ...(["pr", "review"].includes(layout.id) && run?.prUrl ? { prUrl: run.prUrl, prNumber: run.prNumber } : {}) } })), [columns, states, selectedStage, run?.prUrl, run?.prNumber]);
   const edges = useMemo(() => nodes.slice(0, -1).map((node, index) => ({ id: `${node.id}-${nodes[index + 1].id}`, source: node.id, target: nodes[index + 1].id, sourceHandle: "out", targetHandle: "in", type: "smoothstep", className: node.data.state === "complete" ? "fix-edge-complete" : "", style: { strokeWidth: 1.5 }, markerEnd: { type: "arrowclosed", color: "var(--muted-foreground)" } })), [nodes]);
   return <div ref={container} className="fix-pipeline" style={{ height }} role="region" aria-label="Fix pipeline" onKeyDownCapture={event => {
     const node = event.target.closest('.react-flow__node');
@@ -58,7 +65,8 @@ export default function FixPipeline({ run, selectedStage, onSelect }) {
       event.preventDefault(); event.stopPropagation(); onSelect(node.dataset.id);
     }
   }}>
-    <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} onNodeClick={(_, node) => onSelect(node.id)} onNodesChange={changeNodes} nodesDraggable nodesConnectable={false} edgesFocusable={false} deleteKeyCode={null} elementsSelectable fitViewOptions={{ padding: 0.14, maxZoom: 1 }} minZoom={0.25} maxZoom={1.5} panOnDrag={columns !== 1} zoomOnScroll={false} preventScrolling={false} zoomOnDoubleClick={false} colorMode={resolvedTheme === "dark" ? "dark" : "light"} proOptions={{ hideAttribution: false }}>
+    <ReactFlow defaultNodes={nodes} edges={edges} nodeTypes={nodeTypes} onNodeClick={(_, node) => onSelect(node.id)} nodesDraggable nodesConnectable={false} edgesFocusable={false} deleteKeyCode={null} elementsSelectable fitViewOptions={{ padding: 0.14, maxZoom: 1 }} minZoom={0.25} maxZoom={1.5} panOnDrag={columns !== 1} zoomOnScroll={false} preventScrolling={false} zoomOnDoubleClick={false} colorMode={resolvedTheme === "dark" ? "dark" : "light"} proOptions={{ hideAttribution: false }}>
+      <SyncNodes nodes={nodes} columns={columns} />
       <Controls showInteractive={false} />
       <FitLayout columns={columns} width={width} height={height} />
     </ReactFlow>
