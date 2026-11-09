@@ -11,7 +11,7 @@
   --xy-controls-button-border-color: var(--border);
   --xy-attribution-background-color: var(--card);
 }
-.fix-pipeline .react-flow { background-color: var(--background); background-image: repeating-linear-gradient(135deg, transparent 0 9px, var(--border) 9px 10px); }
+.fix-pipeline .react-flow { background-color: var(--background); background-image: repeating-linear-gradient(135deg, transparent 0 9px, color-mix(in srgb, var(--border) 35%, transparent) 9px 10px); }
 .fix-node { cursor: grab; }
 .react-flow__node.dragging .fix-node { cursor: grabbing; }
 .fix-pipeline .react-flow__controls { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: none; }
