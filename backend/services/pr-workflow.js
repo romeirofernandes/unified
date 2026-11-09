@@ -37,8 +37,12 @@ async function findPull(api, run) {
 async function assessRun(run, d, filter) {
   const { api } = await d.github.repositoryClient(run);
   await liveProject(run, d);
-  const context = await d.selectContext(run, api, d.ask, d.Blob);
-  const value = await d.ask({ messages: [{ role: "system", content: system }, { role: "user", content: JSON.stringify({ task: "Assess this issue against the actual files. Return {suitable:boolean,category:ui_copy|ui_style|ui_behavior|documentation|unsupported,reason:string,plan:string[]}. Reject vague requests, changes requiring other files, security-sensitive changes, or behavior with no clear way for a reviewer to verify it. Do not count confidence as evidence.", issue: run.issue, acceptance: run.acceptance, files: context.files }) }], maxTokens: 2500 });
+  const trace = message => event(d, filter, "assessing", message);
+  await trace("GitHub access verified. Selecting repository context.");
+  const context = await d.selectContext(run, api, d.ask, d.Blob, trace);
+  await d.Run.updateOne(filter, { $set: { baseSha: context.baseSha, baseTree: context.baseTree, files: context.files.map(({ path, sha, size }) => ({ path, sha, size })) } });
+  await trace("Repository context saved. Asking the model to assess scope.");
+  const value = await d.ask({ messages: [{ role: "system", content: system }, { role: "user", content: JSON.stringify({ task: "Assess this issue against the actual files. Return {suitable:boolean,category:ui_copy|ui_style|ui_behavior|documentation|unsupported,reason:string,plan:string[]}. Reject vague requests, changes requiring other files, security-sensitive changes, or behavior with no clear way for a reviewer to verify it. Do not count confidence as evidence.", issue: run.issue, acceptance: run.acceptance, files: context.files }) }], maxTokens: 1000 });
   const assessment = validateAssessment(value, context.files);
   await liveProject(run, d);
   await event(d, filter, assessment.suitable ? "eligible" : "not_suitable", assessment.reason, { active: false, assessment, baseSha: context.baseSha, baseTree: context.baseTree, files: context.files.map(({ path, sha, size }) => ({ path, sha, size })), leaseUntil: null });
@@ -49,9 +53,9 @@ async function fixRun(run, d, filter) {
   const head = await api(`/commits/${encodeURIComponent(run.baseBranch)}`);
   if (head.sha !== run.baseSha) throw fail("The base branch changed. Create a fresh assessment against its latest commit.");
   const files = await Promise.all(run.files.map(file => d.sourceFile(run, api, file, d.Blob)));
-  const proposal = await d.ask({ messages: [{ role: "system", content: system }, { role: "user", content: JSON.stringify({ task: "Implement only the assessed fix. Return {edits:[{path,before,after}]}. Each before must be an exact unique substring of a provided file. Use short replacements with enough context to match uniquely. Do not create files, change tests, widen scope, add network calls, change security behavior or rewrite whole files. At most 3 files, 12 replacements, 120 lines counting before plus after. Return {edits:[]} if it cannot be done precisely.", issue: run.issue, acceptance: run.acceptance, assessment: run.assessment, files }) }], maxTokens: 7000 });
+  const proposal = await d.ask({ messages: [{ role: "system", content: system }, { role: "user", content: JSON.stringify({ task: "Implement only the assessed fix. Return {edits:[{path,before,after}]}. Each before must be an exact unique substring of a provided file. Use short replacements with enough context to match uniquely. Do not create files, change tests, widen scope, add network calls, change security behavior or rewrite whole files. At most 3 files, 12 replacements, 120 lines counting before plus after. Return {edits:[]} if it cannot be done precisely.", issue: run.issue, acceptance: run.acceptance, assessment: run.assessment, files }) }], maxTokens: 2000 });
   const updated = applyPatch(files, proposal.edits);
-  const review = await d.ask({ messages: [{ role: "system", content: system }, { role: "user", content: JSON.stringify({ task: "Review this proposed patch against the original files and acceptance criteria. Return {approved:boolean,reason:string}. Reject incorrect changes, new sensitive behavior, missing context, out-of-scope changes, and weakened validation. This is a preflight review, not proof that tests passed.", issue: run.issue, acceptance: run.acceptance, files, edits: proposal.edits }) }], maxTokens: 1200 });
+  const review = await d.ask({ messages: [{ role: "system", content: system }, { role: "user", content: JSON.stringify({ task: "Review this proposed patch against the original files and acceptance criteria. Return {approved:boolean,reason:string}. Reject incorrect changes, new sensitive behavior, missing context, out-of-scope changes, and weakened validation. This is a preflight review, not proof that tests passed.", issue: run.issue, acceptance: run.acceptance, files, edits: proposal.edits }) }], maxTokens: 600 });
   if (review.approved !== true || typeof review.reason !== "string" || review.reason.length > 2000) throw fail("The proposed patch did not pass the scope review. A human should investigate this issue.");
   await liveProject(run, d);
   if ((await api(`/commits/${encodeURIComponent(run.baseBranch)}`)).sha !== run.baseSha) throw fail("The base branch changed during generation. Assess the issue again.");
@@ -78,8 +82,23 @@ async function processRun(id, overrides = {}) {
   const run = await d.Run.findOneAndUpdate({ _id: id, status: { $in: ["queued", "queued_fix"] }, active: true }, { $set: { status: "assessing", leaseToken: token, leaseUntil: new Date(Date.now() + 10 * 60000) } }, { new: false }).select("+installationId").lean();
   if (!run) return;
   const ask = d.ask;
-  d.ask = options => ask({ ...options, model: run.model || process.env.GROQ_MODEL || "qwen/qwen3.8-27b" });
   const filter = { _id: id, leaseToken: token, active: true };
+  d.ask = async options => {
+    const status = run.status === "queued" ? "assessing" : "generating";
+    const model = run.model || process.env.GROQ_MODEL || "qwen/qwen3.8-27b";
+    const characters = JSON.stringify(options.messages).length;
+    if (characters > 22000) throw fail("This request exceeds the bounded AI context budget. Narrow the issue to a smaller component.");
+    const started = Date.now();
+    await event(d, filter, status, `AI request started · ${model} · ${characters} input characters · up to ${options.maxTokens} output tokens.`);
+    try {
+      const result = await ask({ ...options, model });
+      await event(d, filter, status, `AI response received in ${((Date.now() - started) / 1000).toFixed(1)}s.`);
+      return result;
+    } catch (error) {
+      await event(d, filter, status, `AI request failed after ${((Date.now() - started) / 1000).toFixed(1)}s. ${cleanError(error)}`);
+      throw error;
+    }
+  };
   try {
     await event(d, filter, run.status === "queued" ? "assessing" : "generating", run.status === "queued" ? "Reading repository context and assessing scope." : "Generating a bounded patch from the saved context.");
     if (run.status === "queued") await assessRun(run, d, filter); else await fixRun(run, d, filter);

@@ -35,10 +35,21 @@ async function groqRequest(path, { headers = {}, body, signal }) {
       await response.body?.cancel();
       continue;
     }
-    if (!response.ok)
-      throw new Error(
-        "The AI service could not complete this request. Please try again.",
-      );
+    if (!response.ok) {
+      const guidance = {
+        400: "Groq rejected the AI request. Check the model and request limits.",
+        401: "Groq rejected the API key. Update the backend AI credentials.",
+        403: "Groq denied access to this model. Check the account permissions.",
+        413: "The repository context exceeded Groq’s request limit. Narrow the issue to a smaller component.",
+        429: "Groq’s rate limit was reached. Wait a minute before assessing again.",
+      };
+      const requestId = response.headers.get("x-request-id");
+      const reference = requestId && /^[a-zA-Z0-9_-]{1,100}$/.test(requestId) ? ` Request: ${requestId}.` : "";
+      await response.body?.cancel();
+      const error = new Error(`${guidance[response.status] || "Groq is temporarily unavailable. Try again shortly."} (HTTP ${response.status}).${reference}`);
+      error.status = 502;
+      throw error;
+    }
     return response.json();
   }
 }

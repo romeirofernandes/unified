@@ -20,19 +20,27 @@ async function sourceFile(run, api, file, Blob = RepositoryBlob) {
   }
   return { path: file.path, sha: file.sha, size: Buffer.byteLength(content), content };
 }
-async function selectContext(run, api, ask = groqJson, Blob = RepositoryBlob) {
+async function selectContext(run, api, ask = groqJson, Blob = RepositoryBlob, trace = async () => {}) {
+  await trace("Reading the repository’s base commit and source tree.");
   const head = await api(`/commits/${encodeURIComponent(run.baseBranch)}`);
   if (!/^[a-f0-9]{40}$/.test(head.sha) || !/^[a-f0-9]{40}$/.test(head.commit?.tree?.sha)) throw fail("GitHub returned an invalid source commit.");
   const tree = await api(`/git/trees/${head.commit.tree.sha}?recursive=1`);
   if (tree.truncated) throw fail("This repository is too large for a precise assessment. Use a smaller repository.");
   const candidates = (tree.tree || []).filter(file => file.type === "blob" && file.mode === "100644" && safePath(file.path) && file.size <= limits.fileBytes);
   if (!candidates.length || candidates.length > limits.treeFiles) throw fail("This repository has no supported source files or exceeds the 3,000-file context limit.");
-  const result = await ask({ messages: [{ role: "system", content: system }, { role: "user", content: JSON.stringify({ task: "Select 1 to 8 files needed to decide if this issue can be fixed. Include relevant tests or docs when available. Return {paths: string[]}. Select only listed paths.", issue: run.issue, acceptance: run.acceptance, paths: candidates.map(file => file.path) }) }], maxTokens: 1500 });
-  if (!Array.isArray(result.paths) || !result.paths.length || result.paths.length > limits.files || new Set(result.paths).size !== result.paths.length) throw fail("The model could not select a bounded set of relevant files.");
-  const selected = result.paths.map(path => candidates.find(file => file.path === path));
-  if (selected.some(file => !file) || selected.reduce((total, file) => total + file.size, 0) > limits.contextBytes) throw fail("The selected context exceeds the supported scope.");
+  const terms = `${run.issue.title} ${run.issue.description || ""} ${run.acceptance}`.toLowerCase().match(/[a-z0-9]{3,}/g) || [];
+  const score = file => terms.reduce((total, term) => total + (file.path.toLowerCase().includes(term) ? 1 : 0), 0);
+  const shortlist = candidates.sort((a, b) => score(b) - score(a) || a.path.localeCompare(b.path)).slice(0, 80);
+  await trace(`Found ${candidates.length} supported files; selecting from ${shortlist.length} ranked paths.`);
+  const result = await ask({ messages: [{ role: "system", content: system }, { role: "user", content: JSON.stringify({ task: "Select the smallest set of 1 to 3 files needed to decide if this issue can be fixed. Prefer the specific component named in the issue. Total file size must not exceed 14000 bytes. Include related tests only when needed. Return {paths: string[]}. Select only listed paths.", issue: run.issue, acceptance: run.acceptance, files: shortlist.map(file => ({ path: file.path, bytes: file.size })) }) }], maxTokens: 600 });
+  if (!Array.isArray(result.paths) || !result.paths.length || result.paths.length > 3 || new Set(result.paths).size !== result.paths.length) throw fail("The model could not select a bounded set of relevant files.");
+  const selected = result.paths.map(path => shortlist.find(file => file.path === path));
+  if (selected.some(file => !file)) throw fail("The model selected a file outside the supported source shortlist. Try a more specific issue.");
+  if (selected.reduce((total, file) => total + file.size, 0) > 14000) throw fail("The selected files exceed the 14 KB AI context budget. Narrow the issue to one small component.");
+  await trace(`Selected ${selected.length} source files: ${selected.map(file => file.path).join(", ")}.`);
   const files = await Promise.all(selected.map(file => sourceFile(run, api, file, Blob)));
-  if (files.reduce((total, file) => total + file.size, 0) > limits.contextBytes) throw fail("The source files exceed the context budget.");
+  if (files.reduce((total, file) => total + file.size, 0) > 14000) throw fail("The source files exceed the 14 KB AI context budget. Narrow the issue to one small component.");
+  await trace(`Loaded ${files.reduce((total, file) => total + file.size, 0)} bytes at commit ${head.sha.slice(0, 12)}. Source hashes are saved for the fix.`);
   return { baseSha: head.sha, baseTree: head.commit.tree.sha, files };
 }
 module.exports = { system, sourceFile, selectContext };

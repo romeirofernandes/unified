@@ -244,3 +244,14 @@ test("OAuth repository discovery persists a reusable account catalog without bin
     assert.ok((await api(`/pr/${project._id}`)).data.repositories.some(item => item.repository === "owner/extra"));
   } finally { fakeGithub.exchange = previous; }
 });
+test("failed model requests retain the source snapshot and operational trace", async () => {
+  const run = await assessed();
+  assert.ok(run.events.some(event => event.message.includes('input characters')));
+  await Run.updateOne({_id:run._id}, {$set:{status:'queued',active:true}});
+  await workflow.processRun(run._id, {...dependencies, ask:async () => {throw Object.assign(new Error('Groq rate limit reached (HTTP 429).'), {status:502});}});
+  const failed = await Run.findById(run._id).lean();
+  assert.equal(failed.status, 'failed');
+  assert.equal(failed.files[0].sha, blobSha);
+  assert.ok(failed.events.some(event => /AI request failed after.*HTTP 429/.test(event.message)));
+  assert.equal(calls.filter(call => call.method === 'POST').length, 0);
+});
