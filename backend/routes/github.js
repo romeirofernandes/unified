@@ -8,25 +8,46 @@ function createRouter(overrides = {}) {
   const router = express.Router();
   router.get("/callback", async (req, res) => {
     res.set("Cache-Control", "no-store"); res.set("Referrer-Policy", "no-referrer");
-    if (!d.github.configured()) return res.status(503).send("GitHub connection is not configured.");
-    if (typeof req.query.state !== "string" || !/^[a-f0-9]{64}$/.test(req.query.state)) return res.status(400).send("Invalid connection link. Start again in Pull requests.");
+    const back = (result, projectId) => {
+      const destination = new URL("/dashboard/pull-requests", process.env.FRONTEND_URL || "http://localhost:5173");
+      if (projectId) destination.searchParams.set("project", String(projectId));
+      destination.searchParams.set("github", result);
+      return res.redirect(destination.toString());
+    };
+    if (!d.github.configured()) return back("unavailable");
+    const validState = typeof req.query.state === "string" && /^[a-f0-9]{64}$/.test(req.query.state);
+    // Installation and OAuth are different callbacks. Never consume an OAuth state for installation alone.
+    const installation = !req.query.code && /^\d+$/.test(String(req.query.installation_id || "")) && ["install", "update"].includes(req.query.setup_action);
+    if (!validState) return back(installation || req.query.code ? "installed" : "expired");
+    const hash = d.github.stateHash(req.query.state);
     let connection;
     try {
-      connection = await d.Connection.findOneAndUpdate({ stateHash: d.github.stateHash(req.query.state), stateUntil: { $gt: new Date() } }, { $unset: { stateHash: 1, stateUntil: 1 } }, { new: false }).select("+pendingRepository +pendingCheck").lean();
-      if (!connection) return res.status(400).send("Expired or already used connection link. Start again in Pull requests.");
+      if (installation) {
+        const pending = await d.Connection.findOne({ stateHash: hash, stateUntil: { $gt: new Date() } }).lean();
+        if (!pending) return back("expired");
+        return res.redirect(d.github.authorization(req.query.state).url);
+      }
+      connection = await d.Connection.findOneAndUpdate({ stateHash: hash, stateUntil: { $gt: new Date() } }, { $unset: { stateHash: 1, stateUntil: 1 }, $set: { returnStateHash: hash, returnStateUntil: new Date(Date.now() + 10 * 60000), returnStateResult: "pending" } }, { new: false }).select("+pendingRepository +pendingCheck").lean();
+      if (!connection) {
+        const previous = await d.Connection.findOne({ returnStateHash: hash, returnStateUntil: { $gt: new Date() } }).select("+returnStateResult").lean();
+        const expired = previous || await d.Connection.findOne({ stateHash: hash }).lean();
+        return back(previous?.returnStateResult === "connected" ? "connected" : "expired", expired?.projectId);
+      }
+      if (req.query.error) {
+        await d.Connection.updateOne({ _id: connection._id, returnStateHash: hash }, { $set: { returnStateResult: "denied" } });
+        return back("denied", connection.projectId);
+      }
       if (typeof req.query.code !== "string" || req.query.code.length > 2000 || !req.query.code) throw new Error("Invalid code");
       if (!await d.Project.exists({ _id: connection.projectId, userId: connection.userId }) || await d.Run.exists({ projectId: connection.projectId, active: true })) throw new Error("Project unavailable");
       const repository = await d.github.exchange(req.query.code, connection.pendingRepository);
-      const updated = await d.Connection.updateOne({ _id: connection._id, pendingRepository: connection.pendingRepository, pendingCheck: connection.pendingCheck }, { $set: { ...repository, requiredCheck: connection.pendingCheck, connectedAt: new Date() }, $unset: { pendingRepository: 1, pendingCheck: 1 } });
-      if (!updated.matchedCount) throw new Error("Connection changed during authorization");
-      const destination = new URL("/dashboard/pull-requests", process.env.FRONTEND_URL || "http://localhost:5173");
-      destination.searchParams.set("project", String(connection.projectId)); destination.searchParams.set("github", "connected");
-      res.redirect(destination.toString());
-    } catch {
-      if (!connection) return res.status(502).send("GitHub connection failed. Start again in Pull requests.");
-      const destination = new URL("/dashboard/pull-requests", process.env.FRONTEND_URL || "http://localhost:5173");
-      destination.searchParams.set("project", String(connection.projectId)); destination.searchParams.set("github", "error");
-      res.redirect(destination.toString());
+      const requiredCheck = connection.pendingCheck || (connection.repositoryId === repository.repositoryId ? connection.requiredCheck : "") || "";
+      const updated = await d.Connection.updateOne({ _id: connection._id, returnStateHash: hash }, { $set: { ...repository, requiredCheck, connectedAt: new Date(), returnStateResult: "connected" }, $unset: { pendingRepository: 1, pendingCheck: 1 } });
+      if (!updated.matchedCount) return back("expired", connection.projectId);
+      return back("connected", connection.projectId);
+    } catch (error) {
+      const result = error.code === "GITHUB_INSTALL_REQUIRED" ? "install_required" : "error";
+      if (connection) await d.Connection.updateOne({ _id: connection._id, returnStateHash: hash }, { $set: { returnStateResult: result } }).catch(() => {});
+      return back(result, connection?.projectId);
     }
   });
   return router;

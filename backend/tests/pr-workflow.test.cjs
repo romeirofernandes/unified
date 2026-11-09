@@ -18,7 +18,7 @@ const owner = new mongoose.Types.ObjectId();
 const sha = "a".repeat(40), tree = "b".repeat(40), blobSha = "c".repeat(40), headSha = "d".repeat(40);
 let calls, checkResult, pull, currentSha, answers, postFailure;
 const files = [{ path: "src/Button.tsx", sha: blobSha, size: 25, content: '<button>Save</button>\n' }];
-const fakeGithub = { configured: () => true, stateHash, authorization: () => ({ state: "a".repeat(64), url: "https://github.com/login/oauth/authorize?state=test" }), exchange: async () => ({ repository: "owner/repo", repositoryId: 1, installationId: 2, defaultBranch: "main" }), repositoryClient: async () => ({ api: async (path, options = {}) => {
+const fakeGithub = { configured: () => true, stateHash, authorization: (existing) => { const state = existing || require("node:crypto").randomBytes(32).toString("hex"); return { state, url: `https://github.com/login/oauth/authorize?state=${state}` }; }, checkNames: async () => ["build", "tests"], exchange: async () => ({ repository: "owner/repo", repositoryId: 1, installationId: 2, defaultBranch: "main" }), repositoryClient: async () => ({ api: async (path, options = {}) => {
   calls.push({ path, ...options });
   if (path.startsWith("/commits/main")) return { sha: currentSha, commit: { tree: { sha: tree } } };
   if (path === "/git/trees") return { sha: tree };
@@ -164,7 +164,40 @@ test("GitHub callbacks require an expiring single-use state bound to the project
   await Connection.updateOne({ _id: connection._id }, { $set: { stateHash: stateHash(state), stateUntil: new Date(Date.now() + 60000), pendingRepository: "owner/repo", pendingCheck: "tests" } });
   let result = await fetch(`${base}/github/callback?state=${state}&code=valid`, { redirect: "manual" });
   assert.equal(result.status, 302); assert.match(result.headers.get("location"), /github=connected/);
-  result = await fetch(`${base}/github/callback?state=${state}&code=valid`, { redirect: "manual" }); assert.equal(result.status, 400);
+  result = await fetch(`${base}/github/callback?state=${state}&code=valid`, { redirect: "manual" });
+  assert.equal(result.status, 302); assert.match(result.headers.get("location"), /dashboard\/pull-requests/);
   const data = (await api(`/pr/${project._id}`)).data;
   assert.equal(data.connection.requiredCheck, "tests"); assert.equal(data.connection.installationId, undefined);
+});
+test("installation-only callbacks preserve authorization state instead of consuming it", async () => {
+  const state = "b".repeat(64);
+  await Connection.updateOne({ _id: connection._id }, { $set: { stateHash: stateHash(state), stateUntil: new Date(Date.now() + 60000), pendingRepository: "owner/repo", pendingCheck: "tests" } });
+  const result = await fetch(`${base}/github/callback?state=${state}&installation_id=2&setup_action=install`, { redirect: "manual" });
+  assert.equal(result.status, 302);
+  assert.match(result.headers.get("location"), /github\.com\/login\/oauth\/authorize/);
+  assert.equal(new URL(result.headers.get("location")).searchParams.get("state"), state);
+  assert.ok(await Connection.exists({ _id: connection._id, stateHash: stateHash(state) }));
+});
+
+test("connection starts without a test name and keeps assessment gated until a check is saved", async () => {
+  await Connection.deleteMany({});
+  const start = await api(`/pr/${project._id}/connect`, { repository: "owner/repo" });
+  assert.equal(start.status, 200);
+  const state = new URL(start.data.url).searchParams.get("state");
+  const callback = await fetch(`${base}/github/callback?state=${state}&code=valid`, { redirect: "manual" });
+  assert.equal(callback.status, 302);
+  assert.equal((await Connection.findOne({ projectId: project._id })).requiredCheck, "");
+  assert.equal((await api(`/pr/${project._id}/runs`, { issueId: String(issue._id), acceptance: "The button should say Save changes." })).status, 409);
+  assert.deepEqual((await api(`/pr/${project._id}/checks`)).data.names, ["build", "tests"]);
+  const save = await fetch(`${base}/pr/${project._id}/connection/check`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ requiredCheck: "tests" }) });
+  assert.equal(save.status, 200);
+  assert.equal((await api(`/pr/${project._id}/runs`, { issueId: String(issue._id), acceptance: "The button should say Save changes." })).status, 202);
+});
+test("expired links return to the correct project's setup and preserve repository entry", async () => {
+  const state = "c".repeat(64);
+  await Connection.updateOne({ _id: connection._id }, { $set: { stateHash: stateHash(state), stateUntil: new Date(Date.now() - 1000), pendingRepository: "owner/another-repo" } });
+  const result = await fetch(`${base}/github/callback?state=${state}&code=expired`, { redirect: "manual" });
+  const location = new URL(result.headers.get("location"));
+  assert.equal(result.status, 302); assert.equal(location.searchParams.get("project"), String(project._id)); assert.equal(location.searchParams.get("github"), "expired");
+  assert.equal((await api(`/pr/${project._id}`)).data.setupRepository, "owner/another-repo");
 });

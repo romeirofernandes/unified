@@ -10,8 +10,12 @@ const schema = new mongoose.Schema({
   connectedAt: Date,
   stateHash: { type: String, select: false },
   stateUntil: { type: Date, select: false },
+  returnStateHash: { type: String, select: false },
+  returnStateUntil: { type: Date, select: false },
+  returnStateResult: { type: String, select: false },
   pendingRepository: { type: String, select: false },
   pendingCheck: { type: String, select: false },
 }, { timestamps: true });
 schema.index({ stateHash: 1 }, { sparse: true });
+schema.index({ returnStateHash: 1 }, { sparse: true });
 module.exports = mongoose.model("PullRequestConnection", schema);

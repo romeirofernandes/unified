@@ -3,9 +3,10 @@ const { fail, repositoryName } = require("./pr-policy");
 const API = "https://api.github.com";
 function configured() { return !!(process.env.GITHUB_APP_ID && process.env.GITHUB_APP_CLIENT_ID && process.env.GITHUB_APP_CLIENT_SECRET && process.env.GITHUB_APP_PRIVATE_KEY && process.env.GITHUB_APP_SLUG && process.env.GITHUB_APP_CALLBACK_URL); }
 const stateHash = value => createHash("sha256").update(value).digest("hex");
-function authorization() {
+function authorization(existingState) {
   if (!configured()) throw fail("GitHub App connection is not configured on this server.", 503);
-  const state = randomBytes(32).toString("hex");
+  const state = existingState || randomBytes(32).toString("hex");
+  if (!/^[a-f0-9]{64}$/.test(state)) throw fail("Invalid authorization state.");
   const url = new URL("https://github.com/login/oauth/authorize");
   url.searchParams.set("client_id", process.env.GITHUB_APP_CLIENT_ID);
   url.searchParams.set("redirect_uri", process.env.GITHUB_APP_CALLBACK_URL);
@@ -59,7 +60,13 @@ async function exchange(code, repository) {
     }
     if ((list.installations || []).length < 100) break;
   }
-  throw fail("Install the Unified GitHub App on this repository first, then connect again.");
+  throw Object.assign(fail("Install the Unified GitHub App on this repository first, then connect again."), { code: "GITHUB_INSTALL_REQUIRED" });
+}
+async function checkNames(connection) {
+  const { api } = await repositoryClient(connection);
+  const commit = await api(`/commits/${encodeURIComponent(connection.defaultBranch)}`);
+  const [runs, statuses] = await Promise.all([api(`/commits/${commit.sha}/check-runs?per_page=100&filter=latest`), api(`/commits/${commit.sha}/status?per_page=100`)]);
+  return [...new Set([...(runs.check_runs || []).map(item => item.name), ...(statuses.statuses || []).map(item => item.context)])].filter(name => typeof name === "string" && name.length <= 120 && !/[\x00-\x1f]/.test(name)).sort();
 }
 async function repositoryClient(connection) {
   const token = await installationToken(connection.installationId, connection.repositoryId);
@@ -69,4 +76,4 @@ async function repositoryClient(connection) {
   if (repo.id !== connection.repositoryId || repo.archived || repo.disabled) throw fail("Repository identity or availability changed. Reconnect it.");
   return { api, repo };
 }
-module.exports = { configured, stateHash, authorization, exchange, repositoryClient, request };
+module.exports = { configured, stateHash, authorization, exchange, repositoryClient, checkNames, request };
