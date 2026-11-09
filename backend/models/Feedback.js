@@ -11,6 +11,8 @@ const feedbackSchema = new mongoose.Schema({
     of: mongoose.Schema.Types.Mixed,
     required: true,
   },
+  subscriptionEmail: { type: String, select: false },
+  shippedIssueIds: [{ type: mongoose.Schema.Types.ObjectId }],
   timestamp: {
     type: Date,
     default: Date.now,

@@ -16,14 +16,15 @@ async function createProject(data) {
     return project;
   });
 }
-async function submitFeedback(filter, answers) {
+async function submitFeedback(filter, answers, subscriptionEmail) {
+  subscriptionEmail = require("./feedback-subscriptions").validateSubscription(subscriptionEmail);
   return mongoose.connection.transaction(async (session) => {
     // Both submission and deletion write this document, forcing one to retry.
     const project = await Project.findOneAndUpdate(filter, { $inc: { writeVersion: 1 } }, { new: true, session });
     if (!project) throw unavailable();
     await lockOwner(project.userId, session);
     const formAnswers = validateAnswers(project.fields, answers);
-    const [feedback] = await Feedback.create([{ projectId: project._id, formAnswers }], { session });
+    const [feedback] = await Feedback.create([{ projectId: project._id, formAnswers, subscriptionEmail }], { session });
     return feedback;
   });
 }

@@ -14,7 +14,10 @@ if (!Number.isInteger(proxyHops) || proxyHops < 0 || proxyHops > 3) throw new Er
 app.set("trust proxy", proxyHops);
 const PORT = process.env.PORT || 8000;
 
-connectDB().then(() => require("./services/digest-worker").startDigestWorker());
+connectDB().then(() => {
+  require("./services/digest-worker").startDigestWorker();
+  require("./services/feedback-subscriptions").startShippingWorker();
+});
 
 app.use(cors(require("./config/cors")));
 app.post("/api/payment/webhook", express.raw({ type: "application/json", limit: "64kb" }), require("./controller/paymentController").paymentWebhook);

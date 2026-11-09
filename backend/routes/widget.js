@@ -25,7 +25,7 @@ router.get("/:projectId", async (req, res) => {
 });
 router.post("/:projectId", async (req, res) => {
   try {
-    const feedback = await submitFeedback({ _id: req.params.projectId }, req.body?.formAnswers);
+    const feedback = await submitFeedback({ _id: req.params.projectId }, req.body?.formAnswers, req.body?.subscriptionEmail);
     res.status(201).json({ id: feedback._id });
   } catch (error) { res.status(error.status || 500).json({ message: error.status ? error.message : "Could not submit feedback." }); }
 });
