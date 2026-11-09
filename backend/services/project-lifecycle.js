@@ -33,6 +33,9 @@ async function deleteProject(filter) {
     const project = await Project.findOneAndDelete(filter, { session });
     if (!project) return false;
     await Feedback.deleteMany({ projectId: project._id }, { session });
+    await require("../models/PullRequestRun").deleteMany({ projectId: project._id }, { session });
+    await require("../models/PullRequestConnection").deleteMany({ projectId: project._id }, { session });
+    await require("../models/RepositoryBlob").deleteMany({ projectId: project._id }, { session });
     return true;
   });
 }

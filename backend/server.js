@@ -17,6 +17,7 @@ const PORT = process.env.PORT || 8000;
 connectDB().then(() => {
   require("./services/digest-worker").startDigestWorker();
   require("./services/feedback-subscriptions").startShippingWorker();
+  require("./services/pr-workflow").startPullRequestWorker();
 });
 
 app.use(cors(require("./config/cors")));
@@ -29,6 +30,8 @@ app.use("/api/widget", require("./routes/widget"));
 app.use("/api/submissions", require("./routes/submissions"));
 app.use("/api/auth", authRoutes);
 app.use("/api/slack", require("./routes/slack"));
+app.use("/api/github", require("./routes/github"));
+app.use("/api/pull-requests", authMiddleware, require("./routes/pull-requests"));
 app.use("/api/integrations", authMiddleware, require("./routes/integrations"));
 app.use("/api/workbench", authMiddleware, require("./routes/workbench"));
 app.use("/api/projects", authMiddleware, projectRoutes);

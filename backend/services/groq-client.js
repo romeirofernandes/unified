@@ -43,12 +43,12 @@ async function groqRequest(path, { headers = {}, body, signal }) {
   }
 }
 
-async function groqJson({ messages, maxTokens = 4096, signal }) {
+async function groqJson({ messages, maxTokens = 4096, signal, model = process.env.GROQ_MODEL || "qwen/qwen3.8-27b" }) {
   const result = await groqRequest("chat/completions", {
     signal,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: process.env.GROQ_MODEL || "qwen/qwen3.8-27b",
+      model,
       max_completion_tokens: maxTokens,
       response_format: { type: "json_object" },
       messages,
