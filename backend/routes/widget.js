@@ -17,15 +17,15 @@ router.use("/:projectId", async (req, res, next) => {
 });
 router.get("/:projectId", async (req, res) => {
   try {
-    const project = await Project.findOne({ _id: req.params.projectId }).select("name fields appearance theme userId").lean();
+    const project = await Project.findOne({ _id: req.params.projectId }).select("name fields appearance theme userId shippingUpdatesEnabled").lean();
     if (!project || !await User.exists({ _id: project.userId, deleting: { $ne: true } })) return res.status(404).json({ message: "Form not found." });
     const { name, fields, appearance, theme } = project;
-    res.json({ name, fields, appearance, theme });
+    res.json({ name, fields, appearance, theme, shippingUpdatesEnabled: project.shippingUpdatesEnabled === true });
   } catch { res.status(503).json({ message: "Could not load feedback form." }); }
 });
 router.post("/:projectId", async (req, res) => {
   try {
-    const feedback = await submitFeedback({ _id: req.params.projectId }, req.body?.formAnswers);
+    const feedback = await submitFeedback({ _id: req.params.projectId }, req.body?.formAnswers, req.body?.subscriptionEmail);
     res.status(201).json({ id: feedback._id });
   } catch (error) { res.status(error.status || 500).json({ message: error.status ? error.message : "Could not submit feedback." }); }
 });

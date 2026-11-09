@@ -29,6 +29,7 @@ test("all saved project changes are detected and reverting restores the original
     (draft) => (draft.name += " changed"),
     (draft) => (draft.description += " changed"),
     (draft) => (draft.theme = "dark"),
+    (draft) => (draft.shippingUpdatesEnabled = true),
     (draft) => (draft.appearance.font = "Lora"),
     (draft) => (draft.fields[0].label += "?"),
     (draft) => (draft.fields[0].required = true),

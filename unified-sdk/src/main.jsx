@@ -11,6 +11,7 @@ window.fetch = async (input, options) => {
     return new Response(JSON.stringify(options?.method === "POST" ? { id: "demo" } : {
       appearance: { preset: "unified", launcher: JSON.parse(localStorage.getItem("unified-demo-launcher") || "{}") },
       name: "Help us improve",
+      shippingUpdatesEnabled: true,
       theme: "light",
       fields: [
         { _id: "message", type: "textarea", label: "What could we do better?", required: true },

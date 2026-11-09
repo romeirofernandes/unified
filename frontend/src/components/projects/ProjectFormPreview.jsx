@@ -9,6 +9,7 @@ export default function ProjectFormPreview({
   fields,
   theme = "light",
   appearance,
+  shippingUpdatesEnabled = false,
   onThemeChange,
   disabled,
 }) {
@@ -39,6 +40,10 @@ export default function ProjectFormPreview({
             theme={theme}
           />
         ))}
+        {shippingUpdatesEnabled && <label className="flex items-start gap-3 text-sm">
+          <input type="checkbox" disabled className="mt-0.5 size-4" />
+          Email me when my request ships
+        </label>}
         <button
           type="button"
           disabled

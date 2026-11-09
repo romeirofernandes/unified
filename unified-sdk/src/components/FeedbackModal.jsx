@@ -4,7 +4,7 @@ import { ArrowLeft01Icon, ArrowRight01Icon, BubbleChatIcon, Cancel01Icon } from 
 import Stepper, { Step } from "./Stepper";
 import Field from "./Field";
 
-const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose, formData, theme, answers, onSubmit, onChange, pending = false, error }) {
+const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose, formData, theme, answers, onSubmit, onChange, pending = false, error, subscribed = false, onSubscribedChange, subscriptionEmail = "", onSubscriptionChange }) {
   const [fieldError, setFieldError] = useState("");
   const [currentStep, setCurrentStep] = useState(0);
   const instanceId = useId();
@@ -12,6 +12,7 @@ const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose, formData, t
   if (!isOpen) return null;
   const total = formData.fields.length;
   const current = formData.fields[currentStep];
+  const hasEmailAnswer = formData.fields.some(field => field.type === "email" && typeof answers[field._id] === "string" && answers[field._id].trim());
   function submit(event) {
     event.preventDefault();
     if (pending) return;
@@ -48,6 +49,16 @@ const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose, formData, t
           </div>
         </Step>)}
       </Stepper>
+      {currentStep === total - 1 && formData.shippingUpdatesEnabled && onSubscribedChange && <div className="uf-question">
+        <label className="uf-subscription">
+          <input type="checkbox" checked={subscribed} onChange={event => onSubscribedChange(event.target.checked)} disabled={pending} />
+          <span>Email me when my request ships</span>
+        </label>
+        {subscribed && !hasEmailAnswer && <div>
+          <label className="uf-question-label" htmlFor={`${instanceId}-subscription`}>Email for updates</label>
+          <input className="uf-input" id={`${instanceId}-subscription`} type="email" autoComplete="email" required maxLength={254} value={subscriptionEmail} onChange={event => onSubscriptionChange(event.target.value)} disabled={pending} />
+        </div>}
+      </div>}
       {(error || fieldError) && <p role="alert" className="uf-error">{fieldError || error}</p>}
       <footer className="uf-form-footer">
         <button type="button" className="uf-button uf-button-back" disabled={pending} style={{ visibility: currentStep === 0 ? "hidden" : undefined }} onClick={() => { setFieldError(""); setCurrentStep(value => Math.max(0, value - 1)); }}><HugeiconsIcon icon={ArrowLeft01Icon} size={16} aria-hidden="true" />Back</button>

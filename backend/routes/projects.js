@@ -85,6 +85,7 @@ router.use((error, req, res, next) => {
 router.post("/", async (req, res) => {
   try {
     const { name, description, fields, theme } = req.body;
+    if (req.body.shippingUpdatesEnabled !== undefined && typeof req.body.shippingUpdatesEnabled !== "boolean") return res.status(400).json({ message: "Shipping updates must be enabled or disabled." });
     validateFields(fields);
     const appearance = validateAppearance(req.body.appearance);
     const userId = req.user.id;
@@ -95,6 +96,7 @@ router.post("/", async (req, res) => {
       fields,
       theme,
       appearance,
+      shippingUpdatesEnabled: req.body.shippingUpdatesEnabled ?? false,
       userId,
     });
 
@@ -187,6 +189,7 @@ router.get("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { name, description, fields, theme } = req.body;
+    if (req.body.shippingUpdatesEnabled !== undefined && typeof req.body.shippingUpdatesEnabled !== "boolean") return res.status(400).json({ message: "Shipping updates must be enabled or disabled." });
     validateFields(fields);
     const appearance = validateAppearance(req.body.appearance);
     const project = await Project.findOneAndUpdate(
@@ -197,6 +200,7 @@ router.put("/:id", async (req, res) => {
         fields,
         theme,
         ...(appearance ? { appearance } : {}),
+        ...(req.body.shippingUpdatesEnabled !== undefined ? { shippingUpdatesEnabled: req.body.shippingUpdatesEnabled } : {}),
       },
       { new: true, runValidators: true },
     );

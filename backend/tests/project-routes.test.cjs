@@ -250,3 +250,21 @@ test("saved launcher configuration reaches the public widget endpoint", async ()
   assert.deepEqual(publicForm.data.appearance, appearance);
   assert.equal(publicForm.data.userId, undefined);
 });
+
+test("project create and edit persist the shipping setting and reject non-booleans", async () => {
+  const writes = [];
+  const routes = loadRoutes("projects.js", {
+    "../services/project-lifecycle": { createProject: async data => { writes.push(data); return data; } },
+    "../models/Project": { findOneAndUpdate: async (filter, update) => { writes.push(update); return update; } },
+  });
+  const body = { name: "Product", description: "", fields: [{ type: "text", label: "Feedback", required: false }], theme: "light", shippingUpdatesEnabled: true };
+  for (const route of ["post /", "put /:id"]) {
+    const res = response();
+    await routes.get(route)({ body, user: { id: "owner" }, params: { id: "project" } }, res);
+    assert.equal(res.statusCode, route === "post /" ? 201 : 200);
+    assert.equal(writes.at(-1).shippingUpdatesEnabled, true);
+    const invalid = response();
+    await routes.get(route)({ body: { ...body, shippingUpdatesEnabled: "true" }, user: { id: "owner" }, params: { id: "project" } }, invalid);
+    assert.equal(invalid.statusCode, 400);
+  }
+});

@@ -17,6 +17,7 @@ export function projectDraftKey({
   description,
   theme,
   appearance,
+  shippingUpdatesEnabled = false,
   fields,
 }) {
   return JSON.stringify(
@@ -25,6 +26,7 @@ export function projectDraftKey({
       description: description.trim(),
       theme,
       appearance,
+      shippingUpdatesEnabled,
       fields: serializeFields(fields),
     }),
   );

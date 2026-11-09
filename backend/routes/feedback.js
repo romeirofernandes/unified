@@ -11,7 +11,7 @@ router.post("/", async (req, res) => {
   try {
     const { projectId, formAnswers } = req.body;
 
-    const feedback = await submitFeedback({ _id: projectId, userId: req.user.id }, formAnswers);
+    const feedback = await submitFeedback({ _id: projectId, userId: req.user.id }, formAnswers, req.body.subscriptionEmail);
     res.status(201).json(feedback);
   } catch (error) {
     res
