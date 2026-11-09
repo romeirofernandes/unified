@@ -2,8 +2,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import RepositoryConnection from "@/components/pull-requests/RepositoryConnection";
 import ExecutionTrace from "@/components/pull-requests/ExecutionTrace";
-import FileLogo from "@/components/pull-requests/FileLogo";
-import CodeBlock from "@/components/pull-requests/CodeBlock";
+import FilePill from "@/components/pull-requests/FilePill";
 import FixPipeline from "@/components/pull-requests/FixPipeline";
 import PageHeader from "@/components/shared/PageHeader";
 import ProjectPicker from "@/components/shared/ProjectPicker";
@@ -14,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/use-auth";
+import { useRunLive } from "@/hooks/use-run-live";
 import { useApiResource } from "@/hooks/use-api-resource";
 import { apiRequest } from "@/lib/api";
 import { forgetResourcePrefix } from "@/lib/resource-cache";
@@ -26,14 +26,15 @@ function EmptyPipeline() {
   return <section className="overflow-hidden rounded-xl border border-border bg-card"><h2 className="border-b border-border p-5 text-base font-semibold sm:px-6">Fix pipeline</h2><FixPipeline run={null} selectedStage={selected} onSelect={setSelected} /><Dialog open={!!stage} onOpenChange={open => { if (!open) setSelected(null); }}><DialogContent className="border border-border bg-card text-foreground"><DialogHeader><DialogTitle>{stage?.label}</DialogTitle><DialogDescription>{stage?.description}</DialogDescription></DialogHeader></DialogContent></Dialog></section>;
 }
 function StageDetail({ stage, run }) {
-  return <div className="space-y-5 text-sm leading-6">
+  return <div className="space-y-7 text-sm leading-7">
     <p className="whitespace-pre-wrap break-words">{stage.detail}</p>
     {stage.id === "scope" && <>
-      {run.assessment?.plan?.length > 0 && <ol className="list-decimal space-y-2 ps-5">{run.assessment.plan.map((step, index) => <li key={index}>{step}</li>)}</ol>}
+      {run.assessment?.plan?.length > 0 && <div className="rounded-xl border border-border bg-background p-4 sm:p-5"><h3 className="mb-3 text-xs font-semibold text-muted-foreground">Proposed change</h3><ol className="list-decimal space-y-3 ps-4">{run.assessment.plan.map((step, index) => <li key={index} className="ps-1">{step}</li>)}</ol></div>}
       <div><h3 className="mb-1 font-semibold">Expected result</h3><p className="whitespace-pre-wrap break-words text-muted-foreground">{run.acceptance}</p></div>
-      {run.files?.length > 0 && <div><h3 className="mb-2 font-semibold">Source files</h3><ul className="space-y-2">{run.files.map(file => <li key={file.path} className="flex items-start gap-2 font-mono text-xs"><FileLogo path={file.path} /><span className="min-w-0 break-all">{file.path}<span className="mt-1 block text-muted-foreground">{file.sha?.slice(0, 12)}</span></span></li>)}</ul><p className="mt-3 break-all font-mono text-xs text-muted-foreground">{run.baseBranch} · {run.baseSha?.slice(0, 12)}</p></div>}
+      {run.files?.length > 0 && <div className="space-y-3"><h3 className="text-sm font-semibold">Source files</h3><ul className="space-y-3">{run.files.map(file => <li key={file.path} className="space-y-1.5"><FilePill path={file.path} /><span className="block ps-1 font-mono text-[11px] text-muted-foreground">{file.sha?.slice(0, 12)} · {file.size?.toLocaleString()} bytes</span></li>)}</ul><p className="break-all pt-1 font-mono text-[11px] text-muted-foreground">{run.baseBranch} · {run.baseSha?.slice(0, 12)}</p></div>}
+
     </>}
-    {stage.id === "patch" && run.patch?.map((edit, index) => <CodeBlock key={index} filename={edit.path} before={edit.before} after={edit.after} />)}
+
     {["pr", "review"].includes(stage.id) && run.prUrl && <Button asChild variant="secondary"><a href={run.prUrl} target="_blank" rel="noreferrer">Open pull request #{run.prNumber}</a></Button>}
     {stage.id === "review" && run.checks?.length > 0 && <ul className="divide-y divide-border">{run.checks.map((check, index) => <li key={index} className="flex flex-wrap justify-between gap-2 py-2"><span>{check.name}</span><span className="text-muted-foreground">{check.conclusion || check.status}</span></li>)}</ul>}
     {stage.id === "notify" && run.notification?.total > 0 && <dl className="grid grid-cols-3 gap-4"><div><dt className="text-xs text-muted-foreground">Opted in</dt><dd className="text-xl font-semibold tabular-nums">{run.notification.total}</dd></div><div><dt className="text-xs text-muted-foreground">Sent</dt><dd className="text-xl font-semibold tabular-nums">{run.notification.sent}</dd></div><div><dt className="text-xs text-muted-foreground">Pending</dt><dd className="text-xl font-semibold tabular-nums">{run.notification.pending}</dd></div></dl>}
@@ -41,7 +42,7 @@ function StageDetail({ stage, run }) {
 }
 function RunDetail({ runId, projectId, uid, refreshList }) {
   const path = `/pull-requests/${projectId}/runs/${runId}`;
-  const { data: run, loading, error: loadError, reload } = useApiResource(path, uid);
+  const { data: run, loading, error: loadError, reload, setData } = useApiResource(path, uid);
   const [selected, setSelected] = useState(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [confirm, setConfirm] = useState(null);
@@ -49,7 +50,8 @@ function RunDetail({ runId, projectId, uid, refreshList }) {
   const [error, setError] = useState("");
   const guard = useRef(false);
   const status = run?.status;
-  const polling = activeStatuses.includes(status) ? 8000 : watchedStatuses.includes(status) ? 8000 : status === "shipped" && ["pending", "failed"].includes(run.notification?.status) ? 15000 : 0;
+  const live = useRunLive(path, uid, activeStatuses.includes(status) || watchedStatuses.includes(status), setData);
+  const polling = live ? 0 : activeStatuses.includes(status) ? 8000 : watchedStatuses.includes(status) ? 8000 : status === "shipped" && ["pending", "failed"].includes(run.notification?.status) ? 15000 : 0;
   useEffect(() => { if (!polling) return; const timer = setInterval(reload, polling); return () => clearInterval(timer); }, [polling, reload]);
   useEffect(() => { if (status) refreshList(); }, [status, refreshList]);
   async function act(action) {
@@ -69,6 +71,7 @@ function RunDetail({ runId, projectId, uid, refreshList }) {
   return <section aria-label="Selected run" className="min-w-0 overflow-hidden rounded-xl border border-border bg-card">
     <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-5 sm:px-6"><div className="min-w-0"><h2 className="break-words text-base font-semibold">{run.issue.title}</h2><p role="status" className="mt-1 text-xs text-muted-foreground">{runLabels[status] || status}</p></div><div className="flex gap-2">{run.prUrl && <Button asChild variant="secondary"><a href={run.prUrl} target="_blank" rel="noreferrer">PR #{run.prNumber}</a></Button>}</div></header>
     <FixPipeline run={run} selectedStage={stage.id} onSelect={id => { setSelected(id); setDetailOpen(true); }} />
+    {activeStatuses.includes(status) && !detailOpen && <div className="border-t border-border bg-card p-5 sm:p-6"><ExecutionTrace key={current.id} embedded defaultExpanded={false} events={stageEvents(run, current.id)} state={current.state} run={run} stageId={current.id} live={live} /></div>}
     {current.state === "failed" && <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-card p-4 sm:px-6"><p className="min-w-0 flex-1 text-sm text-destructive">{current.label} needs attention.</p><Button variant="secondary" onClick={() => { setSelected(current.id); setDetailOpen(true); }}>View details</Button></div>}
     {["queued", "assessing", "eligible", "queued_fix", "generating", "merged"].includes(status) || (status === "failed" && run.branch) ? <footer className="flex flex-wrap items-center justify-end gap-3 border-t border-border bg-card p-4 sm:px-6">
       {["queued", "assessing", "eligible", "queued_fix", "generating"].includes(status) && <Button variant="destructive" disabled={pending} onClick={() => setConfirm("cancel")}>Cancel run</Button>}
@@ -77,7 +80,7 @@ function RunDetail({ runId, projectId, uid, refreshList }) {
       {status === "merged" && <Button loading={pending} onClick={() => setConfirm("shipped")}>Mark shipped</Button>}
     </footer> : null}
     {error && <div className="px-5 pb-4"><ErrorMessage>{error}</ErrorMessage></div>}
-    <Dialog open={detailOpen} onOpenChange={setDetailOpen}><DialogContent size="lg" className="max-h-[calc(100dvh-2rem)] overflow-y-auto border border-border bg-card text-foreground"><DialogHeader><DialogTitle>{stage.label}</DialogTitle><DialogDescription>{stage.state === "failed" ? "Needs attention" : stage.state === "complete" ? "Complete" : stage.state === "waiting" ? "Waiting" : "Run details"}</DialogDescription></DialogHeader><StageDetail stage={stage} run={run} /><ExecutionTrace key={stage.id} events={stageEvents(run, stage.id)} state={stage.state} /></DialogContent></Dialog>
+    <Dialog open={detailOpen} onOpenChange={setDetailOpen}><DialogContent size="lg" className="max-h-[calc(100dvh-2rem)] overflow-y-auto border border-border bg-card p-6 text-foreground sm:max-w-[760px] sm:p-8"><DialogHeader className="mb-7 pe-6"><DialogTitle>{stage.label}</DialogTitle><DialogDescription>{stage.state === "failed" ? "Needs attention" : stage.state === "complete" ? "Complete" : stage.state === "waiting" ? "Waiting" : "Run details"}</DialogDescription></DialogHeader><StageDetail stage={stage} run={run} /><ExecutionTrace key={stage.id} events={stageEvents(run, stage.id)} state={stage.state} run={run} stageId={stage.id} live={live} /></DialogContent></Dialog>
     <ConfirmDialog open={!!confirm} onClose={() => setConfirm(null)} onConfirm={() => act(confirm)} pending={pending} error={error} title={confirm === "shipped" ? "Has this fix reached users?" : "Cancel this run?"} description={confirm === "shipped" ? "Mark the issue Done and send shipping emails to linked reporters who opted in, if enabled for this project." : "Stop this attempt. Issues moved by this run return to To do. Published PRs remain on GitHub."} confirmLabel={confirm === "shipped" ? "Mark shipped" : "Cancel run"} confirmVariant={confirm === "shipped" ? "primary" : "destructive"} />
   </section>;
 }

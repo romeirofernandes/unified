@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import FileLogo from "./FileLogo";
+import FilePill from "./FilePill";
 import { patchRows } from "@/lib/patch-diff";
 
 const KEYWORDS = new Set(["import", "from", "export", "default", "async", "function", "const", "let", "var", "await", "return", "if", "else", "for", "while", "new", "throw", "try", "catch", "null", "true", "false", "undefined"]);
@@ -28,9 +28,8 @@ export default function CodeBlock({ filename, before, after }) {
     catch { setError("Could not copy. Select the code to copy it."); }
   }
   return <div className="w-full overflow-hidden rounded-lg border border-border bg-background" aria-label={`Replacement excerpt for ${filename}`}>
-    <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2 text-xs">
-      <FileLogo path={filename} />
-      <span title={filename} className="min-w-0 flex-1 truncate font-mono">{filename}</span>
+    <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3 text-xs">
+      <span className="min-w-0 flex-1"><FilePill path={filename} /></span>
       <div className="flex gap-1" aria-label="Code view">{["Diff", "Code"].map(view => <button key={view} type="button" aria-pressed={view === variant} onClick={() => setVariant(view)} className={`rounded px-2 py-1 outline-none focus-visible:ring-2 focus-visible:ring-ring ${view === variant ? "bg-muted text-foreground" : "text-muted-foreground"}`}>{view}</button>)}</div>
       {variant === "Diff" ? <span className="font-mono tabular-nums"><span className="text-green-700 dark:text-green-300">+{rows.filter(row => row.type === "add").length}</span> <span className="text-destructive">−{rows.filter(row => row.type === "del").length}</span></span> : <button type="button" onClick={copy} className="rounded px-2 py-1 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">{copied ? "Copied" : "Copy"}</button>}
     </div>

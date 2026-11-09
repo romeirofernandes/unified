@@ -5,7 +5,7 @@ const API_URL = (
 
 export async function apiRequest(
   path,
-  { uid, token, body, rawBody, headers, ...options } = {},
+  { uid, token, body, rawBody, headers, stream = false, ...options } = {},
 ) {
   const bearer = token || await accessToken(uid);
   const response = await fetch(`${API_URL}/api${path}`, {
@@ -31,5 +31,5 @@ export async function apiRequest(
     error.status = response.status;
     throw error;
   }
-  return response.status === 204 ? null : response.json();
+  return stream ? response.body : response.status === 204 ? null : response.json();
 }

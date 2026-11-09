@@ -13,16 +13,25 @@ const fixture = `
 import React, {useEffect, useState, useCallback} from 'react';
 const project = {_id:'project-1',name:'Unified',fields:[]};
 const issue = {_id:'issue-1',title:'Clarify the save button',description:'The editor button should use a specific label.',status:'todo'};
-const run = {_id:'run-1',projectId:'project-1',issueId:'issue-1',issue:{title:issue.title,description:issue.description},acceptance:'The editor button must read Save changes.',repository:'owner/repository',baseBranch:'main',baseSha:'a'.repeat(40),requiredCheck:'',model:'fixture',prNumber:1,notification:{status:'pending',total:2,sent:0,pending:2,message:'2 shipping emails are queued for delivery.'},status:'eligible',active:false,createdAt:'2026-11-09T10:00:00Z',message:'This is a small label correction in an existing component.',assessment:{suitable:true,reason:'The label is present in the selected editor component.',plan:['Change the existing save label without changing submission behavior.']},files:[{path:'frontend/src/components/Editor.tsx',sha:'b'.repeat(40),size:1240}],patch:[{path:'frontend/src/components/Editor.tsx',before:'<button>Save</button>',after:'<button>Save changes</button>'}],events:[{at:'2026-11-09T10:00:00Z',status:'eligible',message:'Assessment complete.'},{at:'2026-11-09T10:01:00Z',status:'generating',stage:'patch',message:'Patch replacement validated.'}]};
+const run = {_id:'run-1',projectId:'project-1',issueId:'issue-1',issue:{title:issue.title,description:issue.description},acceptance:'The editor button must read Save changes.',repository:'owner/repository',baseBranch:'main',baseSha:'a'.repeat(40),requiredCheck:'',model:'fixture',prNumber:1,notification:{status:'pending',total:2,sent:0,pending:2,message:'2 shipping emails are queued for delivery.'},status:'eligible',active:false,createdAt:'2026-11-09T10:00:00Z',message:'This is a small label correction in an existing component.',assessment:{suitable:true,reason:'The label is present in the selected editor component.',plan:['Change the existing save label without changing submission behavior.']},files:[{path:'frontend/src/components/Editor.tsx',sha:'b'.repeat(40),size:1240}],patch:[{path:'frontend/src/components/Editor.tsx',before:'<button>Save</button>',after:'<button>Save changes</button>'}],events:[{at:'2026-11-09T10:00:00Z',status:'assessing',stage:'scope',operation:'read:Editor',tool:'read',label:'Read source',target:'frontend/src/components/Editor.tsx',state:'running',message:'Reading the saved source snapshot.'},{at:'2026-11-09T10:00:01Z',status:'assessing',stage:'scope',operation:'read:Editor',tool:'read',label:'Read source',target:'frontend/src/components/Editor.tsx',state:'complete',message:'Read 1240 bytes and verified the source hash.'},{at:'2026-11-09T10:00:01Z',status:'assessing',stage:'scope',operation:'ai:scope',tool:'ai',label:'Assess scope',target:'qwen/qwen3.8-27b',state:'running',message:'Assessing the issue against the source and expected result.'},{at:'2026-11-09T10:00:02Z',status:'assessing',stage:'scope',operation:'ai:scope',tool:'ai',label:'Assess scope',target:'qwen/qwen3.8-27b',state:'complete',durationMs:800,message:'The model returned a bounded scope assessment.'},{at:'2026-11-09T10:00:02Z',status:'eligible',message:'Assessment complete.'},{at:'2026-11-09T10:01:00Z',status:'generating',stage:'patch',message:'Patch replacement validated.'}]};
 const data = {configured:true,installUrl:'https://github.com/apps/unified-test/installations/new',repositories:[{repositoryId:1,repository:'owner/repository'},{repositoryId:2,repository:'owner/second'}],connection:{repository:'owner/repository',defaultBranch:'main',connectedAt:'2026-11-09T09:00:00Z'},runs:[]};
 window.prFixture = {run,data,calls:[],update(status){run.status=status; run.prUrl='https://github.com/owner/repository/pull/1'; run.branch='unified/fix-run-1'; data.runs=[{...run}]; window.dispatchEvent(new Event('fixture'));}};
 export function useAuth(){return {user:{uid:'user-1',email:'owner@example.com',displayName:'Project owner'},loading:false,logout(){}};}
 export function useApiResource(route){
  const [,redraw]=useState(0); const reload=useCallback(()=>redraw(n=>n+1),[]);
  useEffect(()=>{window.addEventListener('fixture',reload);return()=>window.removeEventListener('fixture',reload);},[reload]);
- return {data: route==='/projects'?[project]:route.startsWith('/workbench/')?[issue]:route.includes('/runs/')?{...run}: {...data,runs:[...data.runs]},loading:false,error:'',reload,setData(){}};
+ return {data: route==='/projects'?[project]:route.startsWith('/workbench/')?[issue]:route.includes('/runs/')?{...run}: {...data,runs:[...data.runs]},loading:false,error:'',reload,setData(){reload();}};
 }
 export async function apiRequest(route,options){
+ if(options.stream){
+  let send;
+  return new ReadableStream({start(controller){
+   send=()=>controller.enqueue(new TextEncoder().encode('event: change\\n'+'data: {}\\n\\n'));
+   window.prFixture.liveEvent=send;
+   controller.enqueue(new TextEncoder().encode('event: ready\\n'+'data: {}\\n\\n'));
+   options.signal.addEventListener('abort',()=>{try{controller.close();}catch{}},{once:true});
+  },cancel(){if(window.prFixture.liveEvent===send)window.prFixture.liveEvent=null;}});
+ }
  window.prFixture.calls.push({route,...options});
  if(route.endsWith('/runs')){data.runs=[{...run}];window.dispatchEvent(new Event('fixture'));return {_id:run._id};}
  if(route.endsWith('/connection/repository')){const repo=data.repositories.find(item=>item.repositoryId===options.body.repositoryId);data.connection={repository:repo.repository,defaultBranch:'main',connectedAt:new Date().toISOString()};window.dispatchEvent(new Event('fixture'));}
@@ -81,6 +90,15 @@ try {
   await expect(page.getByRole("list", {name:"Execution trace"})).toContainText("Assessment complete.");
   await expect(page.getByRole("list", {name:"Execution trace"})).not.toContainText("Patch replacement validated.");
   await expect(page.getByRole('region', {name:'Run history'})).toHaveCount(0);
+  await page.getByRole('button', {name:/Read source/}).click();
+  await expect(page.getByRole('dialog').getByText('Read 1240 bytes and verified the source hash.')).toBeVisible();
+  await expect.poll(() => page.getByRole('dialog').evaluate(node=>getComputedStyle(node).opacity)).toBe('1');
+  await page.screenshot({path:path.join(output,'scope-dialog-dark.png')});
+  await page.evaluate(() => {document.documentElement.classList.remove('dark');window.dispatchEvent(new Event('fixture-theme'));});
+  await page.waitForTimeout(500);
+  await page.screenshot({path:path.join(output,'scope-dialog-light.png')});
+  await page.evaluate(() => {document.documentElement.classList.add('dark');window.dispatchEvent(new Event('fixture-theme'));});
+
   await expect(page.locator('.fix-node.state-complete').getByText('Complete',{exact:true})).toHaveCount(0);
   await page.getByRole("button", { name: "Close", exact: true }).click();
   await page.locator('.react-flow__node[data-id="patch"]').click();
@@ -110,6 +128,10 @@ try {
   await expect(page.getByRole("link", { name: "PR #1", exact: true })).toBeVisible();
   await expect(page.locator('.react-flow__node[data-id="pr"] a')).toHaveAttribute('href', 'https://github.com/owner/repository/pull/1');
   await expect(page.getByRole("button", { name: "Mark shipped", exact: true })).toHaveCount(0);
+  await page.waitForFunction(() => typeof window.prFixture.liveEvent === 'function');
+  await page.evaluate(() => {window.prFixture.run.message='Live check update from the stream';window.prFixture.liveEvent();});
+  await expect(page.locator('.react-flow__node[data-id="review"]')).toHaveAttribute('aria-label',/Live check update from the stream/);
+
   await page.evaluate(() => { window.prFixture.run.failedStage='review'; window.prFixture.run.message='Build failed: missing export.'; window.prFixture.update('needs_attention'); });
   await expect(page.locator('.react-flow__node[data-id="review"] .state-failed')).toHaveCount(1);
   await page.getByRole("button", { name: "View details", exact: true }).click();

@@ -87,3 +87,19 @@ test("recordings are uploaded as binary audio without JSON conversion", async ()
     globalThis.fetch = original;
   }
 });
+
+test("live requests keep bearer authentication in headers and return the stream without parsing JSON", async () => {
+  const original = globalThis.fetch;
+  const controller = new AbortController();
+  const stream = new ReadableStream({start(c){c.enqueue(new TextEncoder().encode('event: ready\ndata: {}\n\n'));c.close();}});
+  try {
+    globalThis.fetch = async (url,options) => {
+      assert.equal(url.includes('signed-test-token'),false);
+      assert.equal(options.headers.Authorization,'Bearer signed-test-token');
+      assert.equal(options.signal,controller.signal);
+      assert.equal(options.stream,undefined);
+      return {ok:true,status:200,body:stream,json:()=>{throw new Error('Do not parse SSE as JSON');}};
+    };
+    assert.equal(await apiRequest('/pull-requests/project/runs/run/events',{uid:'user',stream:true,signal:controller.signal}),stream);
+  } finally {globalThis.fetch=original;}
+});
