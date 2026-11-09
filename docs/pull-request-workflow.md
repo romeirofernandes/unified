@@ -49,10 +49,12 @@ you need a GitHub App and an existing CI workflow in each connected repository. 
 4. generate the app's private key and set `GITHUB_APP_ID`, `GITHUB_APP_SLUG`, `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, `GITHUB_APP_PRIVATE_KEY` and `GITHUB_APP_CALLBACK_URL` in the backend environment. the PEM key accepts literal `\n` line separators. set `FRONTEND_URL` to the dashboard origin and share `INTEGRATION_ENCRYPTION_KEY` across backend replicas.
 5. keep the existing Groq configuration. new jobs save the configured model so later changes to `GROQ_MODEL` do not silently change a queued run's model.
 6. use a MongoDB replica set, already required by feedback/account deletion. creating a run shares a transactional project lock with deletion. the queue worker starts with the backend, scans every 15 seconds and claims jobs atomically. expired 10-minute leases stop for recovery, they never replay publication automatically.
-7. open **Pull requests**, select a project, install the app on a selected repository, enter `owner/repository` and the exact required check name, then authorize GitHub. the connecting GitHub user must have write access and be able to see this app's installation on that repository.
+7. open **Pull requests** and select a project. the page shows one setup step at a time: **Allow access on GitHub**, **Connect repository**, then **Choose the test check**. paste a repository link or `owner/repository` in step 2. authorize GitHub, then pick a check from the names GitHub reports. PR-only checks can be entered manually. the connecting GitHub user must have write access and be able to see this app's installation on that repository.
 8. the repository's CI must run on `pull_request` or matching `push` events for `unified/fix-*` branches. it must run for drafts and report the exact configured check name. a skipped, neutral, cancelled or failed check does not pass verification. missing checks stop for human attention after an hour.
 
 OAuth user tokens are used only to prove repository access during connection and are never saved. workers mint short-lived installation tokens scoped to one repository. disconnect removes the connection and cached blobs, and stops status access. it leaves branches, drafts and historical run records intact. uninstall the app in GitHub to revoke its GitHub-side grant as well.
+
+installation callbacks do not consume OAuth state. expired links return to the setup page with the repository entry preserved, and revisiting a completed callback returns to the connected project without exchanging the code again. the page gates issue assessment until the repository and test check are configured.
 
 ## using it
 

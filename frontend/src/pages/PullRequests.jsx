@@ -1,3 +1,4 @@
+import RepositoryConnection from "@/components/pull-requests/RepositoryConnection";
 import { useEffect, useId, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import PageHeader from "@/components/shared/PageHeader";
@@ -24,46 +25,6 @@ function RunFlow({ status }) {
       <span className="mb-2 block font-mono text-[11px] tabular-nums">{String(index + 1).padStart(2, "0")}{index < stage ? " · Complete" : ""}</span>{label}
     </li>)}
   </ol>;
-}
-
-function RepositoryConnection({ projectId, uid, data, busy, reload }) {
-  const [editing, setEditing] = useState(false);
-  const [repository, setRepository] = useState(data.connection?.repository || "");
-  const [requiredCheck, setRequiredCheck] = useState(data.connection?.requiredCheck || "");
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState("");
-  const [disconnecting, setDisconnecting] = useState(false);
-  const guard = useRef(false);
-  async function connect(event) {
-    event.preventDefault();
-    if (guard.current) return;
-    guard.current = true; setPending(true); setError("");
-    try {
-      const result = await apiRequest(`/pull-requests/${projectId}/connect`, { uid, method: "POST", body: { repository: repository.trim(), requiredCheck: requiredCheck.trim() } });
-      window.location.assign(result.url);
-    } catch (error) { setError(error.message); guard.current = false; setPending(false); }
-  }
-  async function disconnect() {
-    if (guard.current) return;
-    guard.current = true; setPending(true); setError("");
-    try { await apiRequest(`/pull-requests/${projectId}/connection`, { uid, method: "DELETE" }); setDisconnecting(false); setEditing(false); reload(); }
-    catch (error) { setError(error.message); }
-    finally { guard.current = false; setPending(false); }
-  }
-  return <section aria-label="Repository connection" className="rounded-xl border border-border bg-card p-5 sm:p-6">
-    <div className="flex flex-wrap items-start justify-between gap-4">
-      <div className="min-w-0 space-y-1"><h2 className="text-base font-semibold">{data.connection ? data.connection.repository : "Connect a repository"}</h2><p className="text-sm text-muted-foreground">{data.connection ? `Base: ${data.connection.defaultBranch} · Required check: ${data.connection.requiredCheck}` : "Choose where Unified can open draft pull requests."}</p></div>
-      {data.connection && <div className="flex flex-wrap gap-2"><Button variant="ghost" disabled={busy || pending} onClick={() => { setRepository(data.connection.repository); setRequiredCheck(data.connection.requiredCheck); setEditing(!editing); }}>Change</Button><Button variant="ghost" disabled={busy || pending} onClick={() => setDisconnecting(true)}>Disconnect</Button></div>}
-    </div>
-    {!data.configured ? <p className="mt-4 text-sm text-muted-foreground">GitHub connection is not available in this workspace yet. Your workspace administrator needs to enable it.</p> : (!data.connection || editing) && <form onSubmit={connect} className="mt-5 space-y-5 border-t border-border pt-5">
-      <p className="text-sm leading-6 text-muted-foreground"><a href={data.installUrl} target="_blank" rel="noreferrer" className={textLink}>Install the GitHub App</a> on your chosen repository first, then authorize the connection below. You need write access to that repository.</p>
-      <div className="grid gap-4 sm:grid-cols-2"><FormField label="Repository" placeholder="owner/repository" value={repository} onChange={event => setRepository(event.target.value)} required maxLength={140} disabled={pending || busy} /><FormField label="Required CI check" placeholder="Exact check name, e.g. tests" value={requiredCheck} onChange={event => setRequiredCheck(event.target.value)} required maxLength={120} disabled={pending || busy} /></div>
-      <p className="text-xs leading-5 text-muted-foreground">The issue brief, acceptance criteria, and selected source files are sent to Groq. Files are cached encrypted for 7 days. Unified opens drafts and waits for your existing CI; you review and merge on GitHub.</p>
-      <ErrorMessage>{error}</ErrorMessage>
-      <div className="flex flex-wrap gap-2"><Button type="submit" loading={pending} disabled={busy}>Authorize GitHub</Button>{editing && <Button type="button" variant="ghost" disabled={pending} onClick={() => setEditing(false)}>Cancel</Button>}</div>
-    </form>}
-    <ConfirmDialog open={disconnecting} onClose={() => setDisconnecting(false)} onConfirm={disconnect} pending={pending} error={error} title="Disconnect this repository?" description="Source-file caches will be removed and status syncing will stop. Existing branches and pull requests remain on GitHub." confirmLabel="Disconnect" />
-  </section>;
 }
 
 function RunDetail({ runId, projectId, uid, refreshList }) {
@@ -140,10 +101,8 @@ function ProjectPullRequests({ project, uid, params, setParams }) {
   if (loading) return <LoadingState />;
   if (error) return <div className="space-y-3"><ErrorMessage>{error}</ErrorMessage><Button variant="secondary" onClick={reload}>Retry</Button></div>;
   return <>
-    {params.get("github") === "error" && <ErrorMessage>GitHub could not connect. Install the app on the selected repository, check your write access, then authorize again.</ErrorMessage>}
-    {params.get("github") === "connected" && <p role="status" className="text-sm text-muted-foreground">GitHub repository connected.</p>}
-    <RepositoryConnection key={`${project._id}-${data.connection?.connectedAt || "new"}`} projectId={project._id} uid={uid} data={data} busy={busy} reload={reload} />
-    <div className="grid items-start gap-5 xl:grid-cols-[minmax(280px,0.8fr)_minmax(0,1.4fr)]">
+    <RepositoryConnection key={`${project._id}-${data.connection?.connectedAt || "new"}-${params.get("github") || ""}`} projectId={project._id} uid={uid} data={data} busy={busy} reload={reload} result={params.get("github")} />
+    {data.connection?.requiredCheck ? <div className="grid items-start gap-5 xl:grid-cols-[minmax(280px,0.8fr)_minmax(0,1.4fr)]">
       <div className="min-w-0 space-y-5">
         <section aria-label="New assessment" className="space-y-5 rounded-xl border border-border bg-card p-5 sm:p-6">
           <div className="space-y-2"><h2 className="text-base font-semibold">Start with one issue</h2><p className="text-sm leading-6 text-muted-foreground">Small UI or documentation fixes only. Broad redesigns, backend changes, auth, payments, and dependencies need a human.</p></div>
@@ -161,7 +120,7 @@ function ProjectPullRequests({ project, uid, params, setParams }) {
       </div>
       {runId ? <RunDetail key={runId} runId={runId} projectId={project._id} uid={uid} refreshList={reload} /> : <section className="space-y-6 p-5 sm:p-6"><div className="space-y-2"><h2 className="text-xl font-semibold">From feedback to a reviewed fix</h2><p className="max-w-lg text-sm leading-6 text-muted-foreground">Assess first. Attempt only when the repository contains enough context for a small change. Every draft keeps its source files, patch, and verification history together.</p></div><RunFlow status="queued" /><p className="text-sm leading-6 text-muted-foreground">Passing CI means the configured check succeeded. You still review the code, merge on GitHub, and mark the fix shipped after release.</p></section>}
         {data.runs.length > 0 && <section aria-label="Run history" className="xl:col-span-2 rounded-xl border border-border bg-card p-5 sm:p-6"><h2 className="mb-3 text-base font-semibold">Recent runs</h2><ul className="divide-y divide-border">{data.runs.map(run => <li key={run._id}><button type="button" aria-pressed={run._id === runId} onClick={() => { setParams({ project: project._id, issue: run.issueId, run: run._id }); setAcceptance(""); }} className={`w-full space-y-1 rounded-md px-2 py-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring ${run._id === runId ? "bg-muted/50" : "hover:bg-muted/30"}`}><span className="block break-words text-sm font-medium">{run.issue.title}</span><span className="block text-xs text-muted-foreground">{runLabels[run.status]} · {date(run.createdAt)}</span></button></li>)}</ul></section>}
-    </div>
+    </div> : <p className="px-1 text-sm leading-6 text-muted-foreground">Finish connecting above. Then you can choose a workbench issue and assess it for a draft PR.</p>}
   </>;
 }
 
