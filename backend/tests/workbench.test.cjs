@@ -78,3 +78,31 @@ test("older projects without a board or actionable summary return an empty board
     assert.equal((await created.json())[0].title, "First issue");
   }
 });
+
+test("evidence retains original responses, deduplicates users, and enforces isolation", async () => {
+  const Feedback = require("../models/Feedback");
+  const project = await Project.create({ userId, name: "Evidence", fields: [{ type: "text", label: "Problem" }, { type: "email", label: "Email" }] });
+  const [question, email] = project.fields.map(field => String(field._id));
+  const feedbacks = await Feedback.create([
+    { projectId: project._id, formAnswers: { [question]: "Search freezes", [email]: "USER@example.com" } },
+    { projectId: project._id, formAnswers: { [question]: "Search still freezes", [email]: "user@example.com" } },
+    { projectId: project._id, formAnswers: { [question]: "Search is broken" } },
+    { projectId: new mongoose.Types.ObjectId(), formAnswers: { [question]: "Private" } },
+  ]);
+  await Project.updateOne({ _id: project._id }, { $set: { feedbackSummary: { features: ["Fix search"], evidence: [{ title: "Fix search", responseIds: [...feedbacks.map(item => String(item._id)), "invalid"] }] } } });
+  const [issue] = await (await request(String(project._id))).json();
+  const path = `${project._id}/${issue._id}/evidence`;
+  const evidence = await (await request(path)).json();
+  assert.equal(evidence.responseCount, 3);
+  assert.equal(evidence.affectedUserCount, 1);
+  assert.equal(evidence.unidentifiedResponseCount, 1);
+  assert.ok(evidence.responses.some(item => item.answers[0].answer === "Search freezes"));
+  assert.ok(evidence.responses.every(item => item.answers.length === 1));
+  assert.equal((await request(path, "GET", undefined, { "x-test-user": String(new mongoose.Types.ObjectId()) })).status, 404);
+  await request(`${project._id}/${issue._id}`, "PUT", { title: "Renamed", description: "", status: "done" });
+  assert.equal((await (await request(path)).json()).responseCount, 3);
+  await Feedback.deleteOne({ _id: feedbacks[0]._id });
+  assert.equal((await (await request(path)).json()).responseCount, 2);
+  await request(`${project._id}/${issue._id}`, "DELETE");
+  assert.equal((await request(path)).status, 404);
+});
