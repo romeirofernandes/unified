@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { useApiResource } from "@/hooks/use-api-resource";
@@ -9,22 +9,45 @@ import FeedbackList from "@/components/feedback/FeedbackList";
 import SummaryLoading from "@/components/feedback/SummaryLoading";
 import SummaryCard from "@/components/feedback/SummaryCard";
 import { Button } from "@/components/ui/button";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import { apiRequest } from "@/lib/api";
+import { forgetResource, forgetResourcePrefix } from "@/lib/resource-cache";
 
 function ProjectFeedback({ projectId }) {
   const { user } = useAuth();
   const project = useApiResource(`/projects/${projectId}`, user.uid);
   const feedback = useApiResource(`/feedback/project/${projectId}`, user.uid);
   const responses = feedback.data || [];
+  const [resetting, setResetting] = useState(false);
+  const [resetPending, setResetPending] = useState(false);
+  const [resetError, setResetError] = useState("");
+  const [notice, setNotice] = useState("");
+  const resetGuard = useRef(false);
   const analysis = useFeedbackSummary(project.data, responses, !project.loading && !feedback.loading && !project.error && !feedback.error);
   const refreshResponses = feedback.refresh;
+  const refreshProject = project.refresh;
   useEffect(() => {
-    const refresh = () => { if (document.visibilityState === "visible") refreshResponses(); };
+    const refresh = () => { if (document.visibilityState === "visible") { refreshProject(); refreshResponses(); } };
     const timer = window.setInterval(refresh, 30000);
     window.addEventListener("focus", refresh);
     return () => { clearInterval(timer); window.removeEventListener("focus", refresh); };
-  }, [refreshResponses]);
+  }, [refreshResponses, refreshProject]);
   const error = project.error || feedback.error;
   const loading = project.loading || feedback.loading;
+  async function reset() {
+    if (resetGuard.current) return;
+    resetGuard.current = true; setResetPending(true); setResetError("");
+    try {
+      const result = await apiRequest(`/feedback/project/${projectId}/reset`, { uid: user.uid, method: "POST", body: { confirm: true } });
+      feedback.setData([]);
+      project.setData({ ...project.data, feedbackSummary: null, feedbackGeneration: result.feedbackGeneration });
+      forgetResource("/projects", user.uid);
+      forgetResourcePrefix(`/workbench/${projectId}`, user.uid);
+      setResetting(false); setNotice("Responses and summary reset. Your form is ready for new feedback.");
+      project.reload(); feedback.reload();
+    } catch (error) { setResetError(error.message); }
+    finally { resetGuard.current = false; setResetPending(false); }
+  }
 
   return (
     <>
@@ -36,9 +59,11 @@ function ProjectFeedback({ projectId }) {
               ? "Loading your customer conversations…"
               : `${responses.length} ${responses.length === 1 ? "response" : "responses"}. Select a response to read all answers.`
           }
-
+          action={<Button variant="secondary" disabled={loading || !!error || resetPending || (!responses.length && !analysis.summary)} onClick={() => { setResetError(""); setResetting(true); }}>Reset responses</Button>}
         />
       </div>
+      {notice && <p role="status" className="text-sm text-muted-foreground">{notice}</p>}
+      <ConfirmDialog open={resetting} onClose={() => setResetting(false)} title="Reset all responses?" description={`Permanently delete all responses, email update opt-ins, and the AI summary for ${project.data?.name || "this project"}. Your form, workbench issues, and PR runs stay. This cannot be undone.`} confirmLabel="Reset responses" onConfirm={reset} pending={resetPending} error={resetError} />
       {error && (
         <div className="space-y-3">
           <ErrorMessage>{error}</ErrorMessage>

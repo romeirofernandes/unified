@@ -39,6 +39,31 @@ async function deleteProject(filter) {
     return true;
   });
 }
+async function resetFeedback(filter) {
+  return mongoose.connection.transaction(async session => {
+    const now = new Date();
+    const project = await Project.findOneAndUpdate(filter, {
+      $inc: { writeVersion: 1, feedbackGeneration: 1 },
+      $set: { feedbackSummary: null },
+      $unset: { summaryLock: 1, summaryLockUntil: 1 },
+    }, { new: true, session });
+    if (!project) throw unavailable();
+    await lockOwner(project.userId, session);
+    const { deletedCount } = await Feedback.deleteMany({ projectId: project._id }, { session });
+    await Project.updateOne({ _id: project._id, "workbenchIssues.0": { $exists: true } }, { $set: { "workbenchIssues.$[].responseIds": [] } }, { session });
+    const set = {}, unset = {};
+    for (const channel of ["slack", "email"]) {
+      const prefix = `notifications.${channel}`;
+      set[`${prefix}.since`] = now;
+      set[`${prefix}.nextRunAt`] = new Date(now.getTime() + (project.notifications?.[channel]?.cadence === "hourly" ? 3600000 : 86400000));
+      set[`${prefix}.lastCount`] = 0;
+      set[`${prefix}.error`] = "";
+      for (const key of ["lockToken", "lockUntil", "pendingUntil", "pendingSummary", "lastSummaryHash"]) unset[`${prefix}.${key}`] = 1;
+    }
+    await Project.updateOne({ _id: project._id }, { $set: set, $unset: unset }, { session });
+    return { deletedCount, feedbackGeneration: project.feedbackGeneration };
+  });
+}
 async function deleteAccount(uid, idToken, removeIdentity = require("./firebase-identity").deleteIdentity) {
   const user = await User.findOneAndUpdate({ firebaseUid: uid }, { $set: { deleting: true } }, { new: true });
   if (user) {
@@ -49,4 +74,4 @@ async function deleteAccount(uid, idToken, removeIdentity = require("./firebase-
   await removeIdentity(idToken);
   if (user) await User.deleteOne({ _id: user._id, deleting: true });
 }
-module.exports = { createProject, submitFeedback, deleteProject, deleteAccount };
+module.exports = { createProject, submitFeedback, resetFeedback, deleteProject, deleteAccount };

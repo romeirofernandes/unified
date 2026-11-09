@@ -2,7 +2,7 @@ import { setAccessTokenProvider } from "../src/lib/access-token.js";
 setAccessTokenProvider(async () => "signed-test-token");
 import test from "node:test";
 import assert from "node:assert/strict";
-import { cacheResource, readResource, prefetchResource, forgetResource } from "../src/lib/resource-cache.js";
+import { cacheResource, readResource, prefetchResource, forgetResource, forgetResourcePrefix } from "../src/lib/resource-cache.js";
 
 test("navigation reuses prefetched responses and isolates them by user", async () => {
   const original = globalThis.fetch;
@@ -37,4 +37,22 @@ test("project lists warm detail views and explicit invalidation removes them", (
   assert.deepEqual(readResource("/projects/warm-project", "warm-user").data, project);
   forgetResource("/projects/warm-project", "warm-user");
   assert.equal(readResource("/projects/warm-project", "warm-user"), undefined);
+});
+test("reset invalidates cached evidence and fences in-flight reads without affecting another project", async () => {
+  const original = globalThis.fetch;
+  let release;
+  const uid = "reset-cache-user";
+  try {
+    cacheResource("/workbench/reset-project", uid, [{ _id: "issue" }]);
+    cacheResource("/workbench/other-project", uid, [{ _id: "other" }]);
+    globalThis.fetch = () => new Promise(resolve => { release = () => resolve({ ok: true, status: 200, json: async () => ({ responses: ["old"] }) }); });
+    const reading = prefetchResource("/workbench/reset-project/issue/evidence", uid);
+    while (!release) await new Promise(resolve => setImmediate(resolve));
+    forgetResourcePrefix("/workbench/reset-project", uid);
+    release();
+    assert.equal(await reading, null);
+    assert.equal(readResource("/workbench/reset-project", uid), undefined);
+    assert.equal(readResource("/workbench/reset-project/issue/evidence", uid), undefined);
+    assert.equal(readResource("/workbench/other-project", uid).data[0]._id, "other");
+  } finally { globalThis.fetch = original; }
 });

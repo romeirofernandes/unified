@@ -15,6 +15,12 @@ export function cacheResource(path, uid, data) {
   if (path === "/projects" && Array.isArray(data)) for (const project of data) cacheResource(`/projects/${project._id}`, uid, project);
 }
 export function forgetResource(path, uid) { const key = keyFor(path, uid); cache.delete(key); versions.set(key, (versions.get(key) || 0) + 1); }
+export function forgetResourcePrefix(path, uid) {
+  const prefix = keyFor(path, uid);
+  for (const key of new Set([...cache.keys(), ...pending.keys()])) if (key === prefix || key.startsWith(`${prefix}/`)) {
+    cache.delete(key); versions.set(key, (versions.get(key) || 0) + 1);
+  }
+}
 export function prefetchResource(path, uid, force = false) {
   if (!uid) return Promise.resolve(null);
   const key = keyFor(path, uid);
@@ -23,7 +29,7 @@ export function prefetchResource(path, uid, force = false) {
   if (pending.has(key)) return pending.get(key);
   const version = versions.get(key) || 0;
   const request = apiRequest(path, { uid }).then((data) => {
-    if ((versions.get(key) || 0) !== version) return cache.get(key)?.data ?? data;
+    if ((versions.get(key) || 0) !== version) return cache.get(key)?.data ?? null;
     cacheResource(path, uid, data);
     return data;
   }).finally(() => pending.delete(key));

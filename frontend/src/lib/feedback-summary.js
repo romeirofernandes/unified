@@ -31,11 +31,11 @@ export function readSummary(key) {
   }
 }
 
-export async function generateFeedbackSummary(project, uid) {
+export async function generateFeedbackSummary(project, uid, signal) {
   const summary = await apiRequest(`/feedback/project/${encodeURIComponent(project._id)}/summary`, {
     method: "POST",
     uid,
-    signal: AbortSignal.timeout(9 * 60 * 1000),
+    signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(9 * 60 * 1000)]) : AbortSignal.timeout(9 * 60 * 1000),
   });
   forgetResource(`/workbench/${project._id}`, uid);
   return summary;

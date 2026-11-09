@@ -106,6 +106,7 @@ const projectSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
   })], default: [], select: false },
   feedbackSummary: { type: mongoose.Schema.Types.Mixed, default: null },
+  feedbackGeneration: { type: Number, default: 0 },
   summaryLock: { type: String, select: false },
   summaryLockUntil: { type: Date, select: false },
   slackOAuthStateHash: { type: String, select: false },

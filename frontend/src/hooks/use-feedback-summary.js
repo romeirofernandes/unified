@@ -6,10 +6,16 @@ export function useFeedbackSummary(project, responses, ready) {
   const { user } = useAuth();
   const [generated, setGenerated] = useState(null);
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState("");
+  const [failure, setFailure] = useState(null);
   const running = useRef(false);
   const attempted = useRef(new Set());
-  const summary = generated || project?.feedbackSummary;
+  const scope = `${project?._id}:${project?.feedbackGeneration || 0}`;
+  const error = failure?.scope === scope ? failure.message : "";
+  const latestScope = useRef(scope);
+  latestScope.current = scope;
+  const request = useRef(null);
+  useEffect(() => () => request.current?.abort(), [scope]);
+  const summary = generated?.scope === scope ? generated.summary : project?.feedbackSummary;
   const snapshot = useMemo(() => responses.map((response) => response._id).sort().join(","), [responses]);
   const current = useMemo(() => {
     if (!summary?.responseIds || !Array.isArray(summary.evidence)) return false;
@@ -21,11 +27,16 @@ export function useFeedbackSummary(project, responses, ready) {
     running.current = true;
     attempted.current.add(snapshot);
     setPending(true);
-    setError("");
-    try { setGenerated(await generateFeedbackSummary(project, user?.uid)); }
-    catch (error) { setError(error.message); }
+    setFailure(null);
+    const controller = new AbortController();
+    request.current = controller;
+    try {
+      const summary = await generateFeedbackSummary(project, user?.uid, controller.signal);
+      if (latestScope.current === scope) setGenerated({ scope, summary });
+    }
+    catch (error) { if (!controller.signal.aborted && latestScope.current === scope) setFailure({ scope, message: error.message }); }
     finally { running.current = false; setPending(false); }
-  }, [current, ready, project, responses.length, snapshot, user?.uid]);
+  }, [current, ready, project, responses.length, snapshot, user?.uid, scope]);
   useEffect(() => {
     if (ready && !current && responses.length && !attempted.current.has(snapshot)) void generate();
   }, [ready, current, responses.length, snapshot, generate, pending]);

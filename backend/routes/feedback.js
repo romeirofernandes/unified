@@ -3,7 +3,8 @@ const { randomUUID } = require("node:crypto");
 const router = express.Router();
 const Feedback = require("../models/Feedback");
 const Project = require("../models/Project");
-const { submitFeedback } = require("../services/project-lifecycle");
+const mongoose = require("mongoose");
+const { submitFeedback, resetFeedback } = require("../services/project-lifecycle");
 const { summarizeFeedback } = require("../services/feedback-summary");
 
 // Submit feedback
@@ -41,6 +42,12 @@ router.get("/project/:projectId", async (req, res) => {
 });
 
 // A database lease prevents duplicate generation across concurrent requests and servers.
+router.post("/project/:projectId/reset", async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.projectId) || req.body?.confirm !== true) return res.status(400).json({ message: "Confirm the response reset for a valid project." });
+  try { res.json(await resetFeedback({ _id: req.params.projectId, userId: req.user.id })); }
+  catch (error) { res.status(error.status || 500).json({ message: error.status ? error.message : "Could not reset responses. Please try again." }); }
+});
+
 router.post("/project/:projectId/summary", async (req, res) => {
   const owner = { _id: req.params.projectId, userId: req.user.id };
   const token = randomUUID();
@@ -55,6 +62,7 @@ router.post("/project/:projectId/summary", async (req, res) => {
     if (Array.isArray(saved?.evidence) && saved?.responseIds && responseIds.every((id) => saved.responseIds.includes(id))) return res.json(saved);
     const lease = await Project.findOneAndUpdate({
       ...owner,
+      feedbackGeneration: project.feedbackGeneration ?? null,
       $or: [{ summaryLockUntil: { $exists: false } }, { summaryLockUntil: null }, { summaryLockUntil: { $lt: new Date() } }],
     }, { $set: { summaryLock: token, summaryLockUntil: new Date(Date.now() + 10 * 60 * 1000) } }, { new: true }).lean();
     if (!lease) return res.status(409).json({ message: "A summary is already being generated. Please try again shortly." });

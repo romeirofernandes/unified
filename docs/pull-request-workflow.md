@@ -81,4 +81,4 @@ API references: [GitHub installation tokens](https://docs.github.com/en/rest/app
 
 ## response reset
 
-there is no response-reset control or endpoint in this checkout, and none appeared in the local branch history search. resetting responses is separate from this feature - deleting evidence while a run is active needs an explicit policy first.
+open a project's feedback page and choose **Reset responses** beside the response count. confirmation deletes that project's responses, shipping email opt-ins and AI summary. it clears response links on existing workbench issues and invalidates pending summary/digest work. the form, issues, PR runs and repository connection stay. a transaction serializes the reset with new submissions and project deletion, and a generation counter prevents older summaries from being saved afterward. a new response that arrives after the reset remains available.
