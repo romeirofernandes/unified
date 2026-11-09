@@ -5,10 +5,3 @@ export const runLabels = {
 };
 export const activeStatuses = ["queued", "assessing", "queued_fix", "generating", "publishing"];
 export const watchedStatuses = ["awaiting_checks", "checks_passed", "ready_for_review", "needs_attention"];
-export function runStage(status) {
-  if (["queued", "assessing", "eligible", "not_suitable"].includes(status)) return 0;
-  if (["queued_fix", "generating"].includes(status)) return 1;
-  if (status === "publishing") return 2;
-  if ([...watchedStatuses, "merged", "closed"].includes(status)) return 3;
-  return status === "shipped" ? 4 : -1;
-}

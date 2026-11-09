@@ -14,7 +14,8 @@ const messages = {
 export default function RepositoryConnection({ projectId, uid, data, busy, reload, result }) {
   const options = data.repositories?.length ? data.repositories : data.connection ? [{ repositoryId: data.connection.repository, repository: data.connection.repository }] : [];
   const current = options.find(item => item.repository === data.connection?.repository)?.repositoryId;
-  const [selected, setSelected] = useState(current ? String(current) : "");
+  const [selected, setSelected] = useState(current ? String(current) : options.length === 1 ? String(options[0].repositoryId) : "");
+  const [accessOpened, setAccessOpened] = useState(["installed", "expired", "error", "denied", "repositories"].includes(result));
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [disconnecting, setDisconnecting] = useState(false);
@@ -37,8 +38,8 @@ export default function RepositoryConnection({ projectId, uid, data, busy, reloa
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="flex flex-wrap items-baseline gap-3"><h2 className="text-base font-semibold">Repository</h2>{data.connection && <span className="text-xs text-muted-foreground">Connected · {data.connection.defaultBranch}</span>}</div>
       <div className="flex flex-wrap gap-2">
-        {data.installUrl && <Button asChild variant="secondary"><a href={data.installUrl} target="_blank" rel="noreferrer">{options.length ? "Manage GitHub access" : "Install GitHub App"}</a></Button>}
-        <Button variant="secondary" loading={pending} disabled={!data.configured || busy} onClick={() => mutate("authorize")}>{options.length ? "Refresh repositories" : "Connect GitHub"}</Button>
+        {data.installUrl && <Button asChild variant={!options.length && !accessOpened ? "primary" : "secondary"}><a href={data.installUrl} target="_blank" rel="noreferrer" onClick={() => setAccessOpened(true)}>{options.length ? "Manage GitHub access" : "Install GitHub App"}</a></Button>}
+        <Button variant={!options.length && accessOpened ? "primary" : "secondary"} loading={pending} disabled={!data.configured || busy} onClick={() => mutate("authorize")}>{options.length ? "Refresh repositories" : "Connect GitHub"}</Button>
         {data.connection && <Button variant="destructive" disabled={pending || busy} onClick={() => setDisconnecting(true)}>Disconnect</Button>}
       </div>
     </div>

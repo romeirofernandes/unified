@@ -213,6 +213,14 @@ test("missing CI is manual review, never an invented passing test result", () =>
   assert.match(state.message, /No automated checks/);
   assert.equal(workflow.checkState({ requiredCheck: "" }, [{ name: "build", status: "completed", conclusion: "failure" }], []).status, "needs_attention");
 });
+test("a published fix with no checks waits for human review and keeps the issue In progress", async () => {
+  const run = await publish();
+  await Run.updateOne({ _id: run._id }, { $set: { requiredCheck: "" } });
+  await workflow.syncRun(run._id, dependencies);
+  assert.equal((await Run.findById(run._id)).status, "ready_for_review");
+  assert.equal((await Project.findById(project._id).select("+workbenchIssues")).workbenchIssues[0].status, "in_progress");
+  await assert.rejects(() => workflow.markShipped(run, dependencies), /Only a merged/);
+});
 test("cancelling a fix restores To do and preserves manually started issues", async () => {
   let run = await assessed(); await api(`/pr/${project._id}/runs/${run._id}/attempt`, {});
   assert.equal((await Project.findById(project._id).select("+workbenchIssues")).workbenchIssues[0].status, "in_progress");

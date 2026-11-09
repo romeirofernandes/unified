@@ -10,7 +10,11 @@ const { fail, fingerprint, validateAssessment, applyPatch } = require("./pr-poli
 const working = ["assessing", "generating", "publishing"];
 const watched = ["awaiting_checks", "checks_passed", "ready_for_review", "needs_attention"];
 function deps(overrides) { return { Project, Connection, Run, Blob, github, ask: groqJson, selectContext, sourceFile, ...overrides }; }
-function cleanError(error) { return error.status ? error.message : "This run could not finish. Refresh its GitHub status before starting another attempt."; }
+function cleanError(error) {
+  if (error.status || ["The AI service could not complete this request. Please try again.", "The AI response was invalid. Please try again."].includes(error.message)) return error.message;
+  if (["AbortError", "TimeoutError"].includes(error.name)) return "This step timed out. Start a fresh assessment, or recover publication if a branch was created.";
+  return "This step could not finish. Its saved context and any published PR remain available.";
+}
 async function liveProject(run, d) {
   const project = await d.Project.findOne({ _id: run.projectId, userId: run.userId }).select("+workbenchIssues").lean();
   const issue = project?.workbenchIssues.find(item => String(item._id) === String(run.issueId) && !item.deleted && item.status !== "done");
