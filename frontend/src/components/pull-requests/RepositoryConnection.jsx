@@ -44,9 +44,12 @@ export default function RepositoryConnection({ projectId, uid, data, busy, reloa
       </div>
     </div>
     {data.configured ? <>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-        <div className="min-w-0 flex-1 space-y-2"><p id={labelId} className="text-sm text-muted-foreground">Repository for this project</p><Select value={selected} onValueChange={setSelected} disabled={pending || busy || !options.length}><SelectTrigger aria-labelledby={labelId} className="h-10 w-full rounded-md bg-background" placeholder={options.length ? "Choose a repository" : "Connect GitHub to load repositories"} /><SelectContent>{options.map(item => <SelectItem key={item.repositoryId} value={String(item.repositoryId)}>{item.repository}</SelectItem>)}</SelectContent></Select></div>
-        {selected && selected !== String(current || "") && <Button disabled={pending || busy} loading={pending} onClick={() => mutate("save")}>Use repository</Button>}
+      <div className="space-y-2">
+        <p id={labelId} className="text-sm text-muted-foreground">Repository for this project</p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+        <div className="min-w-0 flex-1"><Select value={selected} onValueChange={setSelected} disabled={pending || busy || !options.length}><SelectTrigger aria-labelledby={labelId} className="h-10 w-full rounded-md bg-background" placeholder={options.length ? "Choose a repository" : "Connect GitHub to load repositories"} /><SelectContent>{options.map(item => <SelectItem key={item.repositoryId} value={String(item.repositoryId)}>{item.repository}</SelectItem>)}</SelectContent></Select></div>
+        {selected && selected !== String(current || "") && <Button className="h-10 shrink-0" disabled={pending || busy} loading={pending} onClick={() => mutate("save")}>Use repository</Button>}
+        </div>
       </div>
       <p className="text-xs leading-5 text-muted-foreground">On GitHub, choose <strong className="font-medium text-foreground">All repositories</strong> for future projects, or keep previous selections checked when adding a repository. Refresh this list after changing access.</p>
     </> : <p className="text-sm text-muted-foreground">GitHub connection is unavailable. Ask your workspace administrator to enable it.</p>}

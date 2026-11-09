@@ -56,10 +56,21 @@ try {
   await assess.click();
   await expect(page.getByRole("button", { name: "Start fix", exact: true })).toBeVisible();
   await expect(page.locator(".react-flow__node")).toHaveCount(6);
+  assert.match(await page.locator('.fix-pipeline .react-flow').evaluate(node => getComputedStyle(node).backgroundImage), /repeating-linear-gradient/);
+  const movable = page.locator('.react-flow__node[data-id="patch"]');
+  const beforeDrag = await movable.boundingBox();
+  await page.mouse.move(beforeDrag.x + 100, beforeDrag.y + 60);
+  await page.mouse.down();
+  await page.mouse.move(beforeDrag.x + 150, beforeDrag.y + 90, {steps:10});
+  await page.mouse.up();
+  assert.ok((await movable.boundingBox()).x > beforeDrag.x + 30, 'Pipeline nodes can be moved');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.waitForTimeout(100);
   await page.locator('.react-flow__node[data-id="scope"]').focus();
   await page.keyboard.press("Enter");
   await expect(page.getByRole("dialog", { name: "Assess scope" })).toBeVisible();
   await expect(page.getByRole("dialog")).toContainText("frontend/src/components/Editor.tsx");
+  await expect(page.getByRole("list", {name:"Execution trace"})).toContainText("Assessment complete.");
   await page.getByRole("button", { name: "Close", exact: true }).click();
   for (const width of [1440, 1024, 768, 390]) {
     await page.setViewportSize({ width, height: 1000 });
@@ -71,8 +82,11 @@ try {
     const backgrounds = await page.locator('.fix-node').evaluateAll(nodes => nodes.map(node => getComputedStyle(node).backgroundColor));
     assert.ok(backgrounds.every(color => !color.includes('rgba') && color !== 'transparent'), 'Pipeline nodes have opaque surfaces');
   }
+  await page.emulateMedia({colorScheme:"dark"});
   await page.evaluate(() => { document.documentElement.classList.remove("dark"); window.dispatchEvent(new Event("fixture-theme")); });
   await page.waitForTimeout(100);
+  await expect(page.locator(".react-flow")).toHaveClass(/light/);
+  assert.notEqual(await page.locator(".fix-node").first().evaluate(node => getComputedStyle(node).backgroundColor), "rgb(23, 23, 23)");
   await page.screenshot({ path: path.join(output, "light-390.png"), fullPage: true });
   await page.getByRole("button", { name: "Start fix", exact: true }).click();
   await expect(page.getByRole("link", { name: "PR #1", exact: true })).toBeVisible();
@@ -97,6 +111,10 @@ try {
   await expect(page.getByRole("button", { name: "Assess this issue" })).toHaveCount(0);
   await page.getByRole('combobox', {name:'Repository for this project'}).click();
   await page.getByRole('option', {name:'owner/second',exact:true}).click();
+  await page.setViewportSize({width:1440,height:1000});
+  const repoBox = await page.getByRole('combobox', {name:'Repository for this project'}).boundingBox();
+  const buttonBox = await page.getByRole('button', {name:'Use repository',exact:true}).boundingBox();
+  assert.ok(Math.abs(repoBox.y - buttonBox.y) < 2, 'Repository button aligns with its dropdown');
   await page.getByRole('button', {name:'Use repository',exact:true}).click();
   await expect(page.getByRole("button", { name: "Assess this issue" })).toBeVisible();
   await expect(page.getByRole('button', {name:'Disconnect',exact:true})).toHaveClass(/from-/);
