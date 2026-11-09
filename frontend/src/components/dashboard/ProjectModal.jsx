@@ -53,6 +53,7 @@ export default function ProjectModal({
   const [handoffHeight, setHandoffHeight] = useState(null);
   const [step, setStep] = useState(1);
   const [name, setName] = useState(project?.name || "");
+  const [shippingUpdatesEnabled, setShippingUpdatesEnabled] = useState(project?.shippingUpdatesEnabled === true);
   const [description, setDescription] = useState(project?.description || "");
   const [theme, setTheme] = useState(() =>
     project?.theme || (resolvedTheme === "dark" ? "dark" : "light"),
@@ -79,6 +80,7 @@ export default function ProjectModal({
     description,
     theme,
     appearance,
+    shippingUpdatesEnabled,
     fields,
   });
   const [initialDraftKey] = useState(() => draftKey);
@@ -110,6 +112,7 @@ export default function ProjectModal({
         description: description.trim(),
         theme,
         appearance,
+        shippingUpdatesEnabled,
         fields: serializeFields(fields),
       });
       onClose();
@@ -229,6 +232,13 @@ export default function ProjectModal({
                     />
                   </TabsContent>
                   <TabsContent value="2" className="mt-0 space-y-4">
+                    <div className="space-y-2 rounded-md border border-border p-4">
+                      <label className="flex items-start gap-3 text-sm font-medium">
+                        <input type="checkbox" className="mt-0.5 size-4 accent-primary" checked={shippingUpdatesEnabled} onChange={event => setShippingUpdatesEnabled(event.target.checked)} aria-describedby={`${formId}-shipping-help`} />
+                        Offer email updates when requests ship
+                      </label>
+                      <p id={`${formId}-shipping-help`} className="text-sm text-muted-foreground">Let people opt in when submitting feedback. They’ll get an email when a linked issue is marked done. Turning this off also pauses shipping emails.</p>
+                    </div>
                     <div className="mb-4">
                       {
                         <Suspense
@@ -336,6 +346,7 @@ export default function ProjectModal({
                 <div className="min-w-0 lg:sticky lg:top-0 lg:max-h-[var(--editor-height)] lg:overflow-y-auto lg:overscroll-contain">
                   <ProjectFormPreview
                     name={name}
+                    shippingUpdatesEnabled={shippingUpdatesEnabled}
                     fields={fields}
                     theme={previewTheme}
                     appearance={appearance}

@@ -4,7 +4,7 @@ import { ArrowLeft01Icon, ArrowRight01Icon, BubbleChatIcon, Cancel01Icon } from 
 import Stepper, { Step } from "./Stepper";
 import Field from "./Field";
 
-const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose, formData, theme, answers, onSubmit, onChange, pending = false, error, subscriptionEmail = "", onSubscriptionChange }) {
+const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose, formData, theme, answers, onSubmit, onChange, pending = false, error, subscribed = false, onSubscribedChange, subscriptionEmail = "", onSubscriptionChange }) {
   const [fieldError, setFieldError] = useState("");
   const [currentStep, setCurrentStep] = useState(0);
   const instanceId = useId();
@@ -12,6 +12,7 @@ const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose, formData, t
   if (!isOpen) return null;
   const total = formData.fields.length;
   const current = formData.fields[currentStep];
+  const hasEmailAnswer = formData.fields.some(field => field.type === "email" && typeof answers[field._id] === "string" && answers[field._id].trim());
   function submit(event) {
     event.preventDefault();
     if (pending) return;
@@ -48,10 +49,15 @@ const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose, formData, t
           </div>
         </Step>)}
       </Stepper>
-      {currentStep === total - 1 && onSubscriptionChange && <div className="uf-question">
-        <label className="uf-question-label" htmlFor={`${instanceId}-subscription`}>Email me when my request ships (optional)</label>
-        <input className="uf-input" id={`${instanceId}-subscription`} type="email" autoComplete="email" maxLength={254} value={subscriptionEmail} onChange={event => onSubscriptionChange(event.target.value)} disabled={pending} aria-describedby={`${instanceId}-subscription-help`} />
-        <p id={`${instanceId}-subscription-help`} className="uf-question-meta">Leave blank to skip updates. We’ll only email when a linked request is marked done.</p>
+      {currentStep === total - 1 && formData.shippingUpdatesEnabled && onSubscribedChange && <div className="uf-question">
+        <label className="uf-subscription">
+          <input type="checkbox" checked={subscribed} onChange={event => onSubscribedChange(event.target.checked)} disabled={pending} />
+          <span>Email me when my request ships</span>
+        </label>
+        {subscribed && !hasEmailAnswer && <div>
+          <label className="uf-question-label" htmlFor={`${instanceId}-subscription`}>Email for updates</label>
+          <input className="uf-input" id={`${instanceId}-subscription`} type="email" autoComplete="email" required maxLength={254} value={subscriptionEmail} onChange={event => onSubscriptionChange(event.target.value)} disabled={pending} />
+        </div>}
       </div>}
       {(error || fieldError) && <p role="alert" className="uf-error">{fieldError || error}</p>}
       <footer className="uf-form-footer">

@@ -88,7 +88,7 @@ HTML email digests use the project’s warm neutral palette, serif headings, num
 
 ## shipping updates
 
-feedback submissions accept an optional `subscriptionEmail` alongside `formAnswers`. leaving it blank skips updates. the widget asks for this on its final question, and the address is stored separately from answers and excluded from feedback and evidence reads.
+feedback submissions accept an optional `subscriptionEmail` alongside `formAnswers`. leaving it blank skips updates. project owners enable shipping updates in the create or edit project questions tab (off by default). the widget offers an unchecked opt-in on its final question, uses an existing email answer, or asks for an email if needed. disabling the project setting hides the option, stops accepting subscriptions, and pauses delivery. the address is stored separately from answers and excluded from feedback and evidence reads.
 
 when a workbench issue with linked response IDs is marked `done`, the shipping worker emails those subscribed respondents within a minute. deleted issues are skipped. summary imports provide the response links. each response gets at most one update per issue, even if the issue is reopened. email uses the same SMTP or Resend setup above.
 
