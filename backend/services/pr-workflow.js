@@ -24,8 +24,16 @@ async function liveProject(run, d) {
   if (!connection || connection.repositoryId !== run.repositoryId || connection.installationId !== run.installationId || connection.repository !== run.repository || connection.defaultBranch !== run.baseBranch) throw fail("The repository connection changed. Start a fresh assessment.");
   return project;
 }
-async function event(d, filter, status, message, extra = {}) {
-  return d.Run.updateOne(filter, { $set: { status, message, ...extra }, $push: { events: { $each: [{ at: new Date(), status, message }], $slice: -40 } } });
+function eventStage(status, extra) {
+  if (extra.failedStage) return extra.failedStage;
+  if (["queued", "assessing", "eligible", "not_suitable"].includes(status)) return "scope";
+  if (["queued_fix", "generating"].includes(status)) return "patch";
+  if (["publishing", "awaiting_checks"].includes(status)) return "pr";
+  if (status === "shipped") return "ship";
+  return "review";
+}
+async function event(d, filter, status, message, extra = {}, stage = eventStage(status, extra)) {
+  return d.Run.updateOne(filter, { $set: { status, message, ...extra }, $push: { events: { $each: [{ at: new Date(), status, message, stage }], $slice: -100 } } });
 }
 function prBody(run) {
   return `## Summary\n\n${run.issue.title}\n\n\`\`\`text\nfeedback issue -> bounded patch -> ${run.requiredCheck || "GitHub review"} -> human review\n\`\`\`\n\nAcceptance criteria:\n${run.acceptance}\n\n${run.assessment.plan.map(step => `- ${step}`).join("\n")}\n\n## Evidence\n\n- **Before:** source commit \`${run.baseSha}\`; issue and file hashes saved in Unified run \`${run._id}\`.\n- **After:** ${run.patch.length} exact replacements. CI has not been verified yet. Review the diff and any reported GitHub checks before merging.\n\n## Merge Danger\n\n**Door:** two-way\n\n**Blast Radius:** UI\n\nAI-generated draft. No tests, dependencies or workflows were modified. Merging does not notify reporters; mark the issue shipped in Unified after release.\n`;
@@ -139,7 +147,7 @@ async function syncRun(id, overrides = {}) {
     if (result.status === "awaiting_checks" && Date.now() - new Date(run.publishedAt || run.createdAt).getTime() > 60 * 60000) result = { ...result, status: "needs_attention", message: "GitHub checks have not completed. Inspect the check output on the PR." };
   }
   const extra = { active: false, prNumber: pull.number, prUrl: pull.html_url, nextCheckAt: new Date(Date.now() + 60000), failedStage: result.failedStage || (result.status === "needs_attention" ? "review" : ""), ...(result.checks ? { checks: result.checks.slice(0, 100) } : {}) };
-  if (run.status !== result.status || run.message !== result.message) await event(d, { _id: run._id, active: false, status: run.status }, result.status, result.message, extra);
+  if (run.status !== result.status || run.message !== result.message) await event(d, { _id: run._id, active: false, status: run.status }, result.status, result.message, extra, "review");
   else await d.Run.updateOne({ _id: run._id, active: false, status: run.status }, { $set: extra });
   if (result.status === "closed") await restoreWorkbench(run, overrides);
 }

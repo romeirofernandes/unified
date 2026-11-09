@@ -85,7 +85,7 @@ function createRouter(overrides = {}) {
     const run = await mongoose.connection.transaction(async session => {
       const current = await d.Project.findOneAndUpdate({ _id: req.project._id, userId: req.user.id, workbenchIssues: { $elemMatch: { _id: issue._id, title: issue.title, description: issue.description, deleted: false, status: { $ne: "done" } } } }, { $inc: { writeVersion: 1 } }, { session });
       if (!current) throw fail("The issue changed or the project was removed. Reload and try again.", 409);
-      const [created] = await d.Run.create([{ ...owner(req), issueId: issue._id, issue: { title: issue.title, description: issue.description || "", fingerprint: fingerprint(issue) }, acceptance: acceptance.trim(), repository: connection.repository, repositoryId: connection.repositoryId, installationId: connection.installationId, baseBranch: connection.defaultBranch, requiredCheck: "", model: process.env.GROQ_MODEL || "qwen/qwen3.8-27b", status: "queued", active: true, events: [{ at: new Date(), status: "queued", message: "Assessment queued." }] }], { session });
+      const [created] = await d.Run.create([{ ...owner(req), issueId: issue._id, issue: { title: issue.title, description: issue.description || "", fingerprint: fingerprint(issue) }, acceptance: acceptance.trim(), repository: connection.repository, repositoryId: connection.repositoryId, installationId: connection.installationId, baseBranch: connection.defaultBranch, requiredCheck: "", model: process.env.GROQ_MODEL || "qwen/qwen3.8-27b", status: "queued", active: true, events: [{ at: new Date(), status: "queued", stage: "scope", message: "Assessment queued." }] }], { session });
       return created;
     });
     res.status(202).json({ _id: run._id });
@@ -96,7 +96,7 @@ function createRouter(overrides = {}) {
     if (!issue || fingerprint(issue) !== req.run.issue.fingerprint) throw fail("The issue changed. Start a fresh assessment.", 409);
     if (await d.Run.exists({ ...owner(req), issueId: issue._id, _id: { $ne: req.run._id }, branch: { $exists: true }, status: { $nin: ["closed", "shipped", "cancelled"] } })) throw fail("Another run already has a branch for this issue.", 409);
     await mongoose.connection.transaction(async session => {
-      const result = await d.Run.updateOne({ _id: req.run._id, ...owner(req), status: "eligible", active: false }, { $set: { status: "queued_fix", active: true, message: "Fix queued.", workbenchManaged: issue.status === "todo", workbenchPreviousStatus: issue.status }, $push: { events: { at: new Date(), status: "queued_fix", message: "Fix requested. Workbench issue moved to In progress." } } }, { session });
+      const result = await d.Run.updateOne({ _id: req.run._id, ...owner(req), status: "eligible", active: false }, { $set: { status: "queued_fix", active: true, message: "Fix queued.", workbenchManaged: issue.status === "todo", workbenchPreviousStatus: issue.status }, $push: { events: { at: new Date(), status: "queued_fix", stage: "patch", message: "Fix requested. Workbench issue moved to In progress." } } }, { session });
       if (!result.matchedCount) throw fail("Only an eligible assessment can be attempted once.", 409);
       const project = await d.Project.updateOne({ _id: req.project._id, userId: req.user.id, workbenchIssues: { $elemMatch: { _id: issue._id, deleted: false, title: issue.title, status: issue.status } } }, { $set: { "workbenchIssues.$.status": "in_progress" } }, { session });
       if (!project.matchedCount) throw fail("The issue changed. Reload the workbench before attempting it.", 409);
@@ -105,7 +105,7 @@ function createRouter(overrides = {}) {
   }));
   router.post("/:projectId/runs/:runId/cancel", handler(async (req, res) => {
     // Publishing cannot be interrupted between its external branch and PR writes.
-    const result = await d.Run.updateOne({ _id: req.run._id, ...owner(req), status: { $in: ["queued", "assessing", "eligible", "queued_fix", "generating"] } }, { $set: { status: "cancelled", active: false, failedStage: ["queued_fix", "generating"].includes(req.run.status) ? "patch" : "scope", message: "Cancelled by the project owner." }, $unset: { leaseToken: 1, leaseUntil: 1 }, $push: { events: { at: new Date(), status: "cancelled", message: "Cancelled by the project owner." } } });
+    const result = await d.Run.updateOne({ _id: req.run._id, ...owner(req), status: { $in: ["queued", "assessing", "eligible", "queued_fix", "generating"] } }, { $set: { status: "cancelled", active: false, failedStage: ["queued_fix", "generating"].includes(req.run.status) ? "patch" : "scope", message: "Cancelled by the project owner." }, $unset: { leaseToken: 1, leaseUntil: 1 }, $push: { events: { at: new Date(), status: "cancelled", stage: ["queued_fix", "generating"].includes(req.run.status) ? "patch" : "scope", message: "Cancelled by the project owner." } } });
     if (!result.matchedCount) throw fail("This run cannot be cancelled now. Published PRs must be closed on GitHub.", 409);
     await workflow.restoreWorkbench(req.run);
     res.json({ cancelled: true });

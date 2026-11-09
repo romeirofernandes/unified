@@ -22,6 +22,7 @@ connectDB().then(() => {
 
 app.use(cors(require("./config/cors")));
 app.post("/api/payment/webhook", express.raw({ type: "application/json", limit: "64kb" }), require("./controller/paymentController").paymentWebhook);
+app.post("/api/github/webhook", express.raw({ type: "application/json", limit: "2mb" }), require("./routes/github-webhook").createWebhook());
 app.use(express.json());
 
 // Routes

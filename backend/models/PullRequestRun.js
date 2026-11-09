@@ -34,9 +34,10 @@ const schema = new mongoose.Schema({
   message: String,
   nextCheckAt: Date,
   shippedAt: Date,
-  events: [{ _id: false, at: Date, status: String, message: String }],
+  events: [{ _id: false, at: Date, status: String, message: String, stage: String }],
 }, { timestamps: true });
 schema.index({ projectId: 1 }, { unique: true, partialFilterExpression: { active: true }, name: "one_active_pr_run_per_project" });
 schema.index({ status: 1, nextCheckAt: 1 });
 schema.index({ projectId: 1, createdAt: -1 });
+schema.index({ repositoryId: 1, installationId: 1, prNumber: 1 });
 module.exports = mongoose.model("PullRequestRun", schema);

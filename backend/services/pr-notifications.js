@@ -16,7 +16,7 @@ async function notificationState(run, project, dependencies = {}) {
   const value = { status: !responses.length ? "empty" : failures.length ? "failed" : pending.length ? "pending" : "sent", total: responses.length, sent: responses.length - pending.length, pending: pending.length, failed: failures.length,
     message: !responses.length ? "No linked reporters opted in for email updates." : failures.some(item => item.status === "unknown") ? "Some delivery outcomes are unknown. Check email delivery before resending." : failures.length ? "Some emails were rejected. Delivery will be retried by the shipping worker." : pending.length ? `${pending.length} shipping ${pending.length === 1 ? "email is" : "emails are"} queued for delivery.` : `Shipping updates sent for ${responses.length} opted-in ${responses.length === 1 ? "response" : "responses"}.` };
   // Keep the last delivery result in the run history, without retaining recipient addresses.
-  if (JSON.stringify(run.notification || {}) !== JSON.stringify(value)) await d.Run.updateOne({ _id: run._id, status: "shipped" }, { $set: { notification: value } });
+  if (JSON.stringify(run.notification || {}) !== JSON.stringify(value)) await d.Run.updateOne({ _id: run._id, status: "shipped" }, { $set: { notification: value }, $push: { events: { $each: [{ at: new Date(), status: "shipped", stage: "notify", message: value.message }], $slice: -100 } } });
   return value;
 }
 module.exports = { notificationState };
