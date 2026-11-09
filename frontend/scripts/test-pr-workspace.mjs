@@ -90,7 +90,19 @@ try {
   await expect(page.getByRole("list", {name:"Execution trace"})).toContainText("Assessment complete.");
   await expect(page.getByRole("list", {name:"Execution trace"})).not.toContainText("Patch replacement validated.");
   await expect(page.getByRole('region', {name:'Run history'})).toHaveCount(0);
+  await expect.poll(() => page.getByRole('dialog').evaluate(node=>getComputedStyle(node).opacity)).toBe('1');
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  const closedDialogHeight = (await page.getByRole('dialog').boundingBox()).height;
   await page.getByRole('button', {name:/Read source/}).click();
+  const heights = await page.getByRole('dialog').evaluate(node=>new Promise(resolve=>{
+    const samples=[],start=performance.now();
+    function sample(){samples.push(node.getBoundingClientRect().height);if(performance.now()-start<450)requestAnimationFrame(sample);else resolve(samples);}
+    requestAnimationFrame(sample);
+  }));
+  const openedDialogHeight=heights.at(-1);
+  assert.ok(openedDialogHeight>closedDialogHeight+10,'Opening a task expands its containing dialog');
+  assert.ok(heights.some(height=>height>closedDialogHeight+1&&height<openedDialogHeight-1),'The containing dialog grows through intermediate heights');
+  await page.emulateMedia({reducedMotion:'reduce'});
   await expect(page.getByRole('dialog').getByText('Read 1240 bytes and verified the source hash.')).toBeVisible();
   await expect.poll(() => page.getByRole('dialog').evaluate(node=>getComputedStyle(node).opacity)).toBe('1');
   await page.screenshot({path:path.join(output,'scope-dialog-dark.png')});

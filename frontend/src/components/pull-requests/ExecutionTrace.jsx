@@ -5,11 +5,17 @@ import { Spinner } from "@/components/ui/spinner";
 import { traceTools } from "@/lib/trace-tools";
 import { patchRows } from "@/lib/patch-diff";
 import FilePill from "./FilePill";
+import FileLogo from "./FileLogo";
 import CodeBlock from "./CodeBlock";
 
 const icons = { read:Search01Icon, ai:CodeIcon, edit:CodeIcon, git:GitPullRequestIcon, check:CheckmarkCircle01Icon, mail:Mail01Icon, queue:CheckmarkCircle01Icon };
 function Chevron({ open }) {
   return <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`shrink-0 transition-transform motion-reduce:transition-none ${open ? "rotate-180" : ""}`}><path d="m6 9 6 6 6-6" /></svg>;
+}
+function TraceDisclosure({ id, open, children, className }) {
+  return <div id={id} aria-hidden={!open} inert={!open} className="grid transition-[grid-template-rows,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none" style={{ gridTemplateRows: open ? "1fr" : "0fr", opacity: open ? 1 : 0 }}>
+    <div className="min-h-0 overflow-hidden"><div className={className}>{children}</div></div>
+  </div>;
 }
 function ToolRow({ row }) {
   const [manualOpen, setOpen] = useState(null);
@@ -27,9 +33,9 @@ function ToolRow({ row }) {
       <Chevron open={open} />
       <span className="order-last ms-11 min-w-0 max-w-full sm:order-none sm:ms-0 sm:max-w-[48%]">{isFile ? <FilePill path={row.target} className="py-1" /> : <span className="block truncate rounded-md border border-border bg-muted px-2 py-1 text-[11px] text-muted-foreground">{row.target}</span>}</span>
     </button>
-    <div id={id} hidden={!open} className="border-t border-border bg-background px-4 py-3 sm:ps-[3.75rem]">
+    <TraceDisclosure id={id} open={open} className="border-t border-border bg-background px-4 py-3 sm:ps-[3.75rem]">
       {row.messages.map((message, index) => <p key={index} className={`break-words py-1 text-xs leading-6 ${row.state === "failed" && index === row.messages.length - 1 ? "text-destructive" : "text-muted-foreground"}`}>{message}</p>)}
-    </div>
+    </TraceDisclosure>
   </li>;
 }
 // Tool Chips + Task Rows, driven by real saved operations rather than the gallery's timed sequence.
@@ -51,13 +57,13 @@ export default function ExecutionTrace({ events, state, run, stageId, live, embe
       <Spinner className="mt-0.5 shrink-0 text-[var(--fluid-accent)]" />
       <div className="min-w-0"><p className="text-sm font-medium">{active?.label || "Processing this step"}</p><p className="mt-1 break-words text-xs leading-5 text-muted-foreground">{active?.messages.at(-1) || events.at(-1)?.message || "Waiting for the worker to start."}</p></div>
     </div>}
-    <div id={id} hidden={!expanded} className="space-y-4">
+    <TraceDisclosure id={id} open={expanded} className="space-y-4">
       {rows.length ? <ol aria-label="Execution trace" aria-live="polite" aria-relevant="additions" className="space-y-2.5">{rows.map(row => <ToolRow key={row.key} row={row} />)}</ol> : <p className="rounded-xl border border-dashed border-border p-5 text-xs text-muted-foreground">{state === "waiting" ? "This step has not started." : "No recorded activity for this step yet."}</p>}
       {edits.length > 0 && <div className="flex flex-wrap gap-2 border-t border-border pt-4">{edits.map((edit,index) => {
         const diff = patchRows(edit.before,edit.after);
-        return <button key={index} type="button" aria-expanded={preview === index} onClick={() => setPreview(preview === index ? null : index)} className="flex max-w-full items-center gap-2 rounded-lg border border-border bg-background p-1.5 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"><FilePill path={edit.path} className="border-0 bg-muted py-1" /><span className="shrink-0 pe-1 font-mono text-[11px]"><span className="text-green-700 dark:text-green-300">+{diff.filter(row=>row.type === "add").length}</span> <span className="text-destructive">−{diff.filter(row=>row.type === "del").length}</span></span></button>;
+        return <button key={index} type="button" aria-expanded={preview === index} onClick={() => setPreview(preview === index ? null : index)} className="flex max-w-full items-center gap-2 rounded-lg border border-border bg-background p-1.5 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"><span title={edit.path} className="inline-flex min-w-0 items-center gap-2 px-1.5 py-1 font-mono text-xs"><FileLogo path={edit.path} /><span className="truncate">{edit.path}</span></span><span className="shrink-0 pe-1 font-mono text-[11px]"><span className="text-green-700 dark:text-green-300">+{diff.filter(row=>row.type === "add").length}</span> <span className="text-destructive">−{diff.filter(row=>row.type === "del").length}</span></span></button>;
       })}</div>}
       {preview !== null && edits[preview] && <CodeBlock filename={edits[preview].path} before={edits[preview].before} after={edits[preview].after} />}
-    </div>
+    </TraceDisclosure>
   </section>;
 }
