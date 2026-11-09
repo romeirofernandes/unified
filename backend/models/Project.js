@@ -100,6 +100,7 @@ const projectSchema = new mongoose.Schema({
     status: { type: String, enum: ["todo", "in_progress", "done"], default: "todo" },
     position: Number,
     sourceKey: String,
+    responseIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Feedback" }],
     deleted: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
   })], default: [], select: false },
