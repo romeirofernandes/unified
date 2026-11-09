@@ -37,3 +37,31 @@ test("large feedback sets are summarized in batches and merged with bounded conc
     if (originalKeys === undefined) delete process.env.GROQ_API_KEYS; else process.env.GROQ_API_KEYS = originalKeys;
   }
 });
+
+test("summary evidence carries original IDs through merges and rejects invented IDs", async () => {
+  const originalFetch = global.fetch;
+  const originalKeys = process.env.GROQ_API_KEYS;
+  process.env.GROQ_API_KEYS = "test-key";
+  let merged = false;
+  global.fetch = async (_, options) => {
+    const request = JSON.parse(options.body);
+    const merging = request.messages[0].content.startsWith("Combine");
+    let responseIds;
+    if (merging) {
+      merged = true;
+      assert.ok(request.messages[1].content.includes('"responseIds"'));
+      responseIds = ["first", "second", "first", "invented"];
+    } else {
+      responseIds = request.messages[1].content.split("\n").map(line => JSON.parse(line).id);
+    }
+    return { ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({ tldr: "Search fails.", features: ["Fix search"], evidence: [{ title: "Fix search", responseIds }, { title: "Unrelated", responseIds: ["invented"] }] }) } }] }) };
+  };
+  try {
+    const result = await summarizeFeedback({ fields: [{ _id: "q", type: "text", label: "Problem" }] }, ["first", "second"].map(_id => ({ _id, formAnswers: { q: "x".repeat(15000) } })));
+    assert.equal(merged, true);
+    assert.deepEqual(result.evidence, [{ title: "Fix search", responseIds: ["first", "second"] }]);
+  } finally {
+    global.fetch = originalFetch;
+    if (originalKeys === undefined) delete process.env.GROQ_API_KEYS; else process.env.GROQ_API_KEYS = originalKeys;
+  }
+});
