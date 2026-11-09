@@ -2,7 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const express = require("express");
 const mongoose = require("mongoose");
-const { MongoMemoryServer } = require("mongodb-memory-server");
+const { MongoMemoryReplSet } = require("mongodb-memory-server");
 const Project = require("../models/Project");
 const Run = require("../models/PullRequestRun");
 const Connection = require("../models/PullRequestConnection");
@@ -34,7 +34,7 @@ const fakeGithub = { configured: () => true, stateHash, authorization: () => ({ 
 } }) };
 const dependencies = { github: fakeGithub, ask: async () => answers.shift(), selectContext: async () => ({ baseSha: sha, baseTree: tree, files }), sourceFile: async () => files[0] };
 test.before(async () => {
-  mongo = await MongoMemoryServer.create(); await mongoose.connect(mongo.getUri());
+  mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 } }); await mongoose.connect(mongo.getUri());
   await Promise.all([Run.init(), Connection.init(), Blob.init()]);
   const app = express(); app.use(express.json()); app.use((req, res, next) => { req.user = { id: req.headers["x-user"] || String(owner) }; next(); });
   app.use("/pr", createRouter({ github: fakeGithub, workflow: { syncRun: id => workflow.syncRun(id, dependencies), markShipped: run => workflow.markShipped(run, dependencies) } }));
@@ -133,6 +133,31 @@ test("source cache is encrypted, reused by SHA and excludes credential-looking f
   assert.equal((await Blob.findOne({}).lean()).encrypted, undefined);
   assert.ok(!(await Blob.findOne({}).select("+encrypted")).encrypted.includes("Save"));
   await assert.rejects(() => sourceFile(run, async () => ({ encoding: "base64", content: Buffer.from("ghp_" + "x".repeat(30)).toString("base64") }), { ...files[0], sha: "f".repeat(40) }), /credentials/);
+});
+test("disconnect stops status access before an installation token is requested", async () => {
+  const run = await publish(); await Connection.deleteMany({ projectId: project._id });
+  const count = calls.length;
+  await assert.rejects(() => workflow.syncRun(run._id, dependencies), /Reconnect/);
+  assert.equal(calls.length, count);
+});
+test("recovery never duplicates an existing PR and releases a failed unpublished run", async () => {
+  postFailure = true; const run = await publish();
+  await workflow.recoverRun(run._id, dependencies);
+  assert.equal((await Run.findById(run._id)).prNumber, 7);
+  assert.equal(calls.filter(call => call.path === "/pulls" && call.method === "POST").length, 1);
+  await Run.updateOne({ _id: run._id }, { $set: { status: "failed", active: false }, $unset: { prNumber: 1, prUrl: 1 } }); pull = null;
+  await workflow.recoverRun(run._id, dependencies);
+  assert.equal((await Run.findById(run._id)).status, "closed");
+});
+test("changed issue text prevents an old merged PR from resolving a different request", async () => {
+  const run = await publish(); pull.merged_at = new Date().toISOString(); pull.state = "closed";
+  await Project.updateOne({ _id: project._id }, { $set: { "workbenchIssues.0.title": "An unrelated new request" } });
+  await assert.rejects(() => workflow.markShipped(run, dependencies), /issue changed/);
+  assert.equal((await Project.findById(project._id).select("+workbenchIssues")).workbenchIssues[0].status, "todo");
+});
+test("skipped, cancelled and ambiguous named checks cannot count as verification", () => {
+  for (const conclusion of ["skipped", "neutral", "cancelled", "failure", "timed_out"]) assert.equal(workflow.checkState({ requiredCheck: "tests" }, [{ name: "tests", status: "completed", conclusion }], []).status, "needs_attention");
+  assert.equal(workflow.checkState({ requiredCheck: "tests" }, [{ name: "tests", status: "completed", conclusion: "success" }, { name: "tests", status: "completed", conclusion: "failure" }], []).status, "needs_attention");
 });
 test("GitHub callbacks require an expiring single-use state bound to the project", async () => {
   const state = "a".repeat(64);

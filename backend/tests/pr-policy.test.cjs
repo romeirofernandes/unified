@@ -2,7 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { safePath, writablePath, applyPatch, validateAssessment, repositoryName, sensitive } = require("../services/pr-policy");
 test("source policy excludes secrets, sensitive systems, generated code and path escapes", () => {
-  for (const path of ["../src/Button.tsx", "src/../Button.tsx", "src\\Button.tsx", ".env", ".github/workflows/test.yml", "backend/form.jsx", "src/auth/Button.tsx", "src/Payment.tsx", "dist/widget.js", "src/config.ts", "src/api/route.ts"]) assert.equal(safePath(path), false, path);
+  for (const path of ["../src/Button.tsx", "src/../Button.tsx", "src\\Button.tsx", ".env", ".github/workflows/test.yml", "backend/form.jsx", "src/auth/Button.tsx", "src/Payment.tsx", "src/AuthenticationForm.tsx", "src/PaymentController.tsx", "dist/widget.js", "src/config.ts", "src/api/route.ts"]) assert.equal(safePath(path), false, path);
   for (const path of ["frontend/src/components/Button.tsx", "src/pages/Feedbacks.jsx", "README.md", "src/Button.test.tsx"]) assert.equal(safePath(path), true, path);
   for (const path of ["src/Button.test.tsx", "src/__tests__/Button.tsx", "src/helper.ts", "app/page.tsx"]) assert.equal(writablePath(path), false, path);
   assert.equal(writablePath("src/components/Button.tsx"), true);

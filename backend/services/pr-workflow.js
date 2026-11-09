@@ -16,7 +16,7 @@ async function liveProject(run, d) {
   const issue = project?.workbenchIssues.find(item => String(item._id) === String(run.issueId) && !item.deleted && item.status !== "done");
   const connection = await d.Connection.findOne({ projectId: run.projectId, userId: run.userId }).lean();
   if (!issue || fingerprint(issue) !== run.issue.fingerprint) throw fail("The issue changed or is no longer open. Assess it again before attempting a fix.");
-  if (!connection || connection.repositoryId !== run.repositoryId || connection.installationId !== run.installationId || connection.repository !== run.repository || connection.requiredCheck !== run.requiredCheck) throw fail("The repository connection changed. Start a fresh assessment.");
+  if (!connection || connection.repositoryId !== run.repositoryId || connection.installationId !== run.installationId || connection.repository !== run.repository || connection.requiredCheck !== run.requiredCheck || connection.defaultBranch !== run.baseBranch) throw fail("The repository connection changed. Start a fresh assessment.");
   return project;
 }
 async function event(d, filter, status, message, extra = {}) {
@@ -53,7 +53,7 @@ async function fixRun(run, d, filter) {
   if ((await api(`/commits/${encodeURIComponent(run.baseBranch)}`)).sha !== run.baseSha) throw fail("The base branch changed during generation. Assess the issue again.");
   run.patch = proposal.edits;
   run.branch = `unified/fix-${run._id}`;
-  const saved = await event(d, filter, "publishing", "Patch validated. Opening a draft pull request.", { patch: proposal.edits, branch: run.branch });
+  const saved = await event(d, filter, "publishing", "Patch validated. Opening a draft pull request.", { patch: proposal.edits, branch: run.branch, review: { approved: true, reason: review.reason } });
   if (!saved.matchedCount) return;
   // Persist the deterministic branch before any external write. A timeout can be reconciled by branch/PR identity.
   const existing = await api(`/git/ref/heads/${run.branch}`, { allow404: true });
@@ -62,7 +62,7 @@ async function fixRun(run, d, filter) {
   const commit = await api("/git/commits", { method: "POST", body: { message: `fix: ${run.issue.title.replace(/[\r\n]/g, " ").slice(0, 160)}`, tree: tree.sha, parents: [run.baseSha] } });
   // Recheck project ownership immediately before the first visible side effect.
   await liveProject(run, d);
-  if (!await d.Run.exists(filter)) return;
+  if (!await d.Run.exists({ ...filter, leaseUntil: { $gt: new Date() } })) return;
   await d.Run.updateOne(filter, { $set: { headSha: commit.sha } });
   await api("/git/refs", { method: "POST", body: { ref: `refs/heads/${run.branch}`, sha: commit.sha } });
   const pull = await findPull(api, run) || await api("/pulls", { method: "POST", body: { title: run.issue.title.slice(0, 180), body: prBody(run), head: run.branch, base: run.baseBranch, draft: true, maintainer_can_modify: true } });
@@ -93,6 +93,8 @@ async function syncRun(id, overrides = {}) {
   const d = deps(overrides);
   const run = await d.Run.findById(id).select("+installationId").lean();
   if (!run || !run.branch || run.active || ["shipped", "cancelled"].includes(run.status)) return;
+  const connection = await d.Connection.findOne({ projectId: run.projectId, userId: run.userId }).lean();
+  if (!connection || connection.repositoryId !== run.repositoryId || connection.installationId !== run.installationId) throw fail("Reconnect this repository before refreshing its PR status.", 409);
   const { api } = await d.github.repositoryClient(run);
   const pull = run.prNumber ? await api(`/pulls/${run.prNumber}`) : await findPull(api, run);
   if (!pull) throw fail("No PR was found. A branch may have been created before the request failed. Inspect it on GitHub before assessing again.");
@@ -126,7 +128,7 @@ async function recoverRun(id, overrides = {}) {
         return;
       }
       if (!run.headSha || branch.object?.sha !== run.headSha) throw fail("The recovery branch changed. Inspect it on GitHub before taking further action.");
-      if (!await d.Run.exists(filter)) return;
+      if (!await d.Run.exists({ ...filter, leaseUntil: { $gt: new Date() } })) return;
       pull = await api("/pulls", { method: "POST", body: { title: run.issue.title.slice(0, 180), body: prBody(run), head: run.branch, base: run.baseBranch, draft: true, maintainer_can_modify: true } });
     }
     await event(d, filter, "awaiting_checks", "Recovered the draft PR. GitHub status will refresh shortly.", { active: false, leaseUntil: null, prNumber: pull.number, prUrl: pull.html_url, publishedAt: run.publishedAt || new Date(), nextCheckAt: new Date() });
@@ -137,8 +139,8 @@ async function markShipped(run, overrides = {}) {
   await syncRun(run._id, overrides);
   const latest = await d.Run.findById(run._id).lean();
   if (latest?.status !== "merged") throw fail("Only a merged PR can be marked shipped. Release the fix first, then try again.", 409);
-  const project = await d.Project.findOneAndUpdate({ _id: run.projectId, userId: run.userId, workbenchIssues: { $elemMatch: { _id: run.issueId, deleted: false } } }, { $set: { "workbenchIssues.$.status": "done" } }, { new: true });
-  if (!project) throw fail("The linked workbench issue is unavailable.", 404);
+  const project = await d.Project.findOneAndUpdate({ _id: run.projectId, userId: run.userId, workbenchIssues: { $elemMatch: { _id: run.issueId, deleted: false, title: run.issue.title, description: { $in: run.issue.description ? [run.issue.description] : ["", null] } } } }, { $set: { "workbenchIssues.$.status": "done" } }, { new: true });
+  if (!project) throw fail("The linked issue changed or was removed. Review it in the workbench before marking it done.", 409);
   await event(d, { _id: run._id, status: "merged" }, "shipped", "Marked shipped. Existing opt-in shipping notifications will process this issue.", { active: false, shippedAt: new Date() });
 }
 let running = false;

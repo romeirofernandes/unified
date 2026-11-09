@@ -6,8 +6,9 @@ function repositoryName(value) {
   return value;
 }
 function safePath(path) {
+  const words = typeof path === "string" ? path.replace(/([a-z0-9])([A-Z])/g, "$1/$2") : "";
   return typeof path === "string" && path.length <= 240 && !path.startsWith("/") && !path.split("/").some(part => !part || part === "." || part === ".." || part.startsWith(".")) && !/[\\\x00-\x1f]/.test(path)
-    && !/(^|[\/_.-])(auth|login|signup|session|token|secret|credential|password|payment|billing|checkout|stripe|razorpay|middleware|server|backend|api|migration|database|schema|config|lock|vendor|dist|build|node_modules)([\/_.-]|$)/i.test(path)
+    && !/(^|[\/_.-])(auth(?:entication|orization)?|login|signup|sign[-_]?in|session|tokens?|secrets?|credentials?|password|permissions?|payments?|billing|checkout|stripe|razorpay|middleware|server|backend|api|migrations?|database|schema|config|lock|vendor|dist|build|node_modules)([\/_.-]|$)/i.test(words)
     && /\.(jsx?|tsx?|css|md|mdx)$/.test(path);
 }
 function writablePath(path) {

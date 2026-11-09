@@ -18,6 +18,7 @@ const schema = new mongoose.Schema({
   leaseUntil: Date,
   leaseToken: { type: String, select: false },
   assessment: { suitable: Boolean, category: String, reason: String, plan: [String] },
+  review: { approved: Boolean, reason: String },
   files: [{ _id: false, path: String, sha: String, size: Number }],
   patch: [{ _id: false, path: String, before: String, after: String }],
   branch: String,

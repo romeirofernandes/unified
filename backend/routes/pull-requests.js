@@ -6,6 +6,7 @@ const Run = require("../models/PullRequestRun");
 const Blob = require("../models/RepositoryBlob");
 const github = require("../services/pr-github");
 const workflow = require("../services/pr-workflow");
+const { consumeLimit } = require("../services/rate-limit");
 const { fail, repositoryName, fingerprint, sensitive } = require("../services/pr-policy");
 function createRouter(overrides = {}) {
   const d = { Project, Connection, Run, Blob, github, workflow, ...overrides };
@@ -61,7 +62,14 @@ function createRouter(overrides = {}) {
     if (await d.Run.exists({ ...owner(req), issueId: issue._id, branch: { $exists: true }, status: { $nin: ["closed", "shipped", "cancelled"] } })) throw fail("This issue already has a branch or PR. Refresh its status and resolve it before starting another run.", 409);
     // Bound inference spending per project as well as excluding concurrent jobs.
     if (await d.Run.countDocuments({ ...owner(req), createdAt: { $gt: new Date(Date.now() - 3600000) } }) >= 10) throw fail("This project reached its 10-assessments-per-hour limit. Try again later.", 429);
-    const run = await d.Run.create({ ...owner(req), issueId: issue._id, issue: { title: issue.title, description: issue.description || "", fingerprint: fingerprint(issue) }, acceptance: acceptance.trim(), repository: connection.repository, repositoryId: connection.repositoryId, installationId: connection.installationId, baseBranch: connection.defaultBranch, requiredCheck: connection.requiredCheck, model: process.env.GROQ_MODEL || "qwen/qwen3.8-27b", status: "queued", active: true, events: [{ at: new Date(), status: "queued", message: "Assessment queued." }] });
+    await d.Run.init();
+    // Share the project's write lock with account/project deletion so a deleted project cannot leave a new job behind.
+    const run = await mongoose.connection.transaction(async session => {
+      const current = await d.Project.findOneAndUpdate({ _id: req.project._id, userId: req.user.id, workbenchIssues: { $elemMatch: { _id: issue._id, title: issue.title, description: issue.description, deleted: false, status: { $ne: "done" } } } }, { $inc: { writeVersion: 1 } }, { session });
+      if (!current) throw fail("The issue changed or the project was removed. Reload and try again.", 409);
+      const [created] = await d.Run.create([{ ...owner(req), issueId: issue._id, issue: { title: issue.title, description: issue.description || "", fingerprint: fingerprint(issue) }, acceptance: acceptance.trim(), repository: connection.repository, repositoryId: connection.repositoryId, installationId: connection.installationId, baseBranch: connection.defaultBranch, requiredCheck: connection.requiredCheck, model: process.env.GROQ_MODEL || "qwen/qwen3.8-27b", status: "queued", active: true, events: [{ at: new Date(), status: "queued", message: "Assessment queued." }] }], { session });
+      return created;
+    });
     res.status(202).json({ _id: run._id });
   }));
   router.get("/:projectId/runs/:runId", handler(async (req, res) => res.json(req.run)));
@@ -81,15 +89,17 @@ function createRouter(overrides = {}) {
   }));
   router.post("/:projectId/runs/:runId/refresh", handler(async (req, res) => {
     if (req.run.active || !req.run.branch) throw fail("This run has no published branch to refresh yet.", 409);
-    if (req.run.nextCheckAt && new Date(req.run.nextCheckAt) > new Date(Date.now() + 45000)) throw fail("Wait a few seconds before refreshing GitHub again.", 429);
+    await consumeLimit(`pr-sync:${req.user.id}`, 6);
     await d.workflow.syncRun(req.run._id);
     res.json({ refreshed: true });
   }));
   router.post("/:projectId/runs/:runId/recover", handler(async (req, res) => {
+    await consumeLimit(`pr-sync:${req.user.id}`, 6);
     await d.workflow.recoverRun(req.run._id);
     res.json({ recovered: true });
   }));
   router.post("/:projectId/runs/:runId/shipped", handler(async (req, res) => {
+    await consumeLimit(`pr-sync:${req.user.id}`, 6);
     await d.workflow.markShipped(req.run);
     res.json({ shipped: true });
   }));
