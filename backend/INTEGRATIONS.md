@@ -85,3 +85,11 @@ delivery errors exclude provider payloads and secrets. tests are limited to one 
 - [Slack logo from SVGL](https://svgl.app/)
 
 HTML email digests use the project’s warm neutral palette, serif headings, numbered actions and a response link, with a plain-text alternative. Slack messages use Block Kit headings, context and separate action sections; feedback remains plain text so it cannot create Slack mentions.
+
+## shipping updates
+
+feedback submissions accept an optional `subscriptionEmail` alongside `formAnswers`. leaving it blank skips updates. the widget asks for this on its final question, and the address is stored separately from answers and excluded from feedback and evidence reads.
+
+when a workbench issue with linked response IDs is marked `done`, the shipping worker emails those subscribed respondents within a minute. deleted issues are skipped. summary imports provide the response links. each response gets at most one update per issue, even if the issue is reopened. email uses the same SMTP or Resend setup above.
+
+explicit provider rejections retry on the next scan. an uncertain delivery is held in `DigestDelivery` as `unknown` (or `sending` if the process stopped) to avoid duplicate emails. inspect the provider before resetting that record to `rejected` for a retry. live email delivery needs configured credentials and a running backend worker.
