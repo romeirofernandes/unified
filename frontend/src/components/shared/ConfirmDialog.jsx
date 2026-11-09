@@ -19,6 +19,7 @@ export default function ConfirmDialog({
   error,
   children,
   confirmLabel = "Delete",
+  confirmVariant = "destructive",
 }) {
   return (
     <Dialog
@@ -44,7 +45,7 @@ export default function ConfirmDialog({
           <Button
             onClick={onConfirm}
             loading={pending}
-            variant="destructive"
+            variant={confirmVariant}
           >
             {confirmLabel}
           </Button>

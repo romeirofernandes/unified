@@ -9,6 +9,7 @@ const Signup = lazy(() => import("./pages/Signup"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Feedbacks = lazy(() => import("./pages/Feedbacks"));
 const Workbench = lazy(() => import("./pages/Workbench"));
+const PullRequests = lazy(() => import("./pages/PullRequests"));
 const Integrations = lazy(() => import("./pages/Integrations"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Docs = lazy(() => import("./pages/Docs"));
@@ -30,6 +31,7 @@ export default function App() {
               element={<Feedbacks />}
             />
             <Route path="/dashboard/workbench" element={<Workbench />} />
+            <Route path="/dashboard/pull-requests" element={<PullRequests />} />
             <Route path="/dashboard/integrations" element={<Integrations />} />
             <Route path="/dashboard/settings" element={<Settings />} />
             <Route path="/dashboard/docs" element={<Docs />} />

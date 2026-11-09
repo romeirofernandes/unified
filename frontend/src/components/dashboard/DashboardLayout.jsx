@@ -13,6 +13,7 @@ import {
   File01Icon,
   ConnectIcon,
   KanbanIcon,
+  GitPullRequestIcon,
   LogOutIcon,
 } from "@hugeicons/core-free-icons";
 import { useAuth } from "@/hooks/use-auth";
@@ -40,6 +41,7 @@ function SignOutGlyph({ size }) {
 const navigation = [
   { path: "/dashboard", label: "Projects", icon: DashboardSquare01Icon },
   { path: "/dashboard/workbench", label: "Workbench", icon: KanbanIcon },
+  { path: "/dashboard/pull-requests", label: "Pull requests", icon: GitPullRequestIcon },
   { path: "/dashboard/integrations", label: "Integrations", icon: ConnectIcon },
   { path: "/dashboard/docs", label: "Documentation", icon: File01Icon },
   { path: "/dashboard/settings", label: "Settings", icon: Settings01Icon },
@@ -47,7 +49,7 @@ const navigation = [
 
 function WorkspaceNavigation() {
   const { user } = useAuth();
-  const prefetch = (path) => { preloadPage(path); if (["/dashboard", "/dashboard/integrations", "/dashboard/workbench"].includes(path)) void prefetchResource("/projects", user?.uid).catch(() => {}); };
+  const prefetch = (path) => { preloadPage(path); if (["/dashboard", "/dashboard/integrations", "/dashboard/workbench", "/dashboard/pull-requests"].includes(path)) void prefetchResource("/projects", user?.uid).catch(() => {}); };
   const { pathname } = useLocation();
   const { setOpenMobile } = useSidebar();
   return (

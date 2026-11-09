@@ -1,5 +1,5 @@
 import { useId, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Add01Icon } from "@hugeicons/core-free-icons";
 import WorkbenchBoard, { StatusSelect } from "@/components/workbench-board";
@@ -81,7 +81,8 @@ function IssueEditor({ issue, projectId, uid, pending, error, onClose, onSave })
         </form>
         {issue._id && <div className="min-w-0 border-t border-border bg-muted/30 md:border-s md:border-t-0"><IssueEvidence projectId={projectId} issueId={issue._id} uid={uid} /></div>}
       </div>
-      <footer className="flex shrink-0 items-center justify-end gap-3 border-t border-border bg-background px-5 py-4 sm:px-6">
+      <footer className="flex shrink-0 flex-wrap items-center justify-end gap-3 border-t border-border bg-background px-5 py-4 sm:px-6">
+        {issue._id && issue.status !== "done" && <Button asChild variant="ghost" disabled={pending}><Link to={`/dashboard/pull-requests?project=${projectId}&issue=${issue._id}`}>Assess for a PR</Link></Button>}
         <Button type="button" variant="ghost" disabled={pending} onClick={onClose}>Cancel</Button>
         <Button type="submit" form={formId} loading={pending} disabled={!title.trim()}>{issue._id ? "Save changes" : "Create issue"}</Button>
       </footer>

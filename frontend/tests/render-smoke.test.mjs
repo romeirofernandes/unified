@@ -29,6 +29,9 @@ import Settings from "./src/pages/Settings";
 import Docs from "./src/pages/Docs";
 import Integrations from "./src/pages/Integrations";
 import Workbench from "./src/pages/Workbench";
+import PullRequests from "./src/pages/PullRequests";
+import { setPullRequestStatus } from "@/hooks/use-api-resource";
+export { setPullRequestStatus };
 import NotFound from "./src/pages/NotFound";
 export { documentationMarkdown } from "./src/components/docs/Quickstart";
 function PreviewThemeProbe() {
@@ -39,7 +42,7 @@ export function renderPreviewTheme(theme) {
   setFixtureTheme(theme);
   return renderToString(<PreviewThemeProbe />);
 }
-const pages = { Workbench, Integrations, Login, Signup, Dashboard, Feedbacks, Settings, Docs, NotFound };
+const pages = { PullRequests, Workbench, Integrations, Login, Signup, Dashboard, Feedbacks, Settings, Docs, NotFound };
 export function render(name, url) {
   const Page = pages[name];
   return renderToString(<MemoryRouter initialEntries={[url]}><FluidRoot><Routes><Route path="/project/:projectId/feedbacks" element={<Page />} /><Route path="*" element={<Page />} /></Routes></FluidRoot></MemoryRouter>);
@@ -86,7 +89,7 @@ const result = await build({
                 ? `export const useAuth = () => ({ user: { uid: "user-1", email: "person@example.com", providerData: [], metadata: {} }, login() {}, signup() {}, loginWithGoogle() {}, logout() {} });`
                 : name === "firebase-fixture"
                   ? "export const auth = {};"
-                  : `const project = ${JSON.stringify(fixture)}; export const useApiResource = (path) => ({ data: path === "/projects" ? [project] : path.startsWith("/projects/") ? project : path.startsWith("/workbench/") ? [{ _id: "issue-1", title: "Fix search", description: "Search fails on mobile", status: "todo", sourceKey: "summary" }] : [{ _id: "feedback-1", timestamp: "2026-11-05T00:00:00.000Z", formAnswers: { "email-field": "customer@example.com" } }], loading: false, error: "", reload() {}, setData() {} });`,
+                  : `let prStatus = "eligible"; export const setPullRequestStatus = value => { prStatus = value; }; const project = ${JSON.stringify(fixture)}; const run = () => ({ _id: "run-1", issueId: "issue-1", issue: { title: "Clarify save button", description: "The editor label is unclear." }, acceptance: "The button should read Save changes.", status: prStatus, active: false, createdAt: "2026-11-09T00:00:00Z", message: "Ready for review", repository: "owner/repo", files: [{ path: "src/Button.tsx", sha: "abc123", size: 12 }], patch: [], assessment: { reason: "A small label change", plan: ["Update the label"] }, events: [] }); export const useApiResource = (path) => ({ data: path === "/projects" ? [project] : path.startsWith("/projects/") ? project : path.startsWith("/pull-requests/") ? (path.includes("/runs/") ? run() : { configured: true, connection: { repository: "owner/repo", defaultBranch: "main", requiredCheck: "tests" }, runs: [run()] }) : path.startsWith("/workbench/") ? [{ _id: "issue-1", title: "Fix search", description: "Search fails on mobile", status: "todo", sourceKey: "summary" }] : [{ _id: "feedback-1", timestamp: "2026-11-05T00:00:00.000Z", formAnswers: { "email-field": "customer@example.com" } }], loading: false, error: "", reload() {}, setData() {} });`,
           }),
         );
       },
@@ -99,7 +102,7 @@ new Function("require", "module", "exports", result.outputFiles[0].text)(
   module,
   module.exports,
 );
-const { render, renderPreviewTheme } = module.exports;
+const { render, renderPreviewTheme, setPullRequestStatus } = module.exports;
 
 test("fresh previews use the app theme, including dark mode", () => {
   assert.equal(renderPreviewTheme("dark"), "<output>dark</output>");
@@ -113,6 +116,7 @@ for (const [name, url, expected] of [
   ["Dashboard", "/dashboard", "Sample project"],
   ["Feedbacks", "/project/project-1/feedbacks", "customer@example.com"],
   ["Workbench", "/dashboard/workbench", "Fix search"],
+  ["PullRequests", "/dashboard/pull-requests", "Assess this issue"],
   ["Integrations", "/dashboard/integrations", "Slack"],
   ["Settings", "/dashboard/settings", "person@example.com"],
   ["Docs", "/docs", "Set up the SDK"],
@@ -138,3 +142,19 @@ test("copy page includes the full integration contract and every package manager
   assert.ok(markdown.includes(`unified-sdk@${sdkVersion}`));
   for (const text of ["# Unified documentation", "## Connect your own form", "YOUR_BACKEND_URL/api/submissions/YOUR_PROJECT_ID", "Bearer YOUR_SUBMISSION_KEY", "QUESTION_ID", "HTTP 201", "required", "npm install unified-sdk", "pnpm add unified-sdk", "yarn add unified-sdk", "bun add unified-sdk", "pnpm dlx", "bunx", "Get feedback digests"]) assert.ok(markdown.includes(text), `Missing ${text}`);
 });
+
+for (const [status, expected, absent] of [
+  ["eligible", "Attempt fix &amp; open draft", "Mark shipped"],
+  ["not_suitable", "Needs a human", "Attempt fix"],
+  ["awaiting_checks", "Waiting for CI", "Mark shipped"],
+  ["merged", "Mark shipped", "Attempt fix"],
+  ["shipped", "Shipped", "Attempt fix"],
+]) {
+  test(`PR run ${status} exposes only its valid next actions`, () => {
+    setPullRequestStatus(status);
+    const markup = render("PullRequests", "/dashboard/pull-requests?issue=issue-1&run=run-1");
+    assert.ok(markup.includes(expected), `Expected ${expected}`);
+    assert.ok(!markup.includes(absent), `Unexpected action ${absent}`);
+    assert.ok(markup.includes("Source context"));
+  });
+}

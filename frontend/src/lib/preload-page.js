@@ -1,5 +1,6 @@
 const loaders = {
   "/dashboard/workbench": () => import("@/pages/Workbench"),
+  "/dashboard/pull-requests": () => import("@/pages/PullRequests"),
   "/dashboard": () => import("@/pages/Dashboard"),
   "/dashboard/docs": () => import("@/pages/Docs"),
   "/dashboard/settings": () => import("@/pages/Settings"),
