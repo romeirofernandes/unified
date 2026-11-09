@@ -21,11 +21,13 @@ test("only subscribed, linked responses in this project receive one update per i
   const unlinked = await create({ subscriptionEmail: "unlinked@example.com" });
   const other = await create({ projectId: new mongoose.Types.ObjectId(), subscriptionEmail: "other@example.com" });
   const issue = { _id: issueId, title: "Search", status: "todo", responseIds: [subscribed._id, anonymous._id, other._id] };
-  const project = { _id: projectId, name: "Product", workbenchIssues: [issue] };
+  const project = { _id: projectId, name: "Product", shippingUpdatesEnabled: true, workbenchIssues: [issue] };
   const sends = [];
   const send = async input => { sends.push(input.recipient); };
   await processShippedUpdates(project, send); assert.equal(sends.length, 0);
-  issue.status = "done"; issue.deleted = true;
+  issue.status = "done"; project.shippingUpdatesEnabled = false;
+  await processShippedUpdates(project, send); assert.equal(sends.length, 0);
+  project.shippingUpdatesEnabled = true; issue.deleted = true;
   await processShippedUpdates(project, send); assert.equal(sends.length, 0);
   issue.deleted = false;
   await Promise.all([processShippedUpdates(project, send), processShippedUpdates(project, send)]);
@@ -40,7 +42,7 @@ test("definitive rejection retries, uncertain delivery does not send twice", asy
   const projectId = new mongoose.Types.ObjectId();
   for (const rejected of [true, false]) {
     const response = await Feedback.create({ projectId, formAnswers: {}, subscriptionEmail: "retry@example.com" });
-    const project = { _id: projectId, name: "Product", workbenchIssues: [{ _id: new mongoose.Types.ObjectId(), status: "done", responseIds: [response._id] }] };
+    const project = { _id: projectId, name: "Product", shippingUpdatesEnabled: true, workbenchIssues: [{ _id: new mongoose.Types.ObjectId(), status: "done", responseIds: [response._id] }] };
     let calls = 0;
     const send = async () => { calls++; if (calls === 1) throw Object.assign(new Error("Failed"), { deliveryRejected: rejected }); };
     await processShippedUpdates(project, send); await processShippedUpdates(project, send);

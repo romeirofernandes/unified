@@ -24,7 +24,7 @@ async function submitFeedback(filter, answers, subscriptionEmail) {
     if (!project) throw unavailable();
     await lockOwner(project.userId, session);
     const formAnswers = validateAnswers(project.fields, answers);
-    const [feedback] = await Feedback.create([{ projectId: project._id, formAnswers, subscriptionEmail }], { session });
+    const [feedback] = await Feedback.create([{ projectId: project._id, formAnswers, subscriptionEmail: project.shippingUpdatesEnabled ? subscriptionEmail : undefined }], { session });
     return feedback;
   });
 }

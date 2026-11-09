@@ -90,6 +90,7 @@ const projectSchema = new mongoose.Schema({
     required: true,
   },
   description: String,
+  shippingUpdatesEnabled: { type: Boolean, default: false },
   appearance: {
     type: appearanceSchema,
     default: () => ({ preset: "unified", colors: {} }),

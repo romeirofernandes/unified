@@ -73,7 +73,7 @@ test("public widget exposes only form configuration and cannot use UID headers a
   await Project.updateOne({ _id: project._id }, { $set: { slackWorkspace: "private-workspace", submissionKeyHash: "private-hash" } });
   const config = await fetch(`${base}/api/widget/${project._id}`);
   assert.equal(config.status, 200);
-  assert.deepEqual(Object.keys(await config.json()).sort(), ["appearance", "fields", "name", "theme"]);
+  assert.deepEqual(Object.keys(await config.json()).sort(), ["appearance", "fields", "name", "shippingUpdatesEnabled", "theme"]);
   const denied = await fetch(`${base}/api/private`, { headers: { "firebase-uid": user.firebaseUid } });
   assert.equal(denied.status, 401);
   const post = (formAnswers) => fetch(`${base}/api/widget/${project._id}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ formAnswers }) });
@@ -115,4 +115,18 @@ test("custom forms accept cross-origin Bearer submissions and preflight from unr
   await Project.updateOne({ _id: project._id }, { $unset: { submissionKeyHash: 1 } });
   const revoked = await fetch(url, { method: "POST", headers: { Origin: "https://independent-frontend.example", Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ formAnswers: answers }) });
   assert.equal(revoked.status, 404);
+});
+
+test("project setting controls subscriptions on every submission path", async () => {
+  const { project, answers } = await fixture();
+  assert.equal(project.shippingUpdatesEnabled, false);
+  const submit = () => submitFeedback({ _id: project._id }, answers, "person@example.com");
+  let feedback = await submit();
+  assert.equal((await Feedback.findById(feedback._id).select("+subscriptionEmail")).subscriptionEmail, undefined);
+  await Project.updateOne({ _id: project._id }, { $set: { shippingUpdatesEnabled: true } });
+  feedback = await submit();
+  assert.equal((await Feedback.findById(feedback._id).select("+subscriptionEmail")).subscriptionEmail, "person@example.com");
+  await Project.updateOne({ _id: project._id }, { $set: { shippingUpdatesEnabled: false } });
+  feedback = await submit();
+  assert.equal((await Feedback.findById(feedback._id).select("+subscriptionEmail")).subscriptionEmail, undefined);
 });

@@ -18,6 +18,7 @@ async function sendUpdate({ recipient, project, issue, batchId }, request = fetc
   if (!response.ok) throw Object.assign(new Error("Shipping update delivery failed."), { deliveryRejected: response.status < 500 });
 }
 async function processShippedUpdates(project, send = sendUpdate) {
+  if (!project.shippingUpdatesEnabled) return;
   for (const issue of project.workbenchIssues || []) {
     if (issue.deleted || issue.status !== "done" || !issue.responseIds?.length) continue;
     const responses = await Feedback.find({ projectId: project._id, _id: { $in: issue.responseIds }, subscriptionEmail: { $exists: true }, shippedIssueIds: { $ne: issue._id } }).select("+subscriptionEmail");
@@ -35,7 +36,7 @@ function startShippingWorker() {
     if (running) return;
     running = true;
     try {
-      const projects = Project.find({ workbenchIssues: { $elemMatch: { status: "done", deleted: false, "responseIds.0": { $exists: true } } } }).select("name +workbenchIssues").cursor();
+      const projects = Project.find({ shippingUpdatesEnabled: true, workbenchIssues: { $elemMatch: { status: "done", deleted: false, "responseIds.0": { $exists: true } } } }).select("name shippingUpdatesEnabled +workbenchIssues").cursor();
       for await (const project of projects) await processShippedUpdates(project);
     } catch { console.error("Shipping update scan failed."); }
     finally { running = false; }
