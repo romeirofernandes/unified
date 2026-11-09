@@ -4,7 +4,7 @@ import { ArrowLeft01Icon, ArrowRight01Icon, BubbleChatIcon, Cancel01Icon } from 
 import Stepper, { Step } from "./Stepper";
 import Field from "./Field";
 
-const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose, formData, theme, answers, onSubmit, onChange, pending = false, error }) {
+const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose, formData, theme, answers, onSubmit, onChange, pending = false, error, subscriptionEmail = "", onSubscriptionChange }) {
   const [fieldError, setFieldError] = useState("");
   const [currentStep, setCurrentStep] = useState(0);
   const instanceId = useId();
@@ -48,6 +48,11 @@ const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose, formData, t
           </div>
         </Step>)}
       </Stepper>
+      {currentStep === total - 1 && onSubscriptionChange && <div className="uf-question">
+        <label className="uf-question-label" htmlFor={`${instanceId}-subscription`}>Email me when my request ships (optional)</label>
+        <input className="uf-input" id={`${instanceId}-subscription`} type="email" autoComplete="email" maxLength={254} value={subscriptionEmail} onChange={event => onSubscriptionChange(event.target.value)} disabled={pending} aria-describedby={`${instanceId}-subscription-help`} />
+        <p id={`${instanceId}-subscription-help`} className="uf-question-meta">Leave blank to skip updates. We’ll only email when a linked request is marked done.</p>
+      </div>}
       {(error || fieldError) && <p role="alert" className="uf-error">{fieldError || error}</p>}
       <footer className="uf-form-footer">
         <button type="button" className="uf-button uf-button-back" disabled={pending} style={{ visibility: currentStep === 0 ? "hidden" : undefined }} onClick={() => { setFieldError(""); setCurrentStep(value => Math.max(0, value - 1)); }}><HugeiconsIcon icon={ArrowLeft01Icon} size={16} aria-hidden="true" />Back</button>

@@ -14,6 +14,7 @@ function FeedbackSession({ projectId, theme, apiUrl = import.meta.env.VITE_API_U
   const [resource, setResource] = useState({ status: "loading", data: null });
   const [status, setStatus] = useState("closed");
   const [answers, setAnswers] = useState({});
+  const [subscriptionEmail, setSubscriptionEmail] = useState("");
   const [error, setError] = useState("");
   const request = useRef(null);
   const baseUrl = apiUrl.replace(/\/$/, "");
@@ -69,7 +70,7 @@ function FeedbackSession({ projectId, theme, apiUrl = import.meta.env.VITE_API_U
         method: "POST",
         signal: controller.signal,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ formAnswers }),
+        body: JSON.stringify({ formAnswers, subscriptionEmail }),
       });
       if (!response.ok) throw new Error("Could not send feedback. Please try again.");
       if (!controller.signal.aborted) setStatus("success");
@@ -90,7 +91,7 @@ function FeedbackSession({ projectId, theme, apiUrl = import.meta.env.VITE_API_U
       storageKey={`unified-feedback:dismissed:${baseUrl}:${projectId}`} launcher={{ ...formData.appearance?.launcher, ...(triggerStyle ? { style: triggerStyle } : {}) }} pending={pending} success={success} position={position || formData.appearance?.launcher?.position} theme={widgetTheme} style={formThemeStyle(formData.appearance, widgetTheme)}>
       <FormFont appearance={formData.appearance} />
       <FeedbackModal isOpen onClose={handleClose} formData={formData} theme={widgetTheme}
-        answers={answers} onSubmit={handleSubmit} pending={pending} error={error} onChange={handleInputChange} />
+        subscriptionEmail={subscriptionEmail} onSubscriptionChange={setSubscriptionEmail} answers={answers} onSubmit={handleSubmit} pending={pending} error={error} onChange={handleInputChange} />
     </FeedbackShell>}
     </>
   );
