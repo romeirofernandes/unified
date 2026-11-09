@@ -32,8 +32,8 @@ function eventStage(status, extra) {
   if (status === "shipped") return "ship";
   return "review";
 }
-async function event(d, filter, status, message, extra = {}, stage = eventStage(status, extra)) {
-  return d.Run.updateOne(filter, { $set: { status, message, ...extra }, $push: { events: { $each: [{ at: new Date(), status, message, stage }], $slice: -100 } } });
+async function event(d, filter, status, message, extra = {}, stage = eventStage(status, extra), trace = {}) {
+  return d.Run.updateOne(filter, { $set: { status, message, ...extra }, $push: { events: { $each: [{ at: new Date(), status, message, stage, ...trace }], $slice: -100 } } });
 }
 function prBody(run) {
   return `## Summary\n\n${run.issue.title}\n\n\`\`\`text\nfeedback issue -> bounded patch -> ${run.requiredCheck || "GitHub review"} -> human review\n\`\`\`\n\nAcceptance criteria:\n${run.acceptance}\n\n${run.assessment.plan.map(step => `- ${step}`).join("\n")}\n\n## Evidence\n\n- **Before:** source commit \`${run.baseSha}\`; issue and file hashes saved in Unified run \`${run._id}\`.\n- **After:** ${run.patch.length} exact replacements. CI has not been verified yet. Review the diff and any reported GitHub checks before merging.\n\n## Merge Danger\n\n**Door:** two-way\n\n**Blast Radius:** UI\n\nAI-generated draft. No tests, dependencies or workflows were modified. Merging does not notify reporters; mark the issue shipped in Unified after release.\n`;
@@ -46,7 +46,7 @@ async function findPull(api, run) {
 async function assessRun(run, d, filter) {
   const { api } = await d.github.repositoryClient(run);
   await liveProject(run, d);
-  const trace = message => event(d, filter, "assessing", message);
+  const trace = (message, detail) => event(d, filter, "assessing", message, {}, "scope", detail);
   await trace("GitHub access verified. Selecting repository context.");
   const context = await d.selectContext(run, api, d.ask, d.Blob, trace);
   await d.Run.updateOne(filter, { $set: { baseSha: context.baseSha, baseTree: context.baseTree, files: context.files.map(({ path, sha, size }) => ({ path, sha, size })) } });
@@ -61,9 +61,11 @@ async function fixRun(run, d, filter) {
   await liveProject(run, d);
   const head = await api(`/commits/${encodeURIComponent(run.baseBranch)}`);
   if (head.sha !== run.baseSha) throw fail("The base branch changed. Create a fresh assessment against its latest commit.");
-  const files = await Promise.all(run.files.map(file => d.sourceFile(run, api, file, d.Blob)));
+  const trace = (message, detail) => event(d, filter, "generating", message, {}, "patch", detail);
+  const files = await Promise.all(run.files.map(file => d.sourceFile(run, api, file, d.Blob, trace)));
   const proposal = await d.ask({ messages: [{ role: "system", content: system }, { role: "user", content: JSON.stringify({ task: "Implement only the assessed fix. Return {edits:[{path,before,after}]}. Each before must be an exact unique substring of a provided file. Use short replacements with enough context to match uniquely. Do not create files, change tests, widen scope, add network calls, change security behavior or rewrite whole files. At most 3 files, 12 replacements, 120 lines counting before plus after. Return {edits:[]} if it cannot be done precisely.", issue: run.issue, acceptance: run.acceptance, assessment: run.assessment, files }) }], maxTokens: 2000, schema: schemas.patch });
   const updated = applyPatch(files, proposal.edits);
+  await trace(`Validated ${proposal.edits.length} exact replacements across ${updated.length} files against the saved source hashes.`, { tool: "edit", label: "Validate edits", target: `${updated.length} files`, state: "complete" });
   const review = await d.ask({ messages: [{ role: "system", content: system }, { role: "user", content: JSON.stringify({ task: "Review this proposed patch against the original files and acceptance criteria. Return {approved:boolean,reason:string}. Reject incorrect changes, new sensitive behavior, missing context, out-of-scope changes, and weakened validation. This is a preflight review, not proof that tests passed.", issue: run.issue, acceptance: run.acceptance, files, edits: proposal.edits }) }], maxTokens: 600, schema: schemas.review });
   if (review.approved !== true || typeof review.reason !== "string" || review.reason.length > 2000) throw fail("The proposed patch did not pass the scope review. A human should investigate this issue.");
   await liveProject(run, d);
@@ -75,15 +77,18 @@ async function fixRun(run, d, filter) {
   // Persist the deterministic branch before any external write. A timeout can be reconciled by branch/PR identity.
   const existing = await api(`/git/ref/heads/${run.branch}`, { allow404: true });
   if (existing) throw fail("This run already has a branch. Refresh its GitHub status before retrying.");
+  await event(d, filter, "publishing", "Preparing the Git tree and commit from the validated patch.", {}, "pr", { operation: "publish:commit", tool: "git", label: "Create commit", target: run.branch, state: "running" });
   const tree = await api("/git/trees", { method: "POST", body: { base_tree: run.baseTree, tree: updated.map(file => ({ path: file.path, mode: "100644", type: "blob", content: file.content })) } });
   const commit = await api("/git/commits", { method: "POST", body: { message: `fix: ${run.issue.title.replace(/[\r\n]/g, " ").slice(0, 160)}`, tree: tree.sha, parents: [run.baseSha] } });
+  await event(d, filter, "publishing", `Created commit ${commit.sha.slice(0, 12)} for the proposed fix.`, {}, "pr", { operation: "publish:commit", tool: "git", label: "Create commit", target: run.branch, state: "complete" });
   // Recheck project ownership immediately before the first visible side effect.
   await liveProject(run, d);
   if (!await d.Run.exists({ ...filter, leaseUntil: { $gt: new Date() } })) return;
   await d.Run.updateOne(filter, { $set: { headSha: commit.sha } });
+  await event(d, filter, "publishing", "Creating the fix branch and opening a draft for human review.", {}, "pr", { operation: "publish:pr", tool: "git", label: "Open draft PR", target: run.repository, state: "running" });
   await api("/git/refs", { method: "POST", body: { ref: `refs/heads/${run.branch}`, sha: commit.sha } });
   const pull = await findPull(api, run) || await api("/pulls", { method: "POST", body: { title: run.issue.title.slice(0, 180), body: prBody(run), head: run.branch, base: run.baseBranch, draft: true, maintainer_can_modify: true } });
-  await event(d, filter, "awaiting_checks", "Draft PR created. Waiting for GitHub review and any automated checks.", { active: false, leaseUntil: null, prNumber: pull.number, prUrl: pull.html_url, headSha: commit.sha, publishedAt: new Date(), nextCheckAt: new Date(Date.now() + 60000) });
+  await event(d, filter, "awaiting_checks", "Draft PR created. Waiting for GitHub review and any automated checks.", { active: false, leaseUntil: null, prNumber: pull.number, prUrl: pull.html_url, headSha: commit.sha, publishedAt: new Date(), nextCheckAt: new Date(Date.now() + 60000) }, "pr", { operation: "publish:pr", tool: "git", label: "Open draft PR", target: `PR #${pull.number}`, state: "complete" });
 }
 async function processRun(id, overrides = {}) {
   const d = deps(overrides);
@@ -97,14 +102,18 @@ async function processRun(id, overrides = {}) {
     const model = run.model || process.env.GROQ_MODEL || "qwen/qwen3.8-27b";
     const characters = JSON.stringify(options.messages).length;
     if (characters > 22000) throw fail("This request exceeds the bounded AI context budget. Narrow the issue to a smaller component.");
+    const operation = randomUUID();
+    const label = options.schema === schemas.selection ? "Select files" : options.schema === schemas.assessment ? "Assess scope" : options.schema === schemas.patch ? "Generate patch" : "Review patch";
+    const detail = { operation, tool: "ai", label, target: model };
+    const stage = run.status === "queued" ? "scope" : "patch";
     const started = Date.now();
-    await event(d, filter, status, `AI request started · ${model} · ${characters} input characters · up to ${options.maxTokens} output tokens.`);
+    await event(d, filter, status, `AI request started · ${model} · ${characters} input characters · up to ${options.maxTokens} output tokens.`, {}, stage, { ...detail, state: "running" });
     try {
-      const result = await ask({ ...options, model, onRetry: message => event(d, filter, status, message) });
-      await event(d, filter, status, `AI response received in ${((Date.now() - started) / 1000).toFixed(1)}s.`);
+      const result = await ask({ ...options, model, onRetry: message => event(d, filter, status, message, {}, stage, { ...detail, state: "running" }) });
+      await event(d, filter, status, `AI response received in ${((Date.now() - started) / 1000).toFixed(1)}s.`, {}, stage, { ...detail, state: "complete", durationMs: Date.now() - started });
       return result;
     } catch (error) {
-      await event(d, filter, status, `AI request failed after ${((Date.now() - started) / 1000).toFixed(1)}s. ${cleanError(error)}`);
+      await event(d, filter, status, `AI request failed after ${((Date.now() - started) / 1000).toFixed(1)}s. ${cleanError(error)}`, {}, stage, { ...detail, state: "failed", durationMs: Date.now() - started });
       throw error;
     }
   };

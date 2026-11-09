@@ -255,3 +255,21 @@ test("failed model requests retain the source snapshot and operational trace", a
   assert.ok(failed.events.some(event => /AI request failed after.*HTTP 429/.test(event.message)));
   assert.equal(calls.filter(call => call.method === 'POST').length, 0);
 });
+test("authenticated live stream delivers Mongo changes without exposing raw run documents", async () => {
+  const run = await assessed();
+  const route = `/pr/${project._id}/runs/${run._id}/events`;
+  assert.equal((await api(route, null, String(new mongoose.Types.ObjectId()))).status,404);
+  const controller = new AbortController();
+  const response = await fetch(base+route,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(10000)])});
+  assert.equal(response.status,200);
+  assert.match(response.headers.get('content-type'),/text\/event-stream/);
+  const reader=response.body.getReader();
+  try {
+    const ready = await reader.read();
+    assert.match(new TextDecoder().decode(ready.value),/event: ready/);
+    await Run.updateOne({_id:run._id},{$set:{message:'fixture live event'}});
+    const change = new TextDecoder().decode((await reader.read()).value);
+    assert.match(change,/event: change/);
+    assert.doesNotMatch(change,/installationId|fixture live event|leaseToken|issue/);
+  } finally {controller.abort();await reader.cancel().catch(()=>{});}
+});

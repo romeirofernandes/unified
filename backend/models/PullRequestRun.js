@@ -34,7 +34,7 @@ const schema = new mongoose.Schema({
   message: String,
   nextCheckAt: Date,
   shippedAt: Date,
-  events: [{ _id: false, at: Date, status: String, message: String, stage: String }],
+  events: [{ _id: false, at: Date, status: String, message: String, stage: String, operation: String, tool: String, label: String, target: String, state: String, durationMs: Number }],
 }, { timestamps: true });
 schema.index({ projectId: 1 }, { unique: true, partialFilterExpression: { active: true }, name: "one_active_pr_run_per_project" });
 schema.index({ status: 1, nextCheckAt: 1 });

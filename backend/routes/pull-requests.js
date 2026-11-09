@@ -90,6 +90,7 @@ function createRouter(overrides = {}) {
     });
     res.status(202).json({ _id: run._id });
   }));
+  router.get("/:projectId/runs/:runId/events", (req, res) => require("../services/pr-live").streamRun(req, res, d.Run));
   router.get("/:projectId/runs/:runId", handler(async (req, res) => res.json({ ...req.run, notification: await notificationState(req.run, req.project), shippingUpdatesEnabled: !!req.project.shippingUpdatesEnabled })));
   router.post("/:projectId/runs/:runId/attempt", handler(async (req, res) => {
     const issue = req.project.workbenchIssues.find(item => String(item._id) === String(req.run.issueId) && !item.deleted && item.status !== "done");
