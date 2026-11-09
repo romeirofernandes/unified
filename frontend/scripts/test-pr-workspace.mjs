@@ -13,7 +13,7 @@ const fixture = `
 import React, {useEffect, useState, useCallback} from 'react';
 const project = {_id:'project-1',name:'Unified',fields:[]};
 const issue = {_id:'issue-1',title:'Clarify the save button',description:'The editor button should use a specific label.',status:'todo'};
-const run = {_id:'run-1',projectId:'project-1',issueId:'issue-1',issue:{title:issue.title,description:issue.description},acceptance:'The editor button must read Save changes.',repository:'owner/repository',baseBranch:'main',baseSha:'a'.repeat(40),requiredCheck:'',model:'fixture',prNumber:1,notification:{status:'pending',total:2,sent:0,pending:2,message:'2 shipping emails are queued for delivery.'},status:'eligible',active:false,createdAt:'2026-11-09T10:00:00Z',message:'This is a small label correction in an existing component.',assessment:{suitable:true,reason:'The label is present in the selected editor component.',plan:['Change the existing save label without changing submission behavior.']},files:[{path:'frontend/src/components/Editor.tsx',sha:'b'.repeat(40),size:1240}],patch:[{path:'frontend/src/components/Editor.tsx',before:'<button>Save</button>',after:'<button>Save changes</button>'}],events:[{at:'2026-11-09T10:00:00Z',status:'eligible',message:'Assessment complete.'}]};
+const run = {_id:'run-1',projectId:'project-1',issueId:'issue-1',issue:{title:issue.title,description:issue.description},acceptance:'The editor button must read Save changes.',repository:'owner/repository',baseBranch:'main',baseSha:'a'.repeat(40),requiredCheck:'',model:'fixture',prNumber:1,notification:{status:'pending',total:2,sent:0,pending:2,message:'2 shipping emails are queued for delivery.'},status:'eligible',active:false,createdAt:'2026-11-09T10:00:00Z',message:'This is a small label correction in an existing component.',assessment:{suitable:true,reason:'The label is present in the selected editor component.',plan:['Change the existing save label without changing submission behavior.']},files:[{path:'frontend/src/components/Editor.tsx',sha:'b'.repeat(40),size:1240}],patch:[{path:'frontend/src/components/Editor.tsx',before:'<button>Save</button>',after:'<button>Save changes</button>'}],events:[{at:'2026-11-09T10:00:00Z',status:'eligible',message:'Assessment complete.'},{at:'2026-11-09T10:01:00Z',status:'generating',stage:'patch',message:'Patch replacement validated.'}]};
 const data = {configured:true,installUrl:'https://github.com/apps/unified-test/installations/new',repositories:[{repositoryId:1,repository:'owner/repository'},{repositoryId:2,repository:'owner/second'}],connection:{repository:'owner/repository',defaultBranch:'main',connectedAt:'2026-11-09T09:00:00Z'},runs:[]};
 window.prFixture = {run,data,calls:[],update(status){run.status=status; run.prUrl='https://github.com/owner/repository/pull/1'; run.branch='unified/fix-run-1'; data.runs=[{...run}]; window.dispatchEvent(new Event('fixture'));}};
 export function useAuth(){return {user:{uid:'user-1',email:'owner@example.com',displayName:'Project owner'},loading:false,logout(){}};}
@@ -79,7 +79,17 @@ try {
   await expect(page.getByRole("dialog", { name: "Assess scope" })).toBeVisible();
   await expect(page.getByRole("dialog")).toContainText("frontend/src/components/Editor.tsx");
   await expect(page.getByRole("list", {name:"Execution trace"})).toContainText("Assessment complete.");
+  await expect(page.getByRole("list", {name:"Execution trace"})).not.toContainText("Patch replacement validated.");
+  await expect(page.getByRole('region', {name:'Run history'})).toHaveCount(0);
+  await expect(page.locator('.fix-node.state-complete').getByText('Complete',{exact:true})).toHaveCount(0);
   await page.getByRole("button", { name: "Close", exact: true }).click();
+  await page.locator('.react-flow__node[data-id="patch"]').click();
+  await expect(page.getByRole('dialog')).toContainText('Patch replacement validated.');
+  await expect(page.getByRole('dialog')).not.toContainText('Assessment complete.');
+  await expect(page.getByRole('button',{name:'Diff',exact:true})).toHaveAttribute('aria-pressed','true');
+  await page.getByRole('button',{name:'Code',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Copy',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Close',exact:true}).click();
   for (const width of [1440, 1024, 768, 390]) {
     await page.setViewportSize({ width, height: 1000 });
     await page.waitForTimeout(120);

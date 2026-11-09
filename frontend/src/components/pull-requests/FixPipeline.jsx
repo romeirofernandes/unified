@@ -1,6 +1,7 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { ReactFlow, Controls, Handle, Position, useReactFlow } from "@xyflow/react";
 import { useTheme } from "next-themes";
+import { Spinner } from "@/components/ui/spinner";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Search01Icon, CodeIcon, GitPullRequestIcon, CheckmarkCircle01Icon, Rocket01Icon, Mail01Icon } from "@hugeicons/core-free-icons";
 import { pipelineStates, pipelineLayout } from "@/lib/fix-pipeline";
@@ -13,7 +14,7 @@ const stateLabels = { waiting: "Waiting", active: "In progress", complete: "Comp
 const PipelineNode = memo(function PipelineNode({ data, selected }) {
   return <div className={`fix-node ${selected ? "is-selected" : ""} state-${data.state}`}>
     {data.input && <Handle type="target" position={positions[data.input]} id="in" isConnectable={false} />}
-    <div className="flex items-center justify-between gap-3"><span className="fix-node-icon"><HugeiconsIcon icon={icons[data.id]} size={19} aria-hidden="true" /></span><span className="text-[11px] font-medium">{stateLabels[data.state]}</span></div>
+    <div className="flex items-center justify-between gap-3"><span className="fix-node-icon">{data.state === "active" ? <Spinner /> : <HugeiconsIcon icon={icons[data.id]} size={19} aria-hidden="true" />}</span>{data.state !== "complete" && <span className="text-[11px] font-medium">{stateLabels[data.state]}</span>}</div>
     <h3 className="mt-3 text-sm font-semibold">{data.label}</h3>
     <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{data.detail}</p>
     {data.prUrl && <a className="nodrag nopan mt-2 inline-block text-xs font-medium underline underline-offset-4" href={data.prUrl} target="_blank" rel="noreferrer" onClick={event => event.stopPropagation()}>Open PR #{data.prNumber || ""}</a>}

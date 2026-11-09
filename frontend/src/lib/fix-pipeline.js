@@ -40,3 +40,14 @@ export function pipelineLayout(columns) {
     return { id: stage.id, position: { x: col * 300, y: row * 210 }, input: i === 0 ? null : columns === 1 || i % columns === 0 ? "top" : row % 2 ? "right" : "left", output: i === stages.length - 1 ? null : columns === 1 || nextRow !== row ? "bottom" : row % 2 ? "left" : "right" };
   });
 }
+export function stageEvents(run, stageId) {
+  let previous = "scope";
+  const events = (run.events || []).filter(event => {
+    const status = event.status;
+    const stage = event.stage || (["queued", "assessing", "eligible", "not_suitable"].includes(status) ? "scope" : ["queued_fix", "generating"].includes(status) ? "patch" : ["publishing", "awaiting_checks"].includes(status) ? "pr" : ["checks_passed", "ready_for_review", "needs_attention", "merged", "closed"].includes(status) ? "review" : status === "shipped" ? "ship" : ["failed", "cancelled"].includes(status) ? run.failedStage || previous : previous);
+    previous = stage;
+    return stage === stageId;
+  });
+  if (stageId === "notify" && !events.length && run.notification?.message) return [{stage:"notify",status:run.notification.status === "failed" ? "failed" : run.status,message:run.notification.message}];
+  return events;
+}

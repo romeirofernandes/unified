@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import RepositoryConnection from "@/components/pull-requests/RepositoryConnection";
+import ExecutionTrace from "@/components/pull-requests/ExecutionTrace";
+import CodeBlock from "@/components/pull-requests/CodeBlock";
 import FixPipeline from "@/components/pull-requests/FixPipeline";
 import PageHeader from "@/components/shared/PageHeader";
 import ProjectPicker from "@/components/shared/ProjectPicker";
@@ -9,16 +11,14 @@ import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { ErrorMessage, LoadingState, EmptyState } from "@/components/shared/PageState";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { useApiResource } from "@/hooks/use-api-resource";
 import { apiRequest } from "@/lib/api";
 import { forgetResourcePrefix } from "@/lib/resource-cache";
 import { runLabels, activeStatuses, watchedStatuses } from "@/lib/pull-request-status";
-import { pipelineStates } from "@/lib/fix-pipeline";
+import { pipelineStates, stageEvents } from "@/lib/fix-pipeline";
 
-const date = value => new Date(value).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 function EmptyPipeline() {
   const [selected, setSelected] = useState(null);
   const stage = pipelineStates(null).find(item => item.id === selected);
@@ -32,7 +32,7 @@ function StageDetail({ stage, run }) {
       <div><h3 className="mb-1 font-semibold">Expected result</h3><p className="whitespace-pre-wrap break-words text-muted-foreground">{run.acceptance}</p></div>
       {run.files?.length > 0 && <div><h3 className="mb-2 font-semibold">Source files</h3><ul className="space-y-2">{run.files.map(file => <li key={file.path} className="break-all font-mono text-xs">{file.path}<span className="mt-1 block text-muted-foreground">{file.sha?.slice(0, 12)}</span></li>)}</ul><p className="mt-3 break-all font-mono text-xs text-muted-foreground">{run.baseBranch} · {run.baseSha?.slice(0, 12)}</p></div>}
     </>}
-    {stage.id === "patch" && run.patch?.map((edit, index) => <div key={index} className="space-y-2"><h3 className="break-all font-mono text-xs font-semibold">{edit.path}</h3><p className="text-xs text-muted-foreground">Before</p><pre className="whitespace-pre-wrap break-words rounded-md border border-border bg-background p-3 font-mono text-xs leading-5">{edit.before}</pre><p className="text-xs text-muted-foreground">After</p><pre className="whitespace-pre-wrap break-words rounded-md border border-border bg-background p-3 font-mono text-xs leading-5">{edit.after || "(Removed)"}</pre></div>)}
+    {stage.id === "patch" && run.patch?.map((edit, index) => <CodeBlock key={index} filename={edit.path} before={edit.before} after={edit.after} />)}
     {["pr", "review"].includes(stage.id) && run.prUrl && <Button asChild variant="secondary"><a href={run.prUrl} target="_blank" rel="noreferrer">Open pull request #{run.prNumber}</a></Button>}
     {stage.id === "review" && run.checks?.length > 0 && <ul className="divide-y divide-border">{run.checks.map((check, index) => <li key={index} className="flex flex-wrap justify-between gap-2 py-2"><span>{check.name}</span><span className="text-muted-foreground">{check.conclusion || check.status}</span></li>)}</ul>}
     {stage.id === "notify" && run.notification?.total > 0 && <dl className="grid grid-cols-3 gap-4"><div><dt className="text-xs text-muted-foreground">Opted in</dt><dd className="text-xl font-semibold tabular-nums">{run.notification.total}</dd></div><div><dt className="text-xs text-muted-foreground">Sent</dt><dd className="text-xl font-semibold tabular-nums">{run.notification.sent}</dd></div><div><dt className="text-xs text-muted-foreground">Pending</dt><dd className="text-xl font-semibold tabular-nums">{run.notification.pending}</dd></div></dl>}
@@ -48,7 +48,7 @@ function RunDetail({ runId, projectId, uid, refreshList }) {
   const [error, setError] = useState("");
   const guard = useRef(false);
   const status = run?.status;
-  const polling = activeStatuses.includes(status) ? 8000 : watchedStatuses.includes(status) ? 30000 : status === "shipped" && ["pending", "failed"].includes(run.notification?.status) ? 15000 : 0;
+  const polling = activeStatuses.includes(status) ? 8000 : watchedStatuses.includes(status) ? 8000 : status === "shipped" && ["pending", "failed"].includes(run.notification?.status) ? 15000 : 0;
   useEffect(() => { if (!polling) return; const timer = setInterval(reload, polling); return () => clearInterval(timer); }, [polling, reload]);
   useEffect(() => { if (status) refreshList(); }, [status, refreshList]);
   async function act(action) {
@@ -66,17 +66,17 @@ function RunDetail({ runId, projectId, uid, refreshList }) {
   const current = stages.find(stage => stage.state === "failed") || stages.find(stage => stage.state === "active") || stages[0];
   const stage = stages.find(item => item.id === selected) || current;
   return <section aria-label="Selected run" className="min-w-0 overflow-hidden rounded-xl border border-border bg-card">
-    <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-5 sm:px-6"><div className="min-w-0"><h2 className="break-words text-base font-semibold">{run.issue.title}</h2><p role="status" className="mt-1 text-xs text-muted-foreground">{runLabels[status] || status}</p></div><div className="flex gap-2">{run.prUrl && <Button asChild variant="secondary"><a href={run.prUrl} target="_blank" rel="noreferrer">PR #{run.prNumber}</a></Button>}{run.branch && !run.active && !["shipped", "cancelled"].includes(status) && <Button variant="secondary" disabled={pending} onClick={() => act("refresh")} aria-label="Refresh GitHub status">Refresh</Button>}</div></header>
+    <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-5 sm:px-6"><div className="min-w-0"><h2 className="break-words text-base font-semibold">{run.issue.title}</h2><p role="status" className="mt-1 text-xs text-muted-foreground">{runLabels[status] || status}</p></div><div className="flex gap-2">{run.prUrl && <Button asChild variant="secondary"><a href={run.prUrl} target="_blank" rel="noreferrer">PR #{run.prNumber}</a></Button>}</div></header>
     <FixPipeline run={run} selectedStage={stage.id} onSelect={id => { setSelected(id); setDetailOpen(true); }} />
     {current.state === "failed" && <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-card p-4 sm:px-6"><p className="min-w-0 flex-1 text-sm text-destructive">{current.label} needs attention.</p><Button variant="secondary" onClick={() => { setSelected(current.id); setDetailOpen(true); }}>View details</Button></div>}
     {["queued", "assessing", "eligible", "queued_fix", "generating", "merged"].includes(status) || (status === "failed" && run.branch) ? <footer className="flex flex-wrap items-center justify-end gap-3 border-t border-border bg-card p-4 sm:px-6">
       {["queued", "assessing", "eligible", "queued_fix", "generating"].includes(status) && <Button variant="destructive" disabled={pending} onClick={() => setConfirm("cancel")}>Cancel run</Button>}
       {status === "failed" && run.branch && <Button variant="secondary" loading={pending} onClick={() => act("recover")}>Recover publication</Button>}
       {status === "eligible" && <Button loading={pending} onClick={() => act("attempt")}>Start fix</Button>}
-      {status === "merged" && <Button disabled={pending} onClick={() => setConfirm("shipped")}>Mark shipped</Button>}
+      {status === "merged" && <Button loading={pending} onClick={() => setConfirm("shipped")}>Mark shipped</Button>}
     </footer> : null}
     {error && <div className="px-5 pb-4"><ErrorMessage>{error}</ErrorMessage></div>}
-    <Dialog open={detailOpen} onOpenChange={setDetailOpen}><DialogContent size="lg" className="max-h-[calc(100dvh-2rem)] overflow-y-auto border border-border bg-card text-foreground"><DialogHeader><DialogTitle>{stage.label}</DialogTitle><DialogDescription>{stage.state === "failed" ? "Needs attention" : stage.state === "complete" ? "Complete" : stage.state === "waiting" ? "Waiting" : "Run details"}</DialogDescription></DialogHeader><StageDetail stage={stage} run={run} /><div className="mt-6 border-t border-border pt-4"><h3 className="mb-4 text-sm font-semibold">Execution trace</h3><ol aria-label="Execution trace" className="space-y-0">{run.events?.map((event, index) => <li key={index} className="relative ms-1 border-s border-border pb-5 ps-5 last:border-transparent last:pb-0"><span aria-hidden="true" className={`absolute -start-[5px] top-1 h-2 w-2 rounded-full ${event.status === "failed" ? "bg-destructive" : "bg-muted-foreground"}`} /><time className="text-[11px] tabular-nums text-muted-foreground" dateTime={event.at}>{date(event.at)} · {new Date(event.at).toLocaleTimeString()}</time><p className={`mt-1 break-words text-xs leading-5 ${event.status === "failed" ? "text-destructive" : "text-foreground"}`}>{event.message}</p></li>)}</ol></div></DialogContent></Dialog>
+    <Dialog open={detailOpen} onOpenChange={setDetailOpen}><DialogContent size="lg" className="max-h-[calc(100dvh-2rem)] overflow-y-auto border border-border bg-card text-foreground"><DialogHeader><DialogTitle>{stage.label}</DialogTitle><DialogDescription>{stage.state === "failed" ? "Needs attention" : stage.state === "complete" ? "Complete" : stage.state === "waiting" ? "Waiting" : "Run details"}</DialogDescription></DialogHeader><StageDetail stage={stage} run={run} /><ExecutionTrace key={stage.id} events={stageEvents(run, stage.id)} state={stage.state} /></DialogContent></Dialog>
     <ConfirmDialog open={!!confirm} onClose={() => setConfirm(null)} onConfirm={() => act(confirm)} pending={pending} error={error} title={confirm === "shipped" ? "Has this fix reached users?" : "Cancel this run?"} description={confirm === "shipped" ? "Mark the issue Done and send shipping emails to linked reporters who opted in, if enabled for this project." : "Stop this attempt. Issues moved by this run return to To do. Published PRs remain on GitHub."} confirmLabel={confirm === "shipped" ? "Mark shipped" : "Cancel run"} confirmVariant={confirm === "shipped" ? "primary" : "destructive"} />
   </section>;
 }
@@ -122,7 +122,7 @@ function ProjectPullRequests({ project, uid, params, setParams }) {
       </section>
       {runId ? <RunDetail key={runId} runId={runId} projectId={project._id} uid={uid} refreshList={refreshAll} /> : <EmptyPipeline />}
     </>}
-    {data.runs.length > 0 && <section aria-label="Run history" className="rounded-xl border border-border bg-card px-5 py-3 sm:px-6"><Accordion className="w-full" size="compact"><AccordionItem value="history" highlight="trigger"><AccordionTrigger>Run history · {data.runs.length}</AccordionTrigger><AccordionContent><ul className="divide-y divide-border">{data.runs.map(run => <li key={run._id}><button type="button" aria-pressed={run._id === runId} onClick={() => { setParams({ project: project._id, issue: run.issueId, run: run._id }); setAcceptance(""); }} className="flex w-full flex-wrap items-center justify-between gap-2 rounded-md bg-card px-2 py-3 text-left outline-none hover:bg-background focus-visible:ring-2 focus-visible:ring-ring"><span className="min-w-0 break-words text-sm font-medium">{run.issue.title}</span><span className="text-xs text-muted-foreground">{runLabels[run.status]} · {date(run.createdAt)}</span></button></li>)}</ul></AccordionContent></AccordionItem></Accordion></section>}
+
   </>;
 }
 export default function PullRequests() {

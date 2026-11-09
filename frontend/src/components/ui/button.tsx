@@ -11,6 +11,7 @@ import {
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
 import type { IconComponent } from "@/lib/icon-context";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { omit } from "@/lib/omit";
 import { tactileButtonBase, tactilePrimaryButton, tactileSecondaryButton } from "@/components/landing/buttonStyles";
@@ -214,7 +215,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const iconSize = isCompact ? 14 : 16;
     // Spinner box tracks the button height so the loading glyph stays
     // proportionate across sizes.
-    const spinnerSizeClass = isCompact ? "h-7 w-7" : "h-9 w-9";
+    const spinnerSizeClass = isCompact ? "h-3.5 w-3.5" : "h-4 w-4";
 
     const bgClass = active
       ? activeBgVariants[variant ?? "primary"]
@@ -242,23 +243,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 )}
               </span>
               <span className="absolute inset-0 flex items-center justify-center">
-                <svg
-                  className={spinnerSizeClass}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <path
-                    d="M 12 12 C 14 8.5 19 8.5 19 12 C 19 15.5 14 15.5 12 12 C 10 8.5 5 8.5 5 12 C 5 15.5 10 15.5 12 12 Z"
-                    stroke="currentColor"
-                    strokeWidth="1.125"
-                    strokeLinecap="round"
-                    pathLength="100"
-                    style={{
-                      strokeDasharray: "15 85",
-                      animation: "spinner-move 2s linear infinite, spinner-dash 4s ease-in-out infinite",
-                    }}
-                  />
-                </svg>
+                <Spinner className={spinnerSizeClass} />
               </span>
             </>
           ) : isIconOnly ? (
@@ -321,6 +306,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref as React.Ref<HTMLButtonElement>}
         className={rootClassName}
         disabled={disabled || loading}
+        aria-busy={loading || undefined}
         style={style}
         {...props}
       >
