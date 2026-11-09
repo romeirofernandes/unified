@@ -52,7 +52,7 @@ router.post("/project/:projectId/summary", async (req, res) => {
     if (!feedbacks.length) return res.status(400).json({ message: "Collect a response before generating a summary." });
     const responseIds = feedbacks.map((feedback) => String(feedback._id)).sort();
     const saved = project.feedbackSummary;
-    if (saved?.responseIds && responseIds.every((id) => saved.responseIds.includes(id))) return res.json(saved);
+    if (Array.isArray(saved?.evidence) && saved?.responseIds && responseIds.every((id) => saved.responseIds.includes(id))) return res.json(saved);
     const lease = await Project.findOneAndUpdate({
       ...owner,
       $or: [{ summaryLockUntil: { $exists: false } }, { summaryLockUntil: null }, { summaryLockUntil: { $lt: new Date() } }],
@@ -60,7 +60,7 @@ router.post("/project/:projectId/summary", async (req, res) => {
     if (!lease) return res.status(409).json({ message: "A summary is already being generated. Please try again shortly." });
     locked = true;
     // Another request may have finished after our first read and before the lease.
-    if (lease.feedbackSummary?.responseIds && responseIds.every((id) => lease.feedbackSummary.responseIds.includes(id))) return res.json(lease.feedbackSummary);
+    if (Array.isArray(lease.feedbackSummary?.evidence) && lease.feedbackSummary?.responseIds && responseIds.every((id) => lease.feedbackSummary.responseIds.includes(id))) return res.json(lease.feedbackSummary);
     const summary = { ...await summarizeFeedback(project, feedbacks), responseIds, responseCount: responseIds.length };
     const updated = await Project.findOneAndUpdate({ ...owner, summaryLock: token }, {
       $set: { feedbackSummary: summary }, $unset: { summaryLock: 1, summaryLockUntil: 1 },

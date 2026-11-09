@@ -128,11 +128,11 @@ test("feedback reads refuse a project that the caller does not own", async () =>
   assert.equal(queried, false);
 });
 
-for (const scenario of ["save", "reuse", "new", "locked"]) {
+for (const scenario of ["save", "reuse", "legacy", "new", "locked"]) {
   test(`summary persistence: ${scenario}`, async () => {
     let generations = 0;
     let stored;
-    const saved = scenario === "reuse" ? { responseIds: ["r1"], tldr: "Saved" } : scenario === "new" ? { responseIds: ["old"] } : null;
+    const saved = scenario === "reuse" ? { responseIds: ["r1"], tldr: "Saved", evidence: [] } : scenario === "legacy" ? { responseIds: ["r1"], tldr: "Old summary" } : scenario === "new" ? { responseIds: ["old"] } : null;
     const project = { _id: "project", fields: [], feedbackSummary: saved };
     const routes = loadRoutes("feedback.js", {
       "../models/Project": {
@@ -149,7 +149,7 @@ for (const scenario of ["save", "reuse", "new", "locked"]) {
     });
     const res = response();
     await routes.get("post /project/:projectId/summary")({ user: { id: "owner" }, params: { projectId: "project" } }, res);
-    assert.equal(generations, ["save", "new"].includes(scenario) ? 1 : 0);
+    assert.equal(generations, ["save", "legacy", "new"].includes(scenario) ? 1 : 0);
     assert.equal(res.statusCode, scenario === "locked" ? 409 : 200);
     if (stored) {
       assert.deepEqual(Array.from(stored.responseIds), ["r1"]);
