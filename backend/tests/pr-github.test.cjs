@@ -51,3 +51,18 @@ test("provider errors never expose response credentials or accept API URL overri
   const auth = github.authorization();
   assert.match(auth.state, /^[a-f0-9]{64}$/); assert.equal(new URL(auth.url).origin, "https://github.com");
 });
+test("GitHub authorization lists every writable repository granted to this app", async () => {
+  global.fetch = async url => {
+    if (url === "https://github.com/login/oauth/access_token") return Response.json({ access_token: "user-test-token" });
+    if (url.includes("/user/installations?")) return Response.json({ installations: [{ id: 10, app_id: 123 }] });
+    if (url.includes("/user/installations/10/repositories?")) return Response.json({ repositories: [
+      { id: 1, full_name: "owner/first", default_branch: "main", permissions: { push: true } },
+      { id: 2, full_name: "owner/second", default_branch: "main", permissions: { push: true } },
+      { id: 3, full_name: "owner/readonly", default_branch: "main", permissions: { push: false } },
+    ] });
+    throw new Error("Unexpected request");
+  };
+  const result = await github.exchange("code");
+  assert.deepEqual(result.repositories.map(item => item.repository), ["owner/first", "owner/second"]);
+  assert.ok(result.repositories.every(item => item.installationId === 10));
+});

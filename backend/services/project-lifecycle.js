@@ -69,6 +69,7 @@ async function deleteAccount(uid, idToken, removeIdentity = require("./firebase-
   if (user) {
     const projects = await Project.find({ userId: user._id }).select("_id").lean();
     for (const project of projects) await deleteProject({ _id: project._id, userId: user._id });
+    await require("../models/GitHubAccess").deleteMany({ userId: user._id });
   }
   // Keep the tombstone until both systems finish, so a failed request is resumable.
   await removeIdentity(idToken);

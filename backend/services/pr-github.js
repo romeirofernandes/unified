@@ -35,39 +35,45 @@ async function installationToken(installationId, repositoryId) {
   return data.token;
 }
 async function exchange(code, repository) {
-  repositoryName(repository);
+  if (repository) repositoryName(repository);
   const response = await fetch("https://github.com/login/oauth/access_token", { method: "POST", redirect: "error", signal: AbortSignal.timeout(20000), headers: { Accept: "application/json", "Content-Type": "application/json" }, body: JSON.stringify({ client_id: process.env.GITHUB_APP_CLIENT_ID, client_secret: process.env.GITHUB_APP_CLIENT_SECRET, code, redirect_uri: process.env.GITHUB_APP_CALLBACK_URL }) });
   const auth = await response.json();
   if (!response.ok || !auth.access_token) throw fail("GitHub authorization failed. Start the connection again.");
   const userToken = auth.access_token;
-  const repo = await request(`/repos/${repository}`, userToken);
-  if (!repo.permissions?.push || repo.archived || repo.disabled) throw fail("Choose an active repository where you have write access.");
-  // User-scoped installation lookup prevents linking an installation ID supplied by an attacker.
+  const selected = repository ? await request(`/repos/${repository}`, userToken) : null;
+  if (selected && (!selected.permissions?.push || selected.archived || selected.disabled)) throw fail("Choose an active repository where you have write access.");
+  const catalog = [];
   for (let page = 1; page <= 5; page++) {
     const list = await request(`/user/installations?per_page=100&page=${page}`, userToken);
     for (const installation of list.installations || []) {
       if (String(installation.app_id) !== String(process.env.GITHUB_APP_ID) || installation.suspended_at) continue;
       for (let repoPage = 1; repoPage <= 10; repoPage++) {
         const repositories = await request(`/user/installations/${installation.id}/repositories?per_page=100&page=${repoPage}`, userToken);
-        if (repositories.repositories?.some(item => item.id === repo.id)) {
-          const token = await installationToken(installation.id, repo.id);
-          const allowed = await request(`/repos/${repo.full_name}`, token);
-          if (allowed.id !== repo.id) throw fail("Repository identity changed. Reconnect it.");
-          return { repository: repo.full_name, repositoryId: repo.id, installationId: installation.id, defaultBranch: repo.default_branch };
+        for (const item of repositories.repositories || []) {
+          if (selected && item.id !== selected.id) continue;
+          if (item.archived || item.disabled) continue;
+          // GitHub returns the user's effective permissions here. Older payloads need an explicit read.
+          const repo = item.permissions ? item : await request(`/repos/${item.full_name || selected?.full_name}`, userToken);
+          if (!repo.permissions?.push || repo.archived || repo.disabled) continue;
+          const entry = { repository: repositoryName(repo.full_name), repositoryId: repo.id, installationId: installation.id, defaultBranch: repo.default_branch };
+          if (selected && repo.id === selected.id) {
+            const token = await installationToken(installation.id, repo.id);
+            const allowed = await request(`/repos/${repo.full_name}`, token);
+            if (allowed.id !== repo.id) throw fail("Repository identity changed. Reconnect it.");
+            return entry;
+          }
+          catalog.push(entry);
+          if (catalog.length >= 200) return { repositories: catalog };
         }
         if ((repositories.repositories || []).length < 100) break;
       }
     }
     if ((list.installations || []).length < 100) break;
   }
-  throw Object.assign(fail("Install the Unified GitHub App on this repository first, then connect again."), { code: "GITHUB_INSTALL_REQUIRED" });
+  if (!selected && catalog.length) return { repositories: catalog };
+  throw Object.assign(fail("Give the GitHub App access to your repositories, then refresh the repository list."), { code: "GITHUB_INSTALL_REQUIRED" });
 }
-async function checkNames(connection) {
-  const { api } = await repositoryClient(connection);
-  const commit = await api(`/commits/${encodeURIComponent(connection.defaultBranch)}`);
-  const [runs, statuses] = await Promise.all([api(`/commits/${commit.sha}/check-runs?per_page=100&filter=latest`), api(`/commits/${commit.sha}/status?per_page=100`)]);
-  return [...new Set([...(runs.check_runs || []).map(item => item.name), ...(statuses.statuses || []).map(item => item.context)])].filter(name => typeof name === "string" && name.length <= 120 && !/[\x00-\x1f]/.test(name)).sort();
-}
+
 async function repositoryClient(connection) {
   const token = await installationToken(connection.installationId, connection.repositoryId);
   const root = `/repos/${repositoryName(connection.repository)}`;
@@ -76,4 +82,4 @@ async function repositoryClient(connection) {
   if (repo.id !== connection.repositoryId || repo.archived || repo.disabled) throw fail("Repository identity or availability changed. Reconnect it.");
   return { api, repo };
 }
-module.exports = { configured, stateHash, authorization, exchange, repositoryClient, checkNames, request };
+module.exports = { configured, stateHash, authorization, exchange, repositoryClient, request };

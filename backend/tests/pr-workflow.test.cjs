@@ -7,6 +7,7 @@ const Project = require("../models/Project");
 const Run = require("../models/PullRequestRun");
 const Connection = require("../models/PullRequestConnection");
 const Blob = require("../models/RepositoryBlob");
+const Access = require("../models/GitHubAccess");
 const workflow = require("../services/pr-workflow");
 const { fingerprint } = require("../services/pr-policy");
 const { sourceFile } = require("../services/pr-context");
@@ -43,7 +44,7 @@ test.before(async () => {
 });
 test.after(async () => { await new Promise(resolve => server.close(resolve)); await mongoose.disconnect(); await mongo.stop(); });
 test.beforeEach(async () => {
-  await Promise.all([Project.deleteMany({}), Run.deleteMany({}), Connection.deleteMany({}), Blob.deleteMany({})]);
+  await Promise.all([Project.deleteMany({}), Run.deleteMany({}), Connection.deleteMany({}), Blob.deleteMany({}), Access.deleteMany({})]);
   project = await Project.create({ name: "Product", userId: owner, fields: [{ type: "text", label: "Feedback" }], workbenchIssues: [{ title: "Clarify the save button", description: "Use Save changes in the editor.", status: "todo" }] });
   issue = project.workbenchIssues[0];
   connection = await Connection.create({ projectId: project._id, userId: owner, repository: "owner/repo", repositoryId: 1, installationId: 2, defaultBranch: "main", requiredCheck: "tests", connectedAt: new Date() });
@@ -73,7 +74,7 @@ test("full lifecycle creates one draft, checks its exact head, and ships only af
   assert.equal(calls.filter(call => call.path === "/pulls" && call.method === "POST").length, 1);
   assert.equal(calls.find(call => call.path === "/pulls" && call.method === "POST").body.draft, true);
   assert.equal((await Run.findById(run._id)).baseSha, sha);
-  assert.equal((await Project.findById(project._id).select("+workbenchIssues")).workbenchIssues[0].status, "todo");
+  assert.equal((await Project.findById(project._id).select("+workbenchIssues")).workbenchIssues[0].status, "in_progress");
   await assert.rejects(() => workflow.markShipped(run, dependencies), /Only a merged/);
   checkResult = [{ name: "unrelated", status: "completed", conclusion: "success" }];
   await workflow.syncRun(run._id, dependencies); assert.equal((await Run.findById(run._id)).status, "awaiting_checks");
@@ -153,7 +154,7 @@ test("changed issue text prevents an old merged PR from resolving a different re
   const run = await publish(); pull.merged_at = new Date().toISOString(); pull.state = "closed";
   await Project.updateOne({ _id: project._id }, { $set: { "workbenchIssues.0.title": "An unrelated new request" } });
   await assert.rejects(() => workflow.markShipped(run, dependencies), /issue changed/);
-  assert.equal((await Project.findById(project._id).select("+workbenchIssues")).workbenchIssues[0].status, "todo");
+  assert.equal((await Project.findById(project._id).select("+workbenchIssues")).workbenchIssues[0].status, "in_progress");
 });
 test("skipped, cancelled and ambiguous named checks cannot count as verification", () => {
   for (const conclusion of ["skipped", "neutral", "cancelled", "failure", "timed_out"]) assert.equal(workflow.checkState({ requiredCheck: "tests" }, [{ name: "tests", status: "completed", conclusion }], []).status, "needs_attention");
@@ -167,7 +168,7 @@ test("GitHub callbacks require an expiring single-use state bound to the project
   result = await fetch(`${base}/github/callback?state=${state}&code=valid`, { redirect: "manual" });
   assert.equal(result.status, 302); assert.match(result.headers.get("location"), /dashboard\/pull-requests/);
   const data = (await api(`/pr/${project._id}`)).data;
-  assert.equal(data.connection.requiredCheck, "tests"); assert.equal(data.connection.installationId, undefined);
+  assert.equal(data.connection.repository, "owner/repo"); assert.equal(data.connection.installationId, undefined);
 });
 test("installation-only callbacks preserve authorization state instead of consuming it", async () => {
   const state = "b".repeat(64);
@@ -179,19 +180,11 @@ test("installation-only callbacks preserve authorization state instead of consum
   assert.ok(await Connection.exists({ _id: connection._id, stateHash: stateHash(state) }));
 });
 
-test("connection starts without a test name and keeps assessment gated until a check is saved", async () => {
-  await Connection.deleteMany({});
-  const start = await api(`/pr/${project._id}/connect`, { repository: "owner/repo" });
-  assert.equal(start.status, 200);
-  const state = new URL(start.data.url).searchParams.get("state");
-  const callback = await fetch(`${base}/github/callback?state=${state}&code=valid`, { redirect: "manual" });
-  assert.equal(callback.status, 302);
-  assert.equal((await Connection.findOne({ projectId: project._id })).requiredCheck, "");
-  assert.equal((await api(`/pr/${project._id}/runs`, { issueId: String(issue._id), acceptance: "The button should say Save changes." })).status, 409);
-  assert.deepEqual((await api(`/pr/${project._id}/checks`)).data.names, ["build", "tests"]);
-  const save = await fetch(`${base}/pr/${project._id}/connection/check`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ requiredCheck: "tests" }) });
-  assert.equal(save.status, 200);
-  assert.equal((await api(`/pr/${project._id}/runs`, { issueId: String(issue._id), acceptance: "The button should say Save changes." })).status, 202);
+test("a connected repository can assess issues without manual test configuration", async () => {
+  await Connection.updateOne({ _id: connection._id }, { $set: { requiredCheck: "" } });
+  const result = await api(`/pr/${project._id}/runs`, { issueId: String(issue._id), acceptance: "The button should say Save changes." });
+  assert.equal(result.status, 202);
+  assert.equal((await Run.findById(result.data._id)).requiredCheck, "");
 });
 test("expired links return to the correct project's setup and preserve repository entry", async () => {
   const state = "c".repeat(64);
@@ -200,4 +193,46 @@ test("expired links return to the correct project's setup and preserve repositor
   const location = new URL(result.headers.get("location"));
   assert.equal(result.status, 302); assert.equal(location.searchParams.get("project"), String(project._id)); assert.equal(location.searchParams.get("github"), "expired");
   assert.equal((await api(`/pr/${project._id}`)).data.setupRepository, "owner/another-repo");
+});
+
+test("authorized repositories are reused across projects without replacing earlier connections", async () => {
+  const another = await Project.create({ userId: owner, name: "Another", fields: [{ type: "text", label: "Feedback" }] });
+  await Access.create({ userId: owner, repositories: [{ repository: "owner/new-repo", repositoryId: 77, installationId: 2, defaultBranch: "main" }], expiresAt: new Date(Date.now() + 60000) });
+  const available = (await api(`/pr/${another._id}`)).data.repositories;
+  assert.deepEqual(new Set(available.map(item => item.repository)), new Set(["owner/repo", "owner/new-repo"]));
+  const saved = await fetch(`${base}/pr/${another._id}/connection/repository`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ repositoryId: 77 }) });
+  assert.equal(saved.status, 200);
+  assert.equal((await Connection.findOne({ projectId: project._id })).repository, "owner/repo");
+  assert.equal((await Connection.findOne({ projectId: another._id })).repository, "owner/new-repo");
+  const forbidden = await fetch(`${base}/pr/${another._id}/connection/repository`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ repositoryId: 999 }) });
+  assert.equal(forbidden.status, 403);
+});
+test("missing CI is manual review, never an invented passing test result", () => {
+  const state = workflow.checkState({ requiredCheck: "" }, [], []);
+  assert.equal(state.status, "ready_for_review");
+  assert.match(state.message, /No automated checks/);
+  assert.equal(workflow.checkState({ requiredCheck: "" }, [{ name: "build", status: "completed", conclusion: "failure" }], []).status, "needs_attention");
+});
+test("cancelling a fix restores To do and preserves manually started issues", async () => {
+  let run = await assessed(); await api(`/pr/${project._id}/runs/${run._id}/attempt`, {});
+  assert.equal((await Project.findById(project._id).select("+workbenchIssues")).workbenchIssues[0].status, "in_progress");
+  await api(`/pr/${project._id}/runs/${run._id}/cancel`, {});
+  assert.equal((await Project.findById(project._id).select("+workbenchIssues")).workbenchIssues[0].status, "todo");
+  await Project.updateOne({ _id: project._id }, { $set: { "workbenchIssues.0.status": "in_progress" } });
+  run = await assessed(); await api(`/pr/${project._id}/runs/${run._id}/attempt`, {}); await api(`/pr/${project._id}/runs/${run._id}/cancel`, {});
+  assert.equal((await Project.findById(project._id).select("+workbenchIssues")).workbenchIssues[0].status, "in_progress");
+});
+
+test("OAuth repository discovery persists a reusable account catalog without binding the wrong project", async () => {
+  const previous = fakeGithub.exchange;
+  fakeGithub.exchange = async () => ({ repositories: [{ repository: "owner/extra", repositoryId: 88, installationId: 2, defaultBranch: "main" }] });
+  try {
+    const start = await api(`/pr/${project._id}/connect`, {});
+    const state = new URL(start.data.url).searchParams.get("state");
+    const result = await fetch(`${base}/github/callback?state=${state}&code=valid`, { redirect: "manual" });
+    assert.equal(new URL(result.headers.get("location")).searchParams.get("github"), "repositories");
+    const access = await Access.findOne({ userId: owner }); assert.equal(access.repositories[0].repositoryId, 88);
+    assert.equal((await Connection.findOne({ projectId: project._id })).repository, "owner/repo");
+    assert.ok((await api(`/pr/${project._id}`)).data.repositories.some(item => item.repository === "owner/extra"));
+  } finally { fakeGithub.exchange = previous; }
 });

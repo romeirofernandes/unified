@@ -8,7 +8,7 @@ const { groqJson } = require("./groq-client");
 const { system, selectContext, sourceFile } = require("./pr-context");
 const { fail, fingerprint, validateAssessment, applyPatch } = require("./pr-policy");
 const working = ["assessing", "generating", "publishing"];
-const watched = ["awaiting_checks", "checks_passed", "needs_attention"];
+const watched = ["awaiting_checks", "checks_passed", "ready_for_review", "needs_attention"];
 function deps(overrides) { return { Project, Connection, Run, Blob, github, ask: groqJson, selectContext, sourceFile, ...overrides }; }
 function cleanError(error) { return error.status ? error.message : "This run could not finish. Refresh its GitHub status before starting another attempt."; }
 async function liveProject(run, d) {
@@ -16,14 +16,14 @@ async function liveProject(run, d) {
   const issue = project?.workbenchIssues.find(item => String(item._id) === String(run.issueId) && !item.deleted && item.status !== "done");
   const connection = await d.Connection.findOne({ projectId: run.projectId, userId: run.userId }).lean();
   if (!issue || fingerprint(issue) !== run.issue.fingerprint) throw fail("The issue changed or is no longer open. Assess it again before attempting a fix.");
-  if (!connection || connection.repositoryId !== run.repositoryId || connection.installationId !== run.installationId || connection.repository !== run.repository || connection.requiredCheck !== run.requiredCheck || connection.defaultBranch !== run.baseBranch) throw fail("The repository connection changed. Start a fresh assessment.");
+  if (!connection || connection.repositoryId !== run.repositoryId || connection.installationId !== run.installationId || connection.repository !== run.repository || connection.defaultBranch !== run.baseBranch) throw fail("The repository connection changed. Start a fresh assessment.");
   return project;
 }
 async function event(d, filter, status, message, extra = {}) {
   return d.Run.updateOne(filter, { $set: { status, message, ...extra }, $push: { events: { $each: [{ at: new Date(), status, message }], $slice: -40 } } });
 }
 function prBody(run) {
-  return `## Summary\n\n${run.issue.title}\n\n\`\`\`text\nfeedback issue -> bounded patch -> ${run.requiredCheck} -> human review\n\`\`\`\n\nAcceptance criteria:\n${run.acceptance}\n\n${run.assessment.plan.map(step => `- ${step}`).join("\n")}\n\n## Evidence\n\n- **Before:** source commit \`${run.baseSha}\`; issue and file hashes saved in Unified run \`${run._id}\`.\n- **After:** ${run.patch.length} exact replacements. CI has not been verified yet. Review the diff and the \`${run.requiredCheck}\` result before merging.\n\n## Merge Danger\n\n**Door:** two-way\n\n**Blast Radius:** UI\n\nAI-generated draft. No tests, dependencies or workflows were modified. Merging does not notify reporters; mark the issue shipped in Unified after release.\n`;
+  return `## Summary\n\n${run.issue.title}\n\n\`\`\`text\nfeedback issue -> bounded patch -> ${run.requiredCheck || "GitHub review"} -> human review\n\`\`\`\n\nAcceptance criteria:\n${run.acceptance}\n\n${run.assessment.plan.map(step => `- ${step}`).join("\n")}\n\n## Evidence\n\n- **Before:** source commit \`${run.baseSha}\`; issue and file hashes saved in Unified run \`${run._id}\`.\n- **After:** ${run.patch.length} exact replacements. CI has not been verified yet. Review the diff and any reported GitHub checks before merging.\n\n## Merge Danger\n\n**Door:** two-way\n\n**Blast Radius:** UI\n\nAI-generated draft. No tests, dependencies or workflows were modified. Merging does not notify reporters; mark the issue shipped in Unified after release.\n`;
 }
 async function findPull(api, run) {
   const owner = run.repository.split("/")[0];
@@ -34,7 +34,7 @@ async function assessRun(run, d, filter) {
   const { api } = await d.github.repositoryClient(run);
   await liveProject(run, d);
   const context = await d.selectContext(run, api, d.ask, d.Blob);
-  const value = await d.ask({ messages: [{ role: "system", content: system }, { role: "user", content: JSON.stringify({ task: "Assess this issue against the actual files. Return {suitable:boolean,category:ui_copy|ui_style|ui_behavior|documentation|unsupported,reason:string,plan:string[]}. Reject vague requests, changes requiring other files, security-sensitive changes, or behavior that cannot be verified by the configured check. Do not count confidence as evidence.", issue: run.issue, acceptance: run.acceptance, requiredCheck: run.requiredCheck, files: context.files }) }], maxTokens: 2500 });
+  const value = await d.ask({ messages: [{ role: "system", content: system }, { role: "user", content: JSON.stringify({ task: "Assess this issue against the actual files. Return {suitable:boolean,category:ui_copy|ui_style|ui_behavior|documentation|unsupported,reason:string,plan:string[]}. Reject vague requests, changes requiring other files, security-sensitive changes, or behavior with no clear way for a reviewer to verify it. Do not count confidence as evidence.", issue: run.issue, acceptance: run.acceptance, files: context.files }) }], maxTokens: 2500 });
   const assessment = validateAssessment(value, context.files);
   await liveProject(run, d);
   await event(d, filter, assessment.suitable ? "eligible" : "not_suitable", assessment.reason, { active: false, assessment, baseSha: context.baseSha, baseTree: context.baseTree, files: context.files.map(({ path, sha, size }) => ({ path, sha, size })), leaseUntil: null });
@@ -66,7 +66,7 @@ async function fixRun(run, d, filter) {
   await d.Run.updateOne(filter, { $set: { headSha: commit.sha } });
   await api("/git/refs", { method: "POST", body: { ref: `refs/heads/${run.branch}`, sha: commit.sha } });
   const pull = await findPull(api, run) || await api("/pulls", { method: "POST", body: { title: run.issue.title.slice(0, 180), body: prBody(run), head: run.branch, base: run.baseBranch, draft: true, maintainer_can_modify: true } });
-  await event(d, filter, "awaiting_checks", "Draft PR created. Waiting for the configured GitHub check.", { active: false, leaseUntil: null, prNumber: pull.number, prUrl: pull.html_url, headSha: commit.sha, publishedAt: new Date(), nextCheckAt: new Date(Date.now() + 60000) });
+  await event(d, filter, "awaiting_checks", "Draft PR created. Waiting for GitHub review and any automated checks.", { active: false, leaseUntil: null, prNumber: pull.number, prUrl: pull.html_url, headSha: commit.sha, publishedAt: new Date(), nextCheckAt: new Date(Date.now() + 60000) });
 }
 async function processRun(id, overrides = {}) {
   const d = deps(overrides);
@@ -79,15 +79,22 @@ async function processRun(id, overrides = {}) {
   try {
     await event(d, filter, run.status === "queued" ? "assessing" : "generating", run.status === "queued" ? "Reading repository context and assessing scope." : "Generating a bounded patch from the saved context.");
     if (run.status === "queued") await assessRun(run, d, filter); else await fixRun(run, d, filter);
-  } catch (error) { await event(d, filter, "failed", cleanError(error), { active: false, leaseUntil: null }); }
+  } catch (error) {
+    const saved = await d.Run.findOne(filter).lean();
+    await event(d, filter, "failed", cleanError(error), { active: false, leaseUntil: null, failedStage: saved?.status === "publishing" ? "pr" : run.status === "queued" ? "scope" : "patch" });
+    if (saved && !saved.branch) await restoreWorkbench(saved, overrides);
+  }
 }
 function checkState(run, checkRuns, statuses) {
   const checks = [...checkRuns.map(item => ({ name: item.name, status: item.status, conclusion: item.conclusion })), ...statuses.map(item => ({ name: item.context, status: item.state === "pending" ? "in_progress" : "completed", conclusion: item.state }))];
-  const matching = checks.filter(item => item.name === run.requiredCheck);
-  if (!matching.length) return { checks, status: "awaiting_checks", message: `Waiting for “${run.requiredCheck}” to appear on this commit.` };
-  if (matching.some(item => item.status === "completed" && item.conclusion !== "success")) return { checks, status: "needs_attention", message: "The required check did not pass. The draft needs human investigation." };
-  if (matching.every(item => item.status === "completed" && item.conclusion === "success")) return { checks, status: "checks_passed", message: "The configured check passed. Review and merge the draft on GitHub." };
-  return { checks, status: "awaiting_checks", message: "The required GitHub check is running." };
+  const matching = run.requiredCheck ? checks.filter(item => item.name === run.requiredCheck) : checks;
+  if (!matching.length) return run.requiredCheck
+    ? { checks, status: "awaiting_checks", message: `Waiting for “${run.requiredCheck}” to appear on this commit.` }
+    : { checks, status: "ready_for_review", message: "No automated checks were reported. Review the draft on GitHub before merging." };
+  const failed = matching.filter(item => item.status === "completed" && item.conclusion !== "success");
+  if (failed.length) return { checks, status: "needs_attention", message: `GitHub check ${failed.map(item => `“${item.name}” (${item.conclusion || "unknown"})`).join(", ")} needs attention.`, failedStage: "review" };
+  if (matching.every(item => item.status === "completed" && item.conclusion === "success")) return { checks, status: "checks_passed", message: "Reported GitHub checks passed. Review and merge the draft on GitHub." };
+  return { checks, status: "awaiting_checks", message: "GitHub checks are running." };
 }
 async function syncRun(id, overrides = {}) {
   const d = deps(overrides);
@@ -101,15 +108,16 @@ async function syncRun(id, overrides = {}) {
   let result;
   if (pull.merged_at) result = { status: "merged", message: "Merged on GitHub. Mark shipped after this fix reaches users." };
   else if (pull.state === "closed") result = { status: "closed", message: "The PR was closed without merging. No shipping emails were triggered." };
-  else if (pull.head.sha !== run.headSha) result = { status: "needs_attention", message: "The PR head changed outside this run. Review its new changes on GitHub." };
+  else if (pull.head.sha !== run.headSha) result = { status: "needs_attention", message: "The PR head changed outside this run. Review its new changes on GitHub.", failedStage: "review" };
   else {
     const [checks, status] = await Promise.all([api(`/commits/${run.headSha}/check-runs?per_page=100&filter=latest`), api(`/commits/${run.headSha}/status?per_page=100`)]);
     result = checkState(run, checks.check_runs || [], status.statuses || []);
-    if (result.status === "awaiting_checks" && Date.now() - new Date(run.publishedAt || run.createdAt).getTime() > 60 * 60000) result = { ...result, status: "needs_attention", message: "The required check has not completed. Check its exact name and workflow triggers on GitHub." };
+    if (result.status === "awaiting_checks" && Date.now() - new Date(run.publishedAt || run.createdAt).getTime() > 60 * 60000) result = { ...result, status: "needs_attention", message: "GitHub checks have not completed. Inspect the check output on the PR." };
   }
-  const extra = { active: false, prNumber: pull.number, prUrl: pull.html_url, nextCheckAt: new Date(Date.now() + 60000), ...(result.checks ? { checks: result.checks.slice(0, 100) } : {}) };
+  const extra = { active: false, prNumber: pull.number, prUrl: pull.html_url, nextCheckAt: new Date(Date.now() + 60000), failedStage: result.failedStage || (result.status === "needs_attention" ? "review" : ""), ...(result.checks ? { checks: result.checks.slice(0, 100) } : {}) };
   if (run.status !== result.status || run.message !== result.message) await event(d, { _id: run._id, active: false, status: run.status }, result.status, result.message, extra);
   else await d.Run.updateOne({ _id: run._id, active: false, status: run.status }, { $set: extra });
+  if (result.status === "closed") await restoreWorkbench(run, overrides);
 }
 async function recoverRun(id, overrides = {}) {
   const d = deps(overrides);
@@ -125,6 +133,7 @@ async function recoverRun(id, overrides = {}) {
       const branch = await api(`/git/ref/heads/${run.branch}`, { allow404: true });
       if (!branch) {
         await event(d, filter, "closed", "No branch or PR was created. A fresh assessment can be started.", { active: false, leaseUntil: null });
+        await restoreWorkbench(run, overrides);
         return;
       }
       if (!run.headSha || branch.object?.sha !== run.headSha) throw fail("The recovery branch changed. Inspect it on GitHub before taking further action.");
@@ -132,7 +141,12 @@ async function recoverRun(id, overrides = {}) {
       pull = await api("/pulls", { method: "POST", body: { title: run.issue.title.slice(0, 180), body: prBody(run), head: run.branch, base: run.baseBranch, draft: true, maintainer_can_modify: true } });
     }
     await event(d, filter, "awaiting_checks", "Recovered the draft PR. GitHub status will refresh shortly.", { active: false, leaseUntil: null, prNumber: pull.number, prUrl: pull.html_url, publishedAt: run.publishedAt || new Date(), nextCheckAt: new Date() });
-  } catch (error) { await event(d, filter, "failed", cleanError(error), { active: false, leaseUntil: null }); throw error; }
+  } catch (error) { await event(d, filter, "failed", cleanError(error), { active: false, leaseUntil: null, failedStage: "pr" }); throw error; }
+}
+async function restoreWorkbench(run, overrides = {}) {
+  if (!run.workbenchManaged) return;
+  const d = deps(overrides);
+  await d.Project.updateOne({ _id: run.projectId, userId: run.userId, workbenchIssues: { $elemMatch: { _id: run.issueId, deleted: false, status: "in_progress", title: run.issue.title, description: { $in: run.issue.description ? [run.issue.description] : ["", null] } } } }, { $set: { "workbenchIssues.$.status": run.workbenchPreviousStatus || "todo" } });
 }
 async function markShipped(run, overrides = {}) {
   const d = deps(overrides);
@@ -150,7 +164,10 @@ async function tick(overrides = {}) {
   const d = deps(overrides);
   try {
     const expired = await d.Run.find({ active: true, status: { $in: working }, leaseUntil: { $lt: new Date() } }).limit(10).lean();
-    for (const run of expired) await event(d, { _id: run._id, active: true, leaseUntil: { $lt: new Date() } }, "failed", "The worker stopped before finishing. Refresh GitHub status to recover a PR before starting again.", { active: false, leaseUntil: null });
+    for (const run of expired) {
+      await event(d, { _id: run._id, active: true, leaseUntil: { $lt: new Date() } }, "failed", "The worker stopped before finishing. Refresh GitHub status to recover a PR before starting again.", { active: false, leaseUntil: null, failedStage: run.status === "publishing" ? "pr" : run.status === "generating" ? "patch" : "scope" });
+      if (!run.branch) await restoreWorkbench(run, overrides);
+    }
     const jobs = await d.Run.find({ status: { $in: ["queued", "queued_fix"] }, active: true }).sort({ createdAt: 1 }).limit(5).select("_id").lean();
     for (const job of jobs) await processRun(job._id, overrides);
     const polling = await d.Run.find({ status: { $in: watched }, prNumber: { $exists: true }, nextCheckAt: { $lte: new Date() } }).sort({ nextCheckAt: 1 }).limit(20).select("_id").lean();
@@ -165,4 +182,4 @@ function startPullRequestWorker() {
   const timer = setInterval(scan, 15000); timer.unref(); scan();
   return () => clearInterval(timer);
 }
-module.exports = { processRun, syncRun, recoverRun, markShipped, checkState, prBody, tick, startPullRequestWorker, liveProject };
+module.exports = { processRun, syncRun, recoverRun, markShipped, checkState, prBody, tick, startPullRequestWorker, liveProject, restoreWorkbench };
