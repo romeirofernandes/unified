@@ -25,7 +25,6 @@ export default function CTA() {
           >
             Create your project <HugeiconsIcon icon={ArrowRight01Icon} size={18} aria-hidden="true" />
           </Link>
-          <Link className="text-[13px] text-[#4d4a44] underline decoration-[#9ba8c2] underline-offset-4 hover:text-[#202c44] dark:text-[#e2e6ef] dark:hover:text-white" to="/docs">Read the setup guide</Link>
         </div>
       </div>
     </section>
