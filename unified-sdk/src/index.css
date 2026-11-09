@@ -83,7 +83,3 @@
 .uf-fragment { position: fixed; z-index: 2147483004; overflow: hidden; pointer-events: none; }
 .uf-fragment-face { position: absolute; max-width: none; box-shadow: none; pointer-events: none; }
 .uf-dust-fallback { position: fixed; z-index: 2147483004; pointer-events: none; }
-
-.uf-subscription { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 20px; cursor: pointer; }
-.uf-subscription input { width: 16px; height: 16px; margin: 2px 0 0; flex-shrink: 0; accent-color: var(--uf-accent); }
-.uf-subscription input:focus-visible { outline: 2px solid var(--uf-accent); outline-offset: 3px; }

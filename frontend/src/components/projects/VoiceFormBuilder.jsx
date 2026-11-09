@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Mic01Icon, StopIcon } from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Collapsible,
   CollapsibleTrigger,
@@ -77,7 +78,7 @@ export default function VoiceFormBuilder({ active, onApply }) {
       <CollapsibleContent contentClassName="space-y-4 border-t border-border p-4">
         <div className="space-y-2">
           <div className="relative flex flex-col gap-3 rounded-md border border-input bg-background p-3 shadow-sm transition-[border-color,box-shadow] duration-150 focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/30">
-            <textarea
+            <Textarea
               id="form-description"
               aria-label="Describe your form"
               value={speech.transcript}
@@ -96,7 +97,7 @@ export default function VoiceFormBuilder({ active, onApply }) {
                   ? ""
                   : "Ask for a name, a 1–10 rating, and what we could improve. Add a choice between design, speed, and features."
               }
-              className={`${speech.listening ? "text-transparent caret-transparent" : ""} block min-h-20 w-full resize-none border-0 bg-transparent p-0 text-base leading-6 outline-none placeholder:text-muted-foreground sm:text-sm`}
+              className={`${speech.listening ? "text-transparent caret-transparent" : ""} min-h-20 resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0`}
             />
             {speech.listening && (
               <div className="pointer-events-none absolute inset-x-6 top-3 flex h-20 items-center justify-center">

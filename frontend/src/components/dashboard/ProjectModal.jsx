@@ -1,3 +1,4 @@
+import { Checkbox } from "@/components/motion/checkbox";
 import { ProjectPreviewContent } from "./ProjectPreview";
 import { projectDraftKey } from "@/lib/project-draft";
 import { useTheme } from "next-themes";
@@ -233,10 +234,7 @@ export default function ProjectModal({
                   </TabsContent>
                   <TabsContent value="2" className="mt-0 space-y-4">
                     <div className="space-y-2 rounded-md border border-border p-4">
-                      <label className="flex items-start gap-3 text-sm font-medium">
-                        <input type="checkbox" className="mt-0.5 size-4 accent-primary" checked={shippingUpdatesEnabled} onChange={event => setShippingUpdatesEnabled(event.target.checked)} aria-describedby={`${formId}-shipping-help`} />
-                        Offer email updates when requests ship
-                      </label>
+                      <Checkbox label="Offer email updates when requests ship" checked={shippingUpdatesEnabled} onCheckedChange={setShippingUpdatesEnabled} aria-describedby={`${formId}-shipping-help`} />
                       <p id={`${formId}-shipping-help`} className="text-sm text-muted-foreground">Let people opt in when submitting feedback. They’ll get an email when a linked issue is marked done. Turning this off also pauses shipping emails.</p>
                     </div>
                     <div className="mb-4">

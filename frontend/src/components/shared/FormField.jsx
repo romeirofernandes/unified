@@ -1,5 +1,6 @@
 import { useId } from "react";
 import { typeClass } from "@/lib/type-scale";
+import { Textarea } from "@/components/ui/textarea";
 
 const controlClass =
   "h-10 w-full min-w-0 rounded-md border border-input bg-background px-3 text-base text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 sm:text-[length:var(--fs-body,13px)]";
@@ -11,7 +12,7 @@ export default function FormField({
   ...props
 }) {
   const id = useId();
-  const Component = control;
+  const Component = control === "textarea" ? Textarea : control;
   return (
     <div className="min-w-0 space-y-2">
       <label
@@ -22,7 +23,7 @@ export default function FormField({
       </label>
       <Component
         id={id}
-        className={`${controlClass} ${control === "textarea" ? "h-auto min-h-24 resize-y py-3" : ""} ${className}`}
+        className={`${Component === "input" ? controlClass : ""} ${className}`}
         {...props}
       />
     </div>

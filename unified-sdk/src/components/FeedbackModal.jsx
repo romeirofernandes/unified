@@ -1,3 +1,4 @@
+import { Checkbox } from "../../../shared/controls/checkbox";
 import { memo, useId, useRef, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon, ArrowRight01Icon, BubbleChatIcon, Cancel01Icon } from "@hugeicons/core-free-icons";
@@ -50,10 +51,7 @@ const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose, formData, t
         </Step>)}
       </Stepper>
       {currentStep === total - 1 && formData.shippingUpdatesEnabled && onSubscribedChange && <div className="uf-question">
-        <label className="uf-subscription">
-          <input type="checkbox" checked={subscribed} onChange={event => onSubscribedChange(event.target.checked)} disabled={pending} />
-          <span>Email me when my request ships</span>
-        </label>
+        <Checkbox formTheme checked={subscribed} onCheckedChange={onSubscribedChange} disabled={pending} label="Email me when my request ships" />
         {subscribed && !hasEmailAnswer && <div>
           <label className="uf-question-label" htmlFor={`${instanceId}-subscription`}>Email for updates</label>
           <input className="uf-input" id={`${instanceId}-subscription`} type="email" autoComplete="email" required maxLength={254} value={subscriptionEmail} onChange={event => onSubscriptionChange(event.target.value)} disabled={pending} />

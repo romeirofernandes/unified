@@ -1,3 +1,4 @@
+import { Checkbox } from "@/components/motion/checkbox";
 "use client";
 
 import {
@@ -1736,19 +1737,13 @@ function Row({
           (bodyLayout === "stacked" ? "-mt-[1px]" : "-mt-[5px]")
       )}
     >
+      {isMulti ? <Checkbox visualOnly checked={chipFilled} onCheckedChange={() => {}} /> : (
       <span
         aria-hidden
         className={cn(
           "absolute inline-flex items-center justify-center text-[length:var(--fs-micro,11px)] leading-[var(--lh-micro,14px)] transition-[opacity,font-variation-settings] duration-80",
           compact ? "w-[18px] h-[18px]" : "w-5 h-5",
-          isMulti && shape.bg,
-          isMulti
-            ? chipFilled
-              ? "bg-foreground text-background"
-              : "border border-border text-muted-foreground"
-            : chipFilled
-            ? "text-foreground"
-            : "text-muted-foreground",
+          chipFilled ? "text-foreground" : "text-muted-foreground",
           // Only fade the chip when it shares a slot with the arrow — for
           // chip-on-left the arrow has its own slot on the right, so the
           // chip stays in place.
@@ -1762,6 +1757,7 @@ function Row({
       >
         {chipContent}
       </span>
+      )}
       {chipPosition === "right" && arrowOverlay}
     </span>
   );

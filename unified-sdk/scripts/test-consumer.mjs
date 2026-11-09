@@ -41,7 +41,7 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
   let launcher = { style: "rounded", icon: "mail", label: "Talk to us", colors: { light: { background: "#123456", text: "#ffffff" } } };
   await page.route("https://feedback.test/**", async route => {
     if (route.request().method() === "OPTIONS") return route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "*" } });
-    if (route.request().method() === "GET") return route.fulfill({ json: { _id: "test-project", name: "Tell us", theme: "light", appearance: { preset: "unified", launcher }, fields: allFields ? [
+    if (route.request().method() === "GET") return route.fulfill({ json: { _id: "test-project", name: "Tell us", shippingUpdatesEnabled: true, theme: "light", appearance: { preset: "unified", launcher }, fields: allFields ? [
       { _id: "date", type: "date", label: "Visit date", required: true },
       { _id: "choice", type: "mcq", label: "Would you return?", required: true, options: [{ label: "Yes", value: "yes" }, { label: "No", value: "no" }] },
       { _id: "rating", type: "slider", label: "Rating", required: true, config: { min: 0, max: 10, step: 1 } },
@@ -128,6 +128,17 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
   await page.getByRole("textbox", { name: "Your email" }).fill("person@example.com");
   await page.getByRole("button", { name: "Continue", exact: true }).click();
   await page.getByRole("textbox", { name: "Your feedback" }).fill("Please add response triage");
+  const subscription = page.getByRole("checkbox", { name: "Email me when my request ships" });
+  await expect(subscription).not.toBeChecked();
+  await page.getByText("Email me when my request ships", { exact: true }).click();
+  await expect(subscription).toBeChecked();
+  await subscription.focus();
+  await page.keyboard.press("Space");
+  await expect(subscription).not.toBeChecked();
+  await page.keyboard.press("Enter");
+  await expect(subscription).toBeChecked();
+  assert.equal(submissions, 0, "Checkbox keyboard activation must not submit the form");
+  await expect(subscription).toHaveCSS("background-color", "rgb(85, 117, 180)");
   await page.getByRole("button", { name: "Send feedback", exact: true }).click();
   await page.getByRole("button", { name: "Sending…", exact: true }).waitFor();
   await page.keyboard.press("Escape");

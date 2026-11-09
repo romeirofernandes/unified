@@ -3,6 +3,7 @@ import { DateInput } from "../../../../shared/controls/date-input";
 import { answerPlaceholder } from "../../../../shared/form-fields.mjs";
 import { RadioGroup, RadioGroupItem } from "@/components/motion/radio";
 import { typeClass } from "@/lib/type-scale";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function PreviewField({ field }) {
   const inputClass =
@@ -22,7 +23,7 @@ export default function PreviewField({ field }) {
         />
       )}
       {field.type === "textarea" && (
-        <textarea
+        <Textarea
           aria-label={field.label}
           className={inputClass}
           rows={3}

@@ -1,3 +1,4 @@
+import { Checkbox } from "@/components/motion/checkbox";
 import FeedbackLauncher from "../../../../shared/FeedbackLauncher";
 import FormFont from "../../../../shared/FormFont";
 import PreviewModeToggle from "./PreviewModeToggle";
@@ -40,10 +41,7 @@ export default function ProjectFormPreview({
             theme={theme}
           />
         ))}
-        {shippingUpdatesEnabled && <label className="flex items-start gap-3 text-sm">
-          <input type="checkbox" disabled className="mt-0.5 size-4" />
-          Email me when my request ships
-        </label>}
+        {shippingUpdatesEnabled && <Checkbox formTheme checked={false} onCheckedChange={() => {}} disabled label="Email me when my request ships" />}
         <button
           type="button"
           disabled

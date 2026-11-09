@@ -10,10 +10,9 @@ import {
   type HTMLAttributes,
 } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox";
+import { Checkbox } from "@/components/motion/checkbox";
 import { cn } from "@/lib/utils";
 import { spring } from "@/lib/springs";
-import { omit } from "@/lib/omit";
 import { fontWeights } from "@/lib/font-weight";
 import { useFluidHover, useRegisterFluidHoverItem } from "@/hooks/use-fluid-hover";
 import {
@@ -288,101 +287,7 @@ const CheckboxItem = forwardRef<HTMLDivElement, CheckboxItemProps>(
         )}
         {...props}
       >
-        {/* Checkbox: Base UI primitive for accessibility. It has no
-            onCheckedChange on purpose; the row toggles for it (see onClick). */}
-        <CheckboxPrimitive.Root
-          checked={checked}
-          // Out of the tab order and hidden from assistive tech: the row already
-          // is the checkbox, so exposing the primitive too would announce every
-          // option twice.
-          tabIndex={-1}
-          aria-hidden
-          className={cn(
-            "relative shrink-0 appearance-none bg-transparent p-0 border-0 outline-none cursor-pointer",
-            compact ? "w-[14px] h-[14px]" : "w-[16px] h-[16px]"
-          )}
-          // A click on the square reaches the row's onClick once: Base UI
-          // replays it on its hidden input but stops that copy there (since
-          // 1.7), so the original must bubble. Listening to onCheckedChange
-          // as well would toggle a second time and undo the first.
-        >
-          {/* Border */}
-          {/* Checked: the border turns transparent and the check alone marks
-              the state. Unchecked: hover or focus darkens it from border to
-              neutral-400 (neutral-500 dark) over 80ms. */}
-          <div
-            className={cn(
-              "absolute inset-0 border-solid transition-all duration-80",
-              compact ? "rounded-[4px]" : "rounded-[5px]",
-              checked
-                ? "border-[1.5px] border-transparent"
-                : isActive
-                ? "border-[1.5px] border-neutral-400 dark:border-neutral-500"
-                : "border-[1.5px] border-border"
-            )}
-          />
-          {/* Check mark */}
-          {/* keepMounted hands unmounting to AnimatePresence: without it Base UI
-              drops the indicator as soon as the box unchecks and the retract
-              never plays. */}
-          {/* initial={false}: a row checked at mount shows the finished
-              check instead of drawing it, so default selections don't
-              animate on page load. */}
-          <AnimatePresence initial={false}>
-            {checked && (
-              <CheckboxPrimitive.Indicator
-                keepMounted
-                render={(indicatorProps) => {
-                  const rest = omit(
-                    indicatorProps as React.HTMLAttributes<SVGSVGElement>,
-                    [
-                      "style",
-                      "onDrag",
-                      "onDragStart",
-                      "onDragEnd",
-                      "onAnimationStart",
-                      "onAnimationEnd",
-                      "onAnimationIteration",
-                    ]
-                  );
-                  return (
-                    <motion.svg
-                      {...rest}
-                      width={compact ? 16 : 18}
-                      height={compact ? 16 : 18}
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-foreground"
-                      initial={{ opacity: 1 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 1 }}
-                    >
-                      {/* The check draws itself: pathLength 0 → 1 over
-                          0.08s easeOut on check, back to 0 over 0.04s
-                          easeIn on uncheck. */}
-                      <motion.path
-                        d="M6 12L10 16L18 8"
-                        initial={{ pathLength: 0 }}
-                        animate={{
-                          pathLength: 1,
-                          transition: { duration: 0.08, ease: "easeOut" },
-                        }}
-                        exit={{
-                          pathLength: 0,
-                          transition: { duration: 0.04, ease: "easeIn" },
-                        }}
-                      />
-                    </motion.svg>
-                  );
-                }}
-              />
-            )}
-          </AnimatePresence>
-        </CheckboxPrimitive.Root>
+        <Checkbox visualOnly checked={checked} onCheckedChange={() => {}} />
 
         {/* Label */}
         {/* Both stacked spans carry the text-box trim so the invisible bold

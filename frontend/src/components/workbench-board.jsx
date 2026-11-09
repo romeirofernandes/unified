@@ -14,7 +14,7 @@ const columns = [
 ];
 export function StatusSelect({ value, onChange, disabled, label, id, compact = false }) {
   return <Select value={value} onValueChange={onChange} disabled={disabled} size={compact ? "compact" : "default"}>
-    <SelectTrigger id={id} aria-label={label} className={compact ? "w-36" : "w-full rounded-md"} />
+    <SelectTrigger id={id} aria-label={label} className={compact ? "w-36 dark:bg-background dark:hover:bg-muted/40" : "w-full rounded-md bg-card hover:bg-muted/50 dark:bg-card dark:hover:bg-muted"} />
     <SelectContent>{columns.map((column) => <SelectItem key={column.id} value={column.id}>{column.label}</SelectItem>)}</SelectContent>
   </Select>;
 }
