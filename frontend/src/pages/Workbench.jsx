@@ -89,7 +89,7 @@ function IssueEditor({ issue, projectId, uid, pending, error, onClose, onSave })
   </Dialog>;
 }
 
-function ProjectBoard({ project, uid }) {
+function ProjectBoard({ project, uid, renderHeader }) {
   const path = `/workbench/${project._id}`;
   const { data, loading, error: loadError, reload, setData } = useApiResource(path, uid);
   const [editing, setEditing] = useState(null);
@@ -116,16 +116,18 @@ function ProjectBoard({ project, uid }) {
     void mutate("PUT", issue, body, issues.map(item => item._id === issue._id ? { ...item, ...body } : item));
   }
   function create(status = "todo") { setError(""); setEditing({ status }); }
-  if (loading) return <LoadingState />;
-  if (loadError) return <div className="space-y-3"><ErrorMessage>{loadError}</ErrorMessage><Button onClick={reload}>Try again</Button></div>;
-  return <div className="flex min-h-0 flex-1 flex-col gap-5">
-    <div className="flex shrink-0 justify-end"><Button disabled={pending} onClick={() => create()}><HugeiconsIcon icon={Add01Icon} size={16} aria-hidden="true" />New issue</Button></div>
+  if (loading) return <>{renderHeader()}<LoadingState /></>;
+  if (loadError) return <>{renderHeader()}<div className="space-y-3"><ErrorMessage>{loadError}</ErrorMessage><Button onClick={reload}>Try again</Button></div></>;
+  return <>
+    {renderHeader(<Button disabled={pending} onClick={() => create()}><HugeiconsIcon icon={Add01Icon} size={16} aria-hidden="true" />New issue</Button>)}
+    <div className="flex min-h-0 flex-1 flex-col gap-5">
     <p role="status" className="sr-only">{announcement}</p>
     {!editing && !deleting && <ErrorMessage>{error}</ErrorMessage>}
     <WorkbenchBoard issues={issues} pending={pending} onEdit={(issue) => { setError(""); setEditing(issue); }} onDelete={(issue) => { setError(""); setDeleting(issue); }} onMove={move} />
     {editing && <IssueEditor issue={editing} projectId={project._id} uid={uid} pending={pending} error={error} onClose={() => setEditing(null)} onSave={(body) => mutate(editing._id ? "PUT" : "POST", editing, body)} />}
     <ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)} title="Delete issue?" description="This issue will be removed from your board. Summary imports won’t bring it back." pending={pending} error={error} onConfirm={() => mutate("DELETE", deleting)} />
-  </div>;
+    </div>
+  </>;
 }
 
 export default function Workbench() {
@@ -134,8 +136,12 @@ export default function Workbench() {
   const [params, setParams] = useSearchParams();
   const projects = data || [];
   const project = projects.find((item) => item._id === params.get("project")) || projects[0];
-  return <>
-    <PageHeader title="Workbench" description="Turn feedback into action. Track your project’s issues through to completion." action={project && <ProjectPicker projects={projects} value={project._id} onChange={(value) => setParams({ project: value }, { replace: true })} />} />
-    {loading ? <LoadingState /> : error ? <div className="space-y-3"><ErrorMessage>{error}</ErrorMessage><Button onClick={reload}>Try again</Button></div> : !project ? <EmptyState title="Create a project first" description="Your project’s feedback issues will appear here once a summary is generated." /> : <ProjectBoard key={project._id} project={project} uid={user?.uid} />}
-  </>;
+  const renderHeader = (action) => <PageHeader title="Workbench" description="Turn feedback into action. Track your project’s issues through to completion." action={project && <div className="flex w-full items-end gap-3 sm:w-auto">
+    <ProjectPicker className="min-w-0 flex-1" projects={projects} value={project._id} triggerClassName="bg-card hover:bg-card" onChange={(value) => setParams({ project: value }, { replace: true })} />
+    {action}
+  </div>} />;
+  if (loading) return <>{renderHeader()}<LoadingState /></>;
+  if (error) return <>{renderHeader()}<div className="space-y-3"><ErrorMessage>{error}</ErrorMessage><Button onClick={reload}>Try again</Button></div></>;
+  if (!project) return <>{renderHeader()}<EmptyState title="Create a project first" description="Your project’s feedback issues will appear here once a summary is generated." /></>;
+  return <ProjectBoard key={project._id} project={project} uid={user?.uid} renderHeader={renderHeader} />;
 }
