@@ -59,7 +59,7 @@ function ProjectFeedback({ projectId }) {
               ? "Loading your customer conversations…"
               : `${responses.length} ${responses.length === 1 ? "response" : "responses"}. Select a response to read all answers.`
           }
-          action={<Button variant="secondary" disabled={loading || !!error || resetPending || (!responses.length && !analysis.summary)} onClick={() => { setResetError(""); setResetting(true); }}>Reset responses</Button>}
+          action={<Button variant="destructive" disabled={loading || !!error || resetPending || (!responses.length && !analysis.summary)} onClick={() => { setResetError(""); setResetting(true); }}>Reset responses</Button>}
         />
       </div>
       {notice && <p role="status" className="text-sm text-muted-foreground">{notice}</p>}

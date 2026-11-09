@@ -1,0 +1,26 @@
+.fix-pipeline {
+  background: var(--background);
+  color: var(--foreground);
+  --xy-background-color: var(--background);
+  --xy-node-background-color: var(--card);
+  --xy-node-color: var(--foreground);
+  --xy-edge-stroke: var(--border);
+  --xy-controls-button-background-color: var(--card);
+  --xy-controls-button-background-color-hover: var(--muted);
+  --xy-controls-button-color: var(--foreground);
+  --xy-controls-button-border-color: var(--border);
+  --xy-attribution-background-color: var(--card);
+}
+.fix-pipeline .react-flow { background: var(--background); }
+.fix-pipeline .react-flow__controls { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: none; }
+.fix-pipeline .react-flow__controls-button { background: var(--card); color: var(--foreground); fill: currentColor; border-color: var(--border); }
+.fix-pipeline .react-flow__attribution { background: var(--card); color: var(--muted-foreground); }
+.fix-pipeline .react-flow__edge-path { stroke: var(--border); }
+.fix-pipeline .fix-edge-complete .react-flow__edge-path { stroke: var(--muted-foreground); }
+.fix-node { width: 248px; height: 166px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); color: var(--foreground); box-shadow: 0 2px 8px rgb(0 0 0 / 4%); }
+.fix-node.is-selected { border-color: var(--fluid-accent); box-shadow: 0 0 0 2px var(--background), 0 0 0 3px var(--fluid-accent); }
+.fix-node.state-failed { border-color: var(--destructive); }
+.fix-node.state-failed .fix-node-icon { color: var(--destructive); }
+.fix-node-icon { display: inline-flex; align-items: center; justify-content: center; height: 28px; width: 28px; border-radius: 7px; background: var(--background); }
+.fix-node .react-flow__handle { width: 7px; height: 7px; background: var(--card); border: 1px solid var(--muted-foreground); }
+.fix-pipeline .react-flow__node:focus-visible { outline: 2px solid var(--fluid-accent); outline-offset: 4px; }

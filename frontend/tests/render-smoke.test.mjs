@@ -144,17 +144,17 @@ test("copy page includes the full integration contract and every package manager
 });
 
 for (const [status, expected, absent] of [
-  ["eligible", "Attempt fix &amp; open draft", "Mark shipped"],
-  ["not_suitable", "Needs a human", "Attempt fix"],
+  ["eligible", "Start fix", "Mark shipped"],
+  ["not_suitable", "Needs a human", "Start fix"],
   ["awaiting_checks", "Waiting for CI", "Mark shipped"],
-  ["merged", "Mark shipped", "Attempt fix"],
-  ["shipped", "Shipped", "Attempt fix"],
+  ["merged", "Mark shipped", "Start fix"],
+  ["shipped", "Shipped", "Start fix"],
 ]) {
   test(`PR run ${status} exposes only its valid next actions`, () => {
     setPullRequestStatus(status);
     const markup = render("PullRequests", "/dashboard/pull-requests?issue=issue-1&run=run-1");
     assert.ok(markup.includes(expected), `Expected ${expected}`);
     assert.ok(!markup.includes(absent), `Unexpected action ${absent}`);
-    assert.ok(markup.includes("Source context"));
+    assert.ok(markup.includes("Fix pipeline"));
   });
 }
