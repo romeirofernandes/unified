@@ -75,7 +75,7 @@ export default function Footer() {
           </div>
 
           <div className="flex flex-col gap-3 pt-2 text-[12px] text-[#5f5c55] dark:text-[#c3c0b9] sm:flex-row sm:items-center sm:justify-between sm:pt-3 sm:text-[13px]">
-            <p className="m-0">© {new Date().getFullYear()} Unified. Built around the customer voice.</p>
+            <p className="m-0">© {new Date().getFullYear()} Unified. All Rights Reserved.</p>
             <p className="m-0 text-[16px] sm:text-[18px]">crafted by <a className="inline-block font-medium text-[#24231f] underline decoration-wavy decoration-[#5575b4] dark:text-[#f4f3ee] dark:decoration-[#a8b9dd] underline-offset-[5px] transition-colors hover:text-[#405783] dark:hover:text-[#a8b9dd]" href="https://romeiro.dev">romeiro&apos;s</a> agents</p>
           </div>
         </div>
