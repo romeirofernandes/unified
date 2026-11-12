@@ -27,7 +27,7 @@ export default function Footer() {
 
   return (
     <footer className="relative isolate w-full overflow-hidden bg-[#f4f3ee] text-[#24231f] transition-colors duration-700 dark:bg-[#141413] dark:text-[#f4f3ee] motion-reduce:transition-none">
-      <HeroChecker className="h-12 w-full sm:h-14 lg:h-16 dark:hidden" />
+      <HeroChecker className="h-4 w-full dark:hidden" />
       <Background className="relative px-5 pb-10 pt-16 text-primary sm:px-8 sm:pb-12 sm:pt-20 lg:px-12">
         <div className="pointer-events-none absolute inset-0 z-0 hidden overflow-hidden dark:block" aria-hidden="true">
           <Ascii
