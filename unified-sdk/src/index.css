@@ -1,6 +1,16 @@
 @import "tailwindcss";
 @source "../../shared";
 
+/* Generate shared-control utilities without depending on the host app's theme. */
+@theme inline {
+  --color-primary: var(--uf-accent);
+  --color-primary-foreground: var(--uf-accentText);
+  --color-foreground: var(--uf-text);
+  --color-background: var(--uf-background);
+  --color-muted-foreground: var(--uf-muted);
+  --color-ring: var(--uf-accent);
+}
+
 .unified-feedback-root {
   display: contents;
   font-family: Inter, system-ui, sans-serif;

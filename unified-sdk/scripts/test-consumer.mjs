@@ -170,6 +170,13 @@ createRoot(document.getElementById('root')).render(<React.StrictMode><App /></Re
   await expect(page.getByRole("radio", { name: "No", exact: true })).toBeChecked();
   await page.keyboard.press("ArrowRight");
   await expect(yes).toBeChecked();
+  const radioPaint = await yes.evaluate(el => {
+    const dot = el.querySelector("span");
+    return { border: getComputedStyle(el).borderColor, dot: getComputedStyle(dot).backgroundColor, width: dot.getBoundingClientRect().width };
+  });
+  assert.notEqual(radioPaint.dot, "rgba(0, 0, 0, 0)", "Selected radio must paint its accent dot in an installed SDK");
+  assert.ok(radioPaint.width >= 6, "Selected radio dot must have visible geometry");
+  await expect.poll(() => yes.evaluate(el => getComputedStyle(el).borderColor)).toBe(radioPaint.dot);
   await page.getByRole("button", { name: "Continue", exact: true }).click();
   const slider = page.getByRole("slider", { name: "Rating", exact: true });
   await slider.focus();
