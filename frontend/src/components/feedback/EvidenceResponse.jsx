@@ -1,16 +1,18 @@
+import FallbackAvatar from "@/components/fallback-avatar";
+import { useReducedMotion } from "motion/react";
 import IssueTags from "./IssueTags";
 
 const dateFormat = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" });
 export default function EvidenceResponse({ response }) {
   const { feedback, sender, answers, timestamp } = response;
+  const reducedMotion = useReducedMotion();
   const primary = answers.find(answer => answer.type === "textarea" && answer.value !== "No answer")
     || answers.find(answer => answer.type === "text" && answer.value !== "No answer");
   const facts = answers.filter(answer => answer !== primary);
   const date = timestamp ? new Date(timestamp) : null;
-  const initials = sender === "Anonymous response" ? "AR" : sender.split("@")[0].split(/[\s._-]+/).filter(Boolean).map(part => part[0]).join("").slice(0, 2).toUpperCase();
   return <article className="min-w-0 rounded-xl border border-border bg-card p-5 sm:p-6" aria-label={`Response from ${sender}`}>
     <header className="mb-6 flex min-w-0 items-center gap-3">
-      <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-full border border-border bg-muted text-[10px] font-medium text-muted-foreground">{initials}</span>
+      <FallbackAvatar name={sender === "Anonymous response" ? String(feedback._id) : sender.trim().toLowerCase()} size={32} animated={!reducedMotion} className="shrink-0 ring-1 ring-border" />
       <h3 className="min-w-0 flex-1 break-words text-xs font-medium">{sender}</h3>
       <time dateTime={date?.toISOString()} title={date?.toLocaleString()} className="shrink-0 text-[10px] tabular-nums text-muted-foreground">{date ? dateFormat.format(date) : "Date unavailable"}</time>
     </header>
