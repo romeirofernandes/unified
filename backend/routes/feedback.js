@@ -35,7 +35,7 @@ router.get("/project/:projectId", async (req, res) => {
       projectId: req.params.projectId,
     }).sort({ timestamp: -1 });
     const issues = (await Project.findById(project._id).select("+workbenchIssues").lean())?.workbenchIssues || [];
-    res.json(feedback.map(item => ({ ...item.toObject(), issues: issues.filter(issue => !issue.deleted && (item.issueIds?.some(id => String(id) === String(issue._id)) || issue.responseIds?.some(id => String(id) === String(item._id)))).map(({ _id, title, status }) => ({ _id, title, status })) })));
+    res.json(feedback.map(item => ({ ...item.toObject({ flattenMaps: true }), issues: issues.filter(issue => !issue.deleted && (item.issueIds?.some(id => String(id) === String(issue._id)) || issue.responseIds?.some(id => String(id) === String(item._id)))).map(({ _id, title, status }) => ({ _id, title, status })) })));
   } catch (error) {
     res
       .status(500)

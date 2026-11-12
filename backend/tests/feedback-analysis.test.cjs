@@ -44,6 +44,7 @@ test('analysis atomically reuses completed issues and tags only responses with v
     assert.equal((await Project.findById(project._id).select('+workbenchIssues')).workbenchIssues.length, 1);
     const responses = await (await realFetch(`${base}/feedback/project/${project._id}`)).json();
     const tagged = responses.find(response => response._id === String(next._id));
+    assert.equal(tagged.formAnswers[field], 'The search still freezes.');
     assert.equal(tagged.issues[0]._id, issueId); assert.equal(tagged.issues[0].status, 'done');
   } finally { if (originalKeys === undefined) delete process.env.GROQ_API_KEYS; else process.env.GROQ_API_KEYS = originalKeys; global.fetch = realFetch; }
 });
