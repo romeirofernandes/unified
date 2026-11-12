@@ -69,6 +69,7 @@ Emil Kowalski's [prototype skill](https://github.com/emilkowalski/skills/tree/ma
 - frontend: 58 tests pass, lint passes, production build passes.
 - packed SDK consumer: passes with visible radio paint, keyboard selection, theme switching and Shadow DOM isolation.
 - PR workspace browser fixture: passes, including failed-node modal retry and responsive layouts.
+- live Groq checks on synthetic data: strict patch generation applies correctly, and rephrased feedback reuses an existing issue ID while excluding unrelated praise.
 - all eight prototypes: exercised at 1440px and 390px, including interactive controls, working local illustration files, picker persistence, no horizontal page overflow and no runtime errors. screenshots were reviewed locally.
 
-no deployment, npm publication, live Groq generation, real GitHub PR or live email delivery was performed.
+no deployment, npm publication, real repository PR or live email delivery was performed. the live Groq checks used only small synthetic inputs, so they verify the configured request contract rather than every real-world issue.
