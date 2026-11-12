@@ -132,11 +132,12 @@ for (const scenario of ["save", "reuse", "legacy", "new", "locked"]) {
   test(`summary persistence: ${scenario}`, async () => {
     let generations = 0;
     let stored;
-    const saved = scenario === "reuse" ? { responseIds: ["r1"], tldr: "Saved", evidence: [] } : scenario === "legacy" ? { responseIds: ["r1"], tldr: "Old summary" } : scenario === "new" ? { responseIds: ["old"] } : null;
+    const saved = scenario === "reuse" ? { schemaVersion: 2, responseIds: ["r1"], tldr: "Saved", evidence: [] } : scenario === "legacy" ? { responseIds: ["r1"], tldr: "Old summary" } : scenario === "new" ? { responseIds: ["old"] } : null;
     const project = { _id: "project", fields: [], feedbackSummary: saved };
     const routes = loadRoutes("feedback.js", {
+      mongoose: { connection: { transaction: async fn => fn({}) } },
       "../models/Project": {
-        findOne: () => ({ lean: async () => project }),
+        findOne: () => { const query = { select: () => query, session: () => query, lean: async () => project }; return query; },
         findOneAndUpdate: (filter, update) => {
           if (update.$set?.summaryLock) return { lean: async () => scenario === "locked" ? null : project };
           stored = update.$set.feedbackSummary;
@@ -144,8 +145,8 @@ for (const scenario of ["save", "reuse", "legacy", "new", "locked"]) {
         },
         updateOne: async () => {},
       },
-      "../models/Feedback": { find: () => ({ sort: () => ({ lean: async () => [{ _id: "r1" }] }) }) },
-      "../services/feedback-summary": { summarizeFeedback: async () => { generations++; return { tldr: "Overview", features: ["Fix search"] }; } },
+      "../models/Feedback": { find: () => ({ sort: () => ({ lean: async () => [{ _id: "r1" }] }) }), bulkWrite: async () => {} },
+      "../services/feedback-summary": { summarizeFeedback: async () => { generations++; return { schemaVersion: 2, tldr: "Overview", features: ["Fix search"], evidence: [] }; } },
     });
     const res = response();
     await routes.get("post /project/:projectId/summary")({ user: { id: "owner" }, params: { projectId: "project" } }, res);

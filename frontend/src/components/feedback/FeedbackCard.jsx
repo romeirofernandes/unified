@@ -1,3 +1,4 @@
+import IssueTags from "./IssueTags";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent, CollapsibleIndicator } from "@/components/motion/collapsible";
 
 const dateFormat = new Intl.DateTimeFormat(undefined, {
@@ -35,6 +36,7 @@ export default function FeedbackCard({ response }) {
         </time>
         <CollapsibleIndicator className="text-muted-foreground" />
       </CollapsibleTrigger>
+      {feedback.issues?.length > 0 && <div className="px-4 pb-3 sm:px-5"><IssueTags issues={feedback.issues} projectId={feedback.projectId} /></div>}
       <CollapsibleContent contentClassName="px-4 pb-5 pt-1 sm:px-5">
         <div className="rounded-md border border-border bg-background p-4 sm:p-5">
           <p className="mb-5 text-xs text-muted-foreground">

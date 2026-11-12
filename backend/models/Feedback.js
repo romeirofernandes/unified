@@ -12,6 +12,7 @@ const feedbackSchema = new mongoose.Schema({
     required: true,
   },
   subscriptionEmail: { type: String, select: false },
+  issueIds: [{ type: mongoose.Schema.Types.ObjectId }],
   shippedIssueIds: [{ type: mongoose.Schema.Types.ObjectId }],
   timestamp: {
     type: Date,

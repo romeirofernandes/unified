@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const { randomUUID } = require("node:crypto");
 const Project = require("../models/Project");
 const Connection = require("../models/PullRequestConnection");
@@ -54,7 +55,19 @@ async function assessRun(run, d, filter) {
   const value = await d.ask({ messages: [{ role: "system", content: system }, { role: "user", content: JSON.stringify({ task: "Assess this issue against the actual files. Return {suitable:boolean,category:ui_copy|ui_style|ui_behavior|documentation|unsupported,reason:string,plan:string[]}. Reject vague requests, changes requiring other files, security-sensitive changes, or behavior with no clear way for a reviewer to verify it. Do not count confidence as evidence.", issue: run.issue, acceptance: run.acceptance, files: context.files }) }], maxTokens: 1000, schema: schemas.assessment });
   const assessment = validateAssessment(value, context.files);
   await liveProject(run, d);
-  await event(d, filter, assessment.suitable ? "eligible" : "not_suitable", assessment.reason, { active: false, assessment, baseSha: context.baseSha, baseTree: context.baseTree, files: context.files.map(({ path, sha, size }) => ({ path, sha, size })), leaseUntil: null });
+  const snapshot = { assessment, baseSha: context.baseSha, baseTree: context.baseTree, files: context.files.map(({ path, sha, size }) => ({ path, sha, size })) };
+  if (!assessment.suitable) {
+    await event(d, filter, "not_suitable", assessment.reason, { ...snapshot, active: false, leaseUntil: null });
+    return;
+  }
+  await mongoose.connection.transaction(async session => {
+    const project = await d.Project.findOne({ _id: run.projectId, userId: run.userId }).select("+workbenchIssues").session(session).lean();
+    const issue = project?.workbenchIssues.find(item => String(item._id) === String(run.issueId) && !item.deleted && item.status !== "done");
+    if (!issue || fingerprint(issue) !== run.issue.fingerprint) throw fail("The issue changed. Start a fresh assessment.");
+    const saved = await d.Run.updateOne(filter, { $set: { ...snapshot, status: "queued_fix", active: true, message: "Assessment passed. Fix queued automatically.", workbenchManaged: issue.status === "todo", workbenchPreviousStatus: issue.status, leaseUntil: null }, $unset: { leaseToken: 1 }, $push: { events: { at: new Date(), status: "queued_fix", stage: "patch", message: "Assessment passed. Fix queued automatically." } } }, { session });
+    if (!saved.matchedCount) return;
+    await d.Project.updateOne({ _id: project._id, userId: run.userId, "workbenchIssues._id": issue._id }, { $set: { "workbenchIssues.$.status": "in_progress" } }, { session });
+  });
 }
 async function fixRun(run, d, filter) {
   const { api } = await d.github.repositoryClient(run);

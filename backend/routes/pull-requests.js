@@ -104,6 +104,22 @@ function createRouter(overrides = {}) {
     });
     res.status(202).json({ queued: true });
   }));
+  router.post("/:projectId/runs/:runId/retry", handler(async (req, res) => {
+    const run = req.run;
+    if (run.status !== "failed" || run.branch) throw fail("Only an unpublished failed run can be retried.", 409);
+    const issue = req.project.workbenchIssues.find(item => String(item._id) === String(run.issueId) && !item.deleted && item.status !== "done");
+    if (!issue || fingerprint(issue) !== run.issue.fingerprint) throw fail("The issue changed. Start a fresh assessment.", 409);
+    if (await d.Run.exists({ ...owner(req), issueId: issue._id, _id: { $ne: run._id }, branch: { $exists: true }, status: { $nin: ["closed", "shipped", "cancelled"] } })) throw fail("Another run already has a branch for this issue.", 409);
+    await consumeLimit(`pr-retry:${req.user.id}`, 6);
+    // Reassess against the current base so a stale snapshot cannot trap retries.
+    const result = await d.Run.updateOne({ _id: run._id, ...owner(req), status: "failed", active: false, branch: { $exists: false } }, {
+      $set: { status: "queued", active: true, message: "Retry queued. Checking the latest source.", failedStage: "", workbenchManaged: false },
+      $unset: { leaseToken: 1, leaseUntil: 1, assessment: 1, review: 1, patch: 1, baseSha: 1, baseTree: 1, files: 1 },
+      $push: { events: { at: new Date(), status: "queued", stage: "scope", message: "Retry requested. Checking the latest source before preparing a fix." } },
+    });
+    if (!result.matchedCount) throw fail("This run changed. Reload and try again.", 409);
+    res.status(202).json({ queued: true });
+  }));
   router.post("/:projectId/runs/:runId/cancel", handler(async (req, res) => {
     // Publishing cannot be interrupted between its external branch and PR writes.
     const result = await d.Run.updateOne({ _id: req.run._id, ...owner(req), status: { $in: ["queued", "assessing", "eligible", "queued_fix", "generating"] } }, { $set: { status: "cancelled", active: false, failedStage: ["queued_fix", "generating"].includes(req.run.status) ? "patch" : "scope", message: "Cancelled by the project owner." }, $unset: { leaseToken: 1, leaseUntil: 1 }, $push: { events: { at: new Date(), status: "cancelled", stage: ["queued_fix", "generating"].includes(req.run.status) ? "patch" : "scope", message: "Cancelled by the project owner." } } });

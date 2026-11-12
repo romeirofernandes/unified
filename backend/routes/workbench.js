@@ -25,7 +25,7 @@ router.get("/:projectId", async (req, res) => {
     if (!project) return res.status(404).json({ message: "Project not found." });
     // Keep imported keys on deleted cards so summaries cannot resurrect them.
     const imported = new Set(project.workbenchIssues.map((issue) => issue.sourceKey));
-    for (const title of project.feedbackSummary?.features || []) {
+    for (const title of project.feedbackSummary?.schemaVersion === 2 ? [] : project.feedbackSummary?.features || []) {
       if (typeof title !== "string" || !title.trim()) continue;
       const sourceKey = createHash("sha256").update(title.trim().toLowerCase().replace(/\s+/g, " ")).digest("hex");
       const responseIds = [...new Set((project.feedbackSummary?.evidence || [])

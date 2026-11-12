@@ -35,7 +35,17 @@ async function deliverDigest({ project, channel, summary, count, recipient, batc
     headers["Idempotency-Key"] = createHash("sha256").update(batchId).digest("hex");
     body = { from: emailFrom(), to: [recipient], subject, text, html: digestHtml({ project, summary, count, test }) };
   }
-  const response = await request(url, { method: "POST", headers, body: JSON.stringify(body), signal: AbortSignal.timeout(20000), redirect: "error" });
-  if (!response.ok) throw Object.assign(new Error(`${channel === "slack" ? "Slack" : "Email"} delivery failed (${response.status}). Check the connection and try again.`), { deliveryRejected: response.status < 500 });
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const response = await request(url, { method: "POST", headers, body: JSON.stringify(body), signal: AbortSignal.timeout(20000), redirect: "error" });
+    if (response.ok) return;
+    // Resend honours the same idempotency key, including across transient retries.
+    if (channel === "email" && !attempt && [429, 500, 502, 503, 504].includes(response.status)) {
+      const seconds = Number(response.headers?.get("retry-after") || 1);
+      await response.body?.cancel();
+      await new Promise(resolve => setTimeout(resolve, Math.min(5, Math.max(1, Number.isFinite(seconds) ? seconds : 1)) * 1000));
+      continue;
+    }
+    throw Object.assign(new Error(`${channel === "slack" ? "Slack" : "Email"} delivery failed (${response.status}). Check the connection and try again.`), { deliveryRejected: response.status < 500 });
+  }
 }
 module.exports = { validateSlackWebhook, digestText, deliverDigest };

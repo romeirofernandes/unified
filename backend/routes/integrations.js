@@ -93,6 +93,10 @@ router.post("/:id/:channel/test", async (req, res) => {
     if (!project) return res.status(429).json({ message: "Wait a minute before sending another test." });
     await deliverDigest({ project, channel, count: 3, recipient: req.user.email, test: true, batchId: randomUUID(), summary: { tldr: "This is a sample digest. Your real digests will summarize new feedback for this project.", features: ["Review recurring requests", "Identify issues worth addressing"] } });
     res.json({ message: "Test digest sent. Check your destination." });
-  } catch { res.status(502).json({ message: "The test could not be delivered. Check the saved connection and server configuration." }); }
+  } catch (error) {
+    if (error.deliveryRejected) await Project.updateOne({ _id: req.params.id, userId: req.user.id }, { $unset: { [`${prefix}.testAfter`]: 1 } }).catch(() => {});
+    const safe = /^(Email|Slack) delivery (failed|is not configured)/.test(error.message);
+    res.status(502).json({ message: safe ? error.message : "The test delivery could not be confirmed. Check the destination before trying again." });
+  }
 });
 module.exports = router;

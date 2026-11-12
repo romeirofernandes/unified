@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Add01Icon } from "@hugeicons/core-free-icons";
@@ -100,6 +100,14 @@ function ProjectBoard({ project, uid, renderHeader }) {
   const [announcement, setAnnouncement] = useState("");
   const running = useRef(false);
   const issues = data || [];
+  const [params, setParams] = useSearchParams();
+  const requestedIssue = params.get("issue");
+  useEffect(() => {
+    if (!data || !requestedIssue) return;
+    const issue = data.find(issue => issue._id === requestedIssue);
+    if (issue) setEditing(issue);
+    setParams(previous => { const next = new URLSearchParams(previous); next.delete("issue"); return next; }, { replace: true });
+  }, [data, requestedIssue, setParams]);
   async function mutate(method, issue, body, optimistic) {
     if (running.current) return;
     running.current = true; setPending(true); setError("");

@@ -4,11 +4,10 @@ import Navbar from "../components/landing/Navbar";
 import HeroBackground from "../components/landing/HeroBackground";
 import Hero from "../components/landing/Hero";
 import ProductPreview from "../components/landing/ProductPreview";
-import Features from "../components/landing/Features";
-import Process from "../components/landing/Testimonials";
+import DispatchDigest from "../components/landing/DispatchDigest";
+import FeedbackLoop from "../components/landing/FeedbackLoop";
 import CTA from "../components/landing/CTA";
 import Footer from "../components/landing/Footer";
-import CheckerDivider from "../components/landing/CheckerDivider";
 
 export default function Landing() {
   return (
@@ -21,9 +20,8 @@ export default function Landing() {
             <Hero />
             <ProductPreview />
           </HeroBackground>
-          <Features />
-          <CheckerDivider />
-          <Process />
+          <FeedbackLoop />
+          <DispatchDigest />
           <CTA />
         </div>
         <Footer />

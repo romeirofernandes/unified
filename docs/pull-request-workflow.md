@@ -58,7 +58,7 @@ installation callbacks do not consume OAuth state. expired links return to the s
 
 ## using it
 
-open an issue in the workbench and choose **Assess for a PR**, or pick an issue from the new page. describe the exact behavior you want and how you expect a reviewer to verify the result. assessment selects files at an immutable source commit and explains whether the change fits our limits. you can inspect the file paths and hashes before choosing **Attempt fix & open draft**.
+open an issue in the workbench and choose **Assess for a PR**, or pick an issue from the new page. describe the exact behavior you want and how you expect a reviewer to verify the result. assessment selects files at an immutable source commit and explains whether the change fits our limits. successful assessments automatically queue the fix. you can inspect the file paths, hashes and execution trace while it runs. if an unpublished step fails, open its node and choose **Retry this run** to reassess the latest source. publication failures use **Recover publication** to avoid duplicate branches or PRs.
 
 the worker generates one exact patch, checks its scope mechanically, and asks for a separate model preflight review. that review is not a test result. GitHub executes any existing CI after publication. inspect the proposed patch and actual CI output on GitHub before merging - this first version does not repair a failed CI run automatically.
 

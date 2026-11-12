@@ -54,10 +54,16 @@ async function api(path, body, user) {
   const response = await fetch(base + path, { method: body ? "POST" : "GET", headers: { "Content-Type": "application/json", ...(user ? { "x-user": user } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
   return { status: response.status, data: await response.json() };
 }
-async function assessed() {
+async function assessed(automatic = false) {
+  const previousStatus = (await Project.findById(project._id).select("+workbenchIssues")).workbenchIssues[0].status;
   const run = await Run.create({ projectId: project._id, userId: owner, issueId: issue._id, issue: { title: issue.title, description: issue.description, fingerprint: fingerprint(issue) }, acceptance: "The editor save button reads Save changes.", repository: connection.repository, repositoryId: 1, installationId: 2, baseBranch: "main", requiredCheck: "tests", status: "queued", active: true });
   answers = [{ suitable: true, category: "ui_copy", reason: "One existing label needs changing.", plan: ["Replace the label."] }];
   await workflow.processRun(run._id, dependencies);
+  if (!automatic) {
+    // Keep legacy eligible runs covered while new assessments queue fixes automatically.
+    await Run.updateOne({ _id: run._id, status: "queued_fix" }, { $set: { status: "eligible", active: false } });
+    await Project.updateOne({ _id: project._id }, { $set: { "workbenchIssues.0.status": previousStatus } });
+  }
   return Run.findById(run._id).select("+installationId").lean();
 }
 async function publish() {
@@ -272,4 +278,24 @@ test("authenticated live stream delivers Mongo changes without exposing raw run 
     assert.match(change,/event: change/);
     assert.doesNotMatch(change,/installationId|fixture live event|leaseToken|issue/);
   } finally {controller.abort();await reader.cancel().catch(()=>{});}
+});
+
+test("successful assessments automatically queue a fix and retries reassess current source", async () => {
+  const run = await assessed(true);
+  assert.equal(run.status, "queued_fix");
+  assert.equal(run.active, true);
+  assert.equal((await Project.findById(project._id).select("+workbenchIssues")).workbenchIssues[0].status, "in_progress");
+  answers = [{ edits: [{ path: files[0].path, before: "Save", after: "Save changes" }] }, { approved: true, reason: "Matches the brief." }];
+  await workflow.processRun(run._id, dependencies);
+  assert.equal((await Run.findById(run._id)).status, "awaiting_checks");
+  assert.equal((await api(`/pr/${project._id}/runs/${run._id}/retry`, {})).status, 409);
+});
+test("failed unpublished runs retry once and reject concurrent or changed issues", async () => {
+  const run = await assessed();
+  await Run.updateOne({ _id: run._id }, { $set: { status: "failed", failedStage: "patch", active: false } });
+  assert.equal((await api(`/pr/${project._id}/runs/${run._id}/retry`, {})).status, 202);
+  assert.equal((await api(`/pr/${project._id}/runs/${run._id}/retry`, {})).status, 409);
+  const queued = await Run.findById(run._id).lean();
+  assert.equal(queued.status, "queued");
+  assert.equal(queued.assessment, undefined);
 });
