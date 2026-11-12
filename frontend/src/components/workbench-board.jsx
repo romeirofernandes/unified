@@ -1,3 +1,4 @@
+import { issueColor } from "@/lib/issue-color";
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { DndContext, DragOverlay, MouseSensor, TouchSensor, useSensor, useSensors, useDraggable, useDroppable, pointerWithin, rectIntersection } from "@dnd-kit/core";
@@ -21,7 +22,7 @@ export function StatusSelect({ value, onChange, disabled, label, id, compact = f
 function CardView({ issue, pending, onEdit, onDelete, onMove, handle, overlay = false }) {
   return <article className="rounded-lg border border-border bg-background shadow-sm">
     <button type="button" {...handle} disabled={pending} onClick={onEdit} className="block w-full cursor-grab touch-manipulation space-y-2 rounded-t-lg p-4 text-left outline-none active:cursor-grabbing focus-visible:ring-2 focus-visible:ring-ring">
-      <h3 className="break-words text-sm font-medium leading-6">{issue.title}</h3>
+      <h3 className="break-words text-sm font-medium leading-6"><span aria-hidden="true" className="me-2 inline-block size-2 rounded-full" style={{ background: issueColor(issue._id) }} />{issue.title}</h3>
       {issue.description && <p className="line-clamp-2 break-words text-xs leading-5 text-muted-foreground">{issue.description}</p>}
       <span className="block text-xs text-muted-foreground">{issue.sourceKey ? "From feedback summary" : "Created in Workbench"}</span>
     </button>

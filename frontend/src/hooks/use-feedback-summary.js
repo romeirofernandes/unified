@@ -18,7 +18,7 @@ export function useFeedbackSummary(project, responses, ready) {
   const summary = generated?.scope === scope ? generated.summary : project?.feedbackSummary;
   const snapshot = useMemo(() => responses.map((response) => response._id).sort().join(","), [responses]);
   const current = useMemo(() => {
-    if (!summary?.responseIds || !Array.isArray(summary.evidence)) return false;
+    if (summary?.schemaVersion !== 2 || !summary?.responseIds || !Array.isArray(summary.evidence)) return false;
     const ids = new Set(summary.responseIds);
     return responses.every((response) => ids.has(response._id));
   }, [summary, responses]);

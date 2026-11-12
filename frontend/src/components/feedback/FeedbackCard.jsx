@@ -1,3 +1,4 @@
+import IssueTags from "./IssueTags";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent, CollapsibleIndicator } from "@/components/motion/collapsible";
 
 const dateFormat = new Intl.DateTimeFormat(undefined, {
@@ -61,6 +62,7 @@ export default function FeedbackCard({ response }) {
               This response has no answers.
             </p>
           )}
+          <div className="mt-5"><IssueTags issues={feedback.issues} projectId={feedback.projectId} /></div>
           <span className="sr-only">Response {feedback._id}</span>
         </div>
       </CollapsibleContent>

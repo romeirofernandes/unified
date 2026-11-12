@@ -27,6 +27,9 @@ function ProjectFeedback({ projectId }) {
   const refreshResponses = feedback.refresh;
   const refreshProject = project.refresh;
   useEffect(() => {
+    if (analysis.summary?.schemaVersion === 2) { refreshResponses(); forgetResourcePrefix(`/workbench/${projectId}`, user.uid); }
+  }, [analysis.summary?.timestamp, analysis.summary?.schemaVersion, refreshResponses, projectId, user.uid]);
+  useEffect(() => {
     const refresh = () => { if (document.visibilityState === "visible") { refreshProject(); refreshResponses(); } };
     const timer = window.setInterval(refresh, 30000);
     window.addEventListener("focus", refresh);
