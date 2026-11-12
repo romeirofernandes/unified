@@ -1,0 +1,20 @@
+.dispatch-digest {padding:104px 32px;background:#e6e9ef;scroll-margin-top:80px;}
+.dark .dispatch-digest {background:#202837;}
+.dispatch-digest-wrap {display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:64px;align-items:center;max-width:1200px;margin:auto;}
+.dispatch-digest-copy {max-width:430px;}
+.dispatch-digest-copy h2 {font-family:var(--font-serif,Georgia,serif);font-size:clamp(38px,4.5vw,58px);font-weight:400;line-height:1.1;letter-spacing:-.035em;margin:20px 0;}
+.dispatch-digest-copy>p:last-child {font-size:14px;line-height:1.85;color:#646873;}
+.dark .dispatch-digest-copy>p:last-child {color:#b7c0cf;}
+.dispatch-digest-visual {position:relative;min-width:0;}
+.dispatch-digest .dispatch-drawing {--dispatch-route-ink:#70839d;--iso-ground:#dce2eb;--iso-paper:#f6f8fb;--iso-face:#d2dce9;display:block;width:100%;height:auto;aspect-ratio:640/470;overflow:visible;}
+.dark .dispatch-digest .dispatch-drawing {--dispatch-route-ink:#d5c8ac;--iso-ground:#263248;--iso-paper:#3b4b61;--iso-face:#2c3a50;}
+.dispatch-destinations {display:flex;justify-content:flex-end;flex-wrap:wrap;gap:12px 22px;margin-top:-10px;padding-right:10px;}
+.dispatch-destinations>span {display:inline-flex;align-items:center;gap:8px;font-size:11px;color:#586c89;white-space:nowrap;}
+.dispatch-destinations img {width:16px;height:16px;}
+.dark .dispatch-destinations>span {color:#c6d3e8;}
+.dispatch-motion-toggle {position:absolute;left:10px;bottom:-3px;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;color:#667c9c;cursor:pointer;}
+.dark .dispatch-motion-toggle {color:#b7c8e2;}
+.dispatch-motion-toggle:hover {background:#8295b315;}
+.dispatch-motion-toggle:focus-visible {outline:2px solid #7698ca;outline-offset:3px;}
+@media(max-width:1000px){.dispatch-digest{padding:80px 28px}.dispatch-digest-wrap{gap:32px}.dispatch-digest-copy h2{font-size:44px}.dispatch-digest-copy>p:last-child{font-size:13px}}
+@media(max-width:700px){.dispatch-digest{padding:64px 24px}.dispatch-digest-wrap{grid-template-columns:1fr;gap:32px}.dispatch-digest-copy h2{font-size:42px}.dispatch-digest-visual{width:100%;max-width:530px;margin:auto}.dispatch-digest .dispatch-drawing{aspect-ratio:360/600}.dispatch-destinations{margin-top:0;gap:16px}.dispatch-destinations>span{font-size:10px}.dispatch-destinations img{width:14px;height:14px}}

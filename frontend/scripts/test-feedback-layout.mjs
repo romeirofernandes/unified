@@ -3,9 +3,9 @@ import {createRequire} from 'node:module';
 import {readFileSync,readdirSync,mkdtempSync} from 'node:fs';
 import {tmpdir} from 'node:os';import path from 'node:path';
 const root=path.resolve(import.meta.dirname,'../..');const req=createRequire(root+'/frontend/package.json');const{build}=req('esbuild');const{chromium,expect}=createRequire(root+'/unified-sdk/package.json')('@playwright/test');
-const source=`import React from 'react';import{createRoot}from'react-dom/client';import{BrowserRouter,Routes,Route}from'react-router-dom';import{ThemeProvider}from'next-themes';import{FluidRoot}from'./src/components/fluid-root';import Landing from './src/pages/Landing';import Digest from './src/prototypes/digest/DigestPrototypes';import FeedbackList from './src/components/feedback/FeedbackList';import SummaryCard from './src/components/feedback/SummaryCard';
+const source=`import React from 'react';import{createRoot}from'react-dom/client';import{BrowserRouter,Routes,Route}from'react-router-dom';import{ThemeProvider}from'next-themes';import{FluidRoot}from'./src/components/fluid-root';import Landing from './src/pages/Landing';import FeedbackList from './src/components/feedback/FeedbackList';import SummaryCard from './src/components/feedback/SummaryCard';
 const issues=[{_id:'search',title:'Search older responses',status:'todo'},{_id:'radio',title:'Show the selected radio option',status:'done'}];const fields=[{_id:'email',type:'email',label:'Email'},{_id:'message',type:'textarea',label:'What could we improve?'},{_id:'rating',type:'slider',label:'Overall experience'}];const responses=[{_id:'r1',projectId:'p1',timestamp:'2026-11-12T10:00:00Z',formAnswers:{email:'ava@acme.example',message:'I remember someone mentioning exports, but I cannot find their message. Could we search by a word or email?',rating:8},issues:[issues[0]]},{_id:'r2',projectId:'p1',timestamp:'2026-11-11T10:00:00Z',formAnswers:{email:'sam@acme.example',message:'The choices do get selected but there is no dot to tell me which one I picked.',rating:6},issues:[issues[1]]},{_id:'r3',projectId:'p1',timestamp:'2026-11-10T10:00:00Z',formAnswers:{email:'jordan@acme.example',message:'Please let me search older feedback by email.',rating:9},issues:[issues[0]]}];function Responses(){return <main className="min-h-screen bg-background text-foreground p-6 sm:p-10"><div className="mx-auto max-w-[1300px] space-y-7"><h1 className="text-3xl">Acme website</h1><SummaryCard summary={{tldr:'Two customers want to search older feedback. The invisible radio selection is fixed.',features:issues.map(i=>i.title),evidence:issues.map(i=>({title:i.title,issueId:i._id}))}} issues={issues} projectId="p1"/><FeedbackList responses={responses} fields={fields} issues={issues}/></div></main>}
-createRoot(document.getElementById('root')).render(<ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}><FluidRoot><BrowserRouter><Routes><Route path="/responses" element={<Responses/>}/><Route path="/prototypes/digest" element={<Digest/>}/><Route path="/" element={<Landing/>}/></Routes></BrowserRouter></FluidRoot></ThemeProvider>);`;
+createRoot(document.getElementById('root')).render(<ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}><FluidRoot><BrowserRouter><Routes><Route path="/responses" element={<Responses/>}/><Route path="/" element={<Landing/>}/></Routes></BrowserRouter></FluidRoot></ThemeProvider>);`;
 const built=await build({stdin:{contents:source,resolveDir:root+'/frontend',loader:'jsx'},bundle:true,write:false,jsx:'automatic',platform:'browser',format:'iife',loader:{'.css':'empty'},alias:{'@':root+'/frontend/src'},define:{'process.env.NODE_ENV':'"test"','import.meta.env':'{}'},plugins:[{name:'fixtures',setup(b){b.onResolve({filter:/^@\/hooks\/use-auth$/},()=>({path:'auth',namespace:'auth'}));b.onLoad({filter:/.*/,namespace:'auth'},()=>({contents:'export function useAuth(){return {user:null}}',loader:'js'}));b.onResolve({filter:/\.svg\?raw$/},args=>({path:path.resolve(args.resolveDir,args.path.replace('?raw','')),namespace:'raw-svg'}));b.onLoad({filter:/.*/,namespace:'raw-svg'},args=>({contents:readFileSync(args.path,'utf8'),loader:'text'}));}}]});
 const css=readdirSync(root+'/frontend/dist/assets').filter(f=>f.endsWith('.css')).map(f=>readFileSync(root+'/frontend/dist/assets/'+f,'utf8')).join('\n');
 const dir=mkdtempSync(path.join(tmpdir(),'unified-selected-ui-'));
@@ -24,14 +24,33 @@ try{
  await page.screenshot({path:dir+'/loop-desktop.png',fullPage:true});
  for(const width of [1024,768,390]){await page.setViewportSize({width,height:1000});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'loop overflow '+width)}await page.screenshot({path:dir+'/loop-mobile.png',fullPage:true});
  await page.setViewportSize({width:1440,height:1000});
- for(let i=1;i<=3;i++){
-  await page.goto('http://prototype.test/prototypes/digest?v='+i);await page.locator('#digest-section').scrollIntoViewIfNeeded();await expect(page.locator('.digest-scene')).toHaveAttribute('data-playing','true');await page.waitForTimeout(700);await page.screenshot({path:dir+'/digest-'+i+'.png',fullPage:true});
-  await page.getByRole('button',{name:'Pause animation',exact:true}).click();await expect(page.locator('.digest-scene')).toHaveAttribute('data-playing','false');await page.getByRole('button',{name:'Play animation',exact:true}).click();await expect(page.locator('.digest-scene')).toHaveAttribute('data-playing','true');
-  await page.getByRole('button',{name:'Slack',exact:true}).click();await expect(page.locator('.digest-scene-destination')).toContainText('#product-feedback');
-  for(const width of [1024,768,390]){await page.setViewportSize({width,height:1000});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'digest overflow '+i+' '+width)}await page.locator('#digest-section').scrollIntoViewIfNeeded();await page.screenshot({path:dir+'/digest-'+i+'-mobile.png',fullPage:true});await page.setViewportSize({width:1440,height:1000});
+ await page.goto('http://prototype.test/');await page.locator('#digest-section').scrollIntoViewIfNeeded();
+ await expect(page.locator('.dispatch-drawing')).toHaveAttribute('data-playing','true');
+ await expect(page.locator('.dispatch-destinations')).toContainText('Your inbox');await expect(page.locator('.dispatch-destinations')).toContainText('Your channel');
+ await expect(page.getByText('Hover, focus or tap a drawing to play.')).toHaveCount(0);await expect(page.locator('.proto-picker')).toHaveCount(0);
+ await page.getByRole('button',{name:'Pause digest animation'}).click();await expect(page.locator('.dispatch-drawing')).toHaveAttribute('data-playing','false');
+ for(const width of [1440,1024,768,390]){
+  await page.setViewportSize({width,height:1000});
+  await expect(page.locator('.dispatch-drawing')).toHaveAttribute('viewBox',width<=700?'0 0 360 600':'0 0 640 470');
+  for(const time of [1.5,3,5,6.5]){
+   const distance=await page.locator('.dispatch-drawing').evaluate(async(svg,time)=>{
+    svg.setCurrentTime(time);await new Promise(requestAnimationFrame);
+    const route=svg.querySelector('.dispatch-route');const note=svg.querySelector('.dispatch-message');
+    const expected=route.getPointAtLength(route.getTotalLength()*((time-.96)/6.08));
+    const local=svg.createSVGPoint().matrixTransform(note.getCTM()).matrixTransform(svg.getCTM().inverse());
+    return Math.hypot(local.x-expected.x,local.y-expected.y);
+   },time);
+   assert.ok(distance<.5,'message follows the exact dotted path at '+width+'px and '+time+'s: '+distance);
+  }
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'dispatch overflow '+width);
+  if(width===390){
+   const tops=await page.locator('.feedback-cycle-step').evaluateAll(nodes=>nodes.map(node=>node.getBoundingClientRect().top));assert.ok(tops.every((top,index)=>index===0||top>tops[index-1]),'phone stages stay vertical and in process order');
+   await expect(page.locator('.feedback-mobile-arrow').first()).toBeVisible();
+  }
+  await page.locator('#digest-section').scrollIntoViewIfNeeded();await page.screenshot({path:dir+'/dispatch-'+width+'.png',fullPage:true});
  }
- await page.emulateMedia({reducedMotion:'reduce'});await page.goto('http://prototype.test/prototypes/digest?v=1');await page.locator('#digest-section').scrollIntoViewIfNeeded();await expect(page.locator('.digest-scene')).toHaveAttribute('data-playing','false');await expect(page.getByRole('button',{name:'Play animation',exact:true})).toBeDisabled();
- await page.emulateMedia({reducedMotion:'no-preference'});await page.getByRole('button',{name:'Switch to dark theme'}).click();await page.waitForTimeout(1200);await page.screenshot({path:dir+'/digest-dark.png',fullPage:true});
- await page.locator('.proto-picker[data-ready]').waitFor();await page.locator('#digest-study-title').click();await page.keyboard.press('2');await expect(page.locator('.digest-signal')).toBeVisible();await page.reload();await expect(page.locator('.digest-signal')).toBeVisible();
- assert.deepEqual(errors,[]);console.log('Evidence response filtering and links, four-stage hover motion, all three digest studies, pause/reduced motion, picker persistence and responsive checks passed. Screenshots: '+dir);
+ await page.setViewportSize({width:1440,height:1000});await page.getByRole('button',{name:'Play digest animation'}).click();await expect(page.locator('.dispatch-drawing')).toHaveAttribute('data-playing','true');
+ await page.emulateMedia({reducedMotion:'reduce'});await expect(page.locator('.dispatch-drawing')).toHaveAttribute('data-playing','false');await expect(page.getByRole('button',{name:'Pause digest animation'})).toHaveCount(0);
+ await page.emulateMedia({reducedMotion:'no-preference'});await page.getByRole('button',{name:'Switch to dark theme'}).click();await page.waitForTimeout(1200);await page.screenshot({path:dir+'/dispatch-dark.png',fullPage:true});
+ assert.deepEqual(errors,[]);console.log('Evidence response links, hover motion, exact SVG-path travel, phone ordering, pause/reduced motion and responsive checks passed. Screenshots: '+dir);
 }finally{await browser.close()}

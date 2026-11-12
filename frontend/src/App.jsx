@@ -4,7 +4,6 @@ import WorkspaceLayout from "./components/dashboard/WorkspaceLayout";
 import RouteLoading from "./components/shared/RouteLoading";
 import Landing from "./pages/Landing";
 
-const DigestPrototypes = lazy(() => import("./prototypes/digest/DigestPrototypes"));
 
 const Login = lazy(() => import("./pages/Login"));
 const Signup = lazy(() => import("./pages/Signup"));
@@ -23,7 +22,6 @@ export default function App() {
       <Suspense fallback={<RouteLoading />}>
         <Routes>
           <Route path="/" element={<Landing />} />
-          <Route path="/prototypes/digest" element={<DigestPrototypes />} />
           <Route path="/docs" element={<Docs />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />

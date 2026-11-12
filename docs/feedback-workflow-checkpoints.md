@@ -45,19 +45,17 @@ the isometric direction is now `/`. the hero, product preview, CTA and footer re
 
 the PR illustration comes from the SVG supplied by the project owner, recoloured to match the other drawings. the other illustrations use Overflow's free stills with custom local animation. the retired landing variants and their routes have been removed.
 
-## digest animation studies
+## selected digest section
 
-the replacement digest section is awaiting a visual choice, so it is isolated at `/prototypes/digest`. the old email card mockup is removed. the prototype route uses the actual landing page as context and opens at the digest section.
+Dispatch is now part of the landing page at `/`. all remaining prototype routes, pickers and unused variants have been removed.
 
-| route | direction | strongest use | cost |
-| --- | --- | --- | --- |
-| `/prototypes/digest?v=1` | dispatch | show the digest travelling from the workbench to the inbox | the most literal delivery diagram |
-| `/prototypes/digest?v=2` | signal | show several feedback notes becoming one useful issue | more emphasis on analysis than delivery |
-| `/prototypes/digest?v=3` | orbit | show feedback being delivered on a repeating schedule | less explicit about digest contents |
+the kanban artwork, envelope, dotted connector and travelling message share one SVG viewport. the message references the connector path directly. the phone layout uses a vertical board-to-envelope path rather than shrinking the desktop composition. pause is available as a small accessible icon, and reduced motion shows a still frame.
 
-all three loop only while the section is visible. they have pause controls, email/Slack destination switching and reduced-motion stills. the picker supports number keys, arrow keys and replay, and preserves selection in the URL. only this new prototype surface remains.
+helper captions and the email/Slack selector have been removed. the right side shows Gmail with “Your inbox” and Slack with “Your channel”. the loop's circular arrow icons are replaced by dotted SVG arrows, including downward arrows between the vertical phone stages.
 
-Emil Kowalski's [prototype skill](https://github.com/emilkowalski/skills/tree/main/skills/prototype) is installed in `.agents/skills/prototype`. asset sources are recorded beside the isometric files.
+all isometric artwork uses 0.5 stroke weight. warm ivory outlines separate the blue faces from the darker section background, while the light theme keeps a muted slate outline on pale surfaces.
+
+Emil Kowalski's prototype skill remains installed in `.agents/skills/prototype`. asset sources are recorded beside the isometric files.
 
 ## validation
 
@@ -66,6 +64,6 @@ Emil Kowalski's [prototype skill](https://github.com/emilkowalski/skills/tree/ma
 - packed SDK consumer: passes with visible radio paint, keyboard selection, theme switching and Shadow DOM isolation.
 - PR workspace browser fixture: passes, including failed-node modal retry and responsive layouts.
 - live Groq checks on synthetic data: strict patch generation applies correctly, and rephrased feedback reuses an existing issue ID while excluding unrelated praise.
-- selected UI: evidence filtering and workbench links, hover-driven SVG parts, the three digest studies, pause controls, reduced motion and picker persistence are checked in a browser. layouts are checked at 1440, 1024, 768 and 390px, and screenshots are reviewed locally.
+- selected UI: evidence filtering and links, hover motion, Dispatch pause/reduced motion, vertical phone order and responsive layouts are checked in a browser. message positions are sampled along the shared SVG path at 1440, 1024, 768 and 390px, with less than 0.5 SVG-unit deviation. light and dark screenshots are reviewed locally.
 
 no deployment, npm publication, real repository PR or live email delivery was performed. the live Groq checks used only small synthetic inputs, so they verify the configured request contract rather than every real-world issue.

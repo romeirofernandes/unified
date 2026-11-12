@@ -1,11 +1,11 @@
-.isometric-figure {
-  --iso-ink:#8b9bab; --iso-edge:#d5dee6; --iso-ground-side:#e3eaf0;
+.isometric-figure,.isometric-palette {
+  --iso-ink:#75808c; --iso-accent-ink:#f2e9d7; --iso-edge:#d5dee6; --iso-ground-side:#e3eaf0;
   --iso-ground:#edf0f2; --iso-paper:#fafbfc; --iso-paper-side:#eff2f6;
   --iso-face:#e1e7ed; --iso-blue:#6d96d3; --iso-blue-light:#9bb8e1; --iso-blue-dark:#557bb8;
   display:block; width:100%; aspect-ratio:1; line-height:0;
 }
-.dark .isometric-figure {
-  --iso-ink:#657486; --iso-edge:#26303b; --iso-ground-side:#303c49;
+.dark .isometric-figure,.dark .isometric-palette {
+  --iso-ink:#d5c8ac; --iso-accent-ink:#f0e2c6; --iso-edge:#26303b; --iso-ground-side:#303c49;
   --iso-ground:#222b34; --iso-paper:#343e48; --iso-paper-side:#2b3540;
   --iso-face:#2b3540; --iso-blue:#7099d5; --iso-blue-light:#9bb8e1; --iso-blue-dark:#456da7;
 }
