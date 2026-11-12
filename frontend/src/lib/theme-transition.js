@@ -10,5 +10,7 @@ export function changeTheme(setTheme, theme) {
   transitioning = true;
   const transition = document.startViewTransition(() => flushSync(() => setTheme(theme)));
   const release = () => { transitioning = false; };
+  // Resizing or navigating can skip the animation after the theme has updated.
+  transition.ready.catch(() => {});
   transition.finished.then(release, release);
 }

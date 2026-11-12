@@ -35,33 +35,29 @@ the browser's default 20-second request timeout could expire before SMTP's conne
 
 the original first-attempt delivery failure could not be reproduced from the screenshot or local fixtures. no live email was sent during this work.
 
-## response prototypes
+## selected response layout
 
-open `/prototypes/responses` on the frontend. the picker supports number keys, arrow keys and `R` to replay. selection persists in `?v=1` through `?v=5`.
+the evidence direction is now the Responses page. the existing summary stays on top, followed by search and order controls, an issue filter rail and the original response cards. the cards show only fields that were actually submitted. issue counts, completion styling and workbench links use saved response tags. the five old response prototypes have been removed.
 
-| route | direction | strongest use | cost |
-| --- | --- | --- | --- |
-| `/prototypes/responses?v=1` | ledger | scan customer, preview and date before expanding | less expressive |
-| `/prototypes/responses?v=2` | notes | make the customer's words the focus | more scrolling |
-| `/prototypes/responses?v=3` | evidence | start with an issue and inspect its supporting responses | adds a filtering rail |
-| `/prototypes/responses?v=4` | inbox | read without losing the surrounding list | less room for long answers |
-| `/prototypes/responses?v=5` | log | fit many responses in a small space | details need an extra click |
+## selected landing direction
 
-all five use the same sample responses. search, order, disclosures, issue filters, response selection and issue detail dialogs work. these are isolated explorations, with no winner applied to production.
+the isometric direction is now `/`. the hero, product preview, CTA and footer remain. the large workbench mockup section is removed. larger browser, kanban, PR and mail illustrations form a clockwise feedback loop. hovering or focusing a drawing starts its part-level animation, and tapping pins or stops it. reduced motion keeps a complete still illustration.
 
-## landing prototypes
+the PR illustration comes from the SVG supplied by the project owner, recoloured to match the other drawings. the other illustrations use Overflow's free stills with custom local animation. the retired landing variants and their routes have been removed.
 
-the current hero, product preview and footer are reused. `/` keeps the existing production landing page.
+## digest animation studies
+
+the replacement digest section is awaiting a visual choice, so it is isolated at `/prototypes/digest`. the old email card mockup is removed. the prototype route uses the actual landing page as context and opens at the digest section.
 
 | route | direction | strongest use | cost |
 | --- | --- | --- | --- |
-| `/1` | workbench | show the actual board, a patch preview and a digest | longest walkthrough |
-| `/2` | isometric | explain the workflow with restrained illustrations and real UI | illustrations add less detail than product UI |
-| `/3` | release story | follow one issue through an interactive chapter selector | visitors need to switch chapters |
+| `/prototypes/digest?v=1` | dispatch | show the digest travelling from the workbench to the inbox | the most literal delivery diagram |
+| `/prototypes/digest?v=2` | signal | show several feedback notes becoming one useful issue | more emphasis on analysis than delivery |
+| `/prototypes/digest?v=3` | orbit | show feedback being delivered on a repeating schedule | less explicit about digest contents |
 
-Overflow's [free isometric set](https://www.overflow.design/isometric/?tier=free) includes Kanban, Mail, Browser and Branch drawings that fit the workbench, digest, widget and PR flow. the prototypes use local two-tone stills. their animated versions require Pro. asset sources and terms are recorded beside the files.
+all three loop only while the section is visible. they have pause controls, email/Slack destination switching and reduced-motion stills. the picker supports number keys, arrow keys and replay, and preserves selection in the URL. only this new prototype surface remains.
 
-Emil Kowalski's [prototype skill](https://github.com/emilkowalski/skills/tree/main/skills/prototype) is installed in `.agents/skills/prototype`. its original picker styling, URL persistence, keyboard switching and replay behaviour are shared across both explorations.
+Emil Kowalski's [prototype skill](https://github.com/emilkowalski/skills/tree/main/skills/prototype) is installed in `.agents/skills/prototype`. asset sources are recorded beside the isometric files.
 
 ## validation
 
@@ -70,6 +66,6 @@ Emil Kowalski's [prototype skill](https://github.com/emilkowalski/skills/tree/ma
 - packed SDK consumer: passes with visible radio paint, keyboard selection, theme switching and Shadow DOM isolation.
 - PR workspace browser fixture: passes, including failed-node modal retry and responsive layouts.
 - live Groq checks on synthetic data: strict patch generation applies correctly, and rephrased feedback reuses an existing issue ID while excluding unrelated praise.
-- all eight prototypes: exercised at 1440px and 390px, including interactive controls, working local illustration files, picker persistence, no horizontal page overflow and no runtime errors. screenshots were reviewed locally.
+- selected UI: evidence filtering and workbench links, hover-driven SVG parts, the three digest studies, pause controls, reduced motion and picker persistence are checked in a browser. layouts are checked at 1440, 1024, 768 and 390px, and screenshots are reviewed locally.
 
 no deployment, npm publication, real repository PR or live email delivery was performed. the live Groq checks used only small synthetic inputs, so they verify the configured request contract rather than every real-world issue.

@@ -1,0 +1,23 @@
+.isometric-figure {
+  --iso-ink:#8b9bab; --iso-edge:#d5dee6; --iso-ground-side:#e3eaf0;
+  --iso-ground:#edf0f2; --iso-paper:#fafbfc; --iso-paper-side:#eff2f6;
+  --iso-face:#e1e7ed; --iso-blue:#6d96d3; --iso-blue-light:#9bb8e1; --iso-blue-dark:#557bb8;
+  display:block; width:100%; aspect-ratio:1; line-height:0;
+}
+.dark .isometric-figure {
+  --iso-ink:#657486; --iso-edge:#26303b; --iso-ground-side:#303c49;
+  --iso-ground:#222b34; --iso-paper:#343e48; --iso-paper-side:#2b3540;
+  --iso-face:#2b3540; --iso-blue:#7099d5; --iso-blue-light:#9bb8e1; --iso-blue-dark:#456da7;
+}
+.isometric-figure>svg {display:block;width:100%;height:100%;overflow:visible;}
+@media(prefers-reduced-motion:no-preference) {
+  .isometric-figure[data-playing] .iso-writing {animation:iso-write 3.8s cubic-bezier(.2,0,0,1) infinite;animation-play-state:paused;stroke-dasharray:1;}
+  .isometric-figure .iso-writing-1 {animation-delay:180ms;}
+  .isometric-figure .iso-writing-2 {animation-delay:360ms;}
+  .isometric-figure[data-playing] .iso-moving-card {animation:iso-card-travel 3.8s cubic-bezier(.2,0,0,1) infinite;animation-play-state:paused;}
+  .isometric-figure[data-playing] .iso-letter {animation:iso-letter-send 3.8s cubic-bezier(.2,0,0,1) infinite;animation-play-state:paused;}
+  .isometric-figure[data-playing] .iso-writing,.isometric-figure[data-playing] .iso-moving-card,.isometric-figure[data-playing] .iso-letter {animation-play-state:running;}
+}
+@keyframes iso-write {0%,8%{stroke-dashoffset:1;opacity:.25}32%,78%{stroke-dashoffset:0;opacity:1}94%,100%{stroke-dashoffset:1;opacity:.25}}
+@keyframes iso-card-travel {0%,12%,100%{transform:translate(0,0)}28%{transform:translate(0,-8px)}58%,74%{transform:translate(34px,12px)}90%{transform:translate(0,-8px)}}
+@keyframes iso-letter-send {0%,12%,100%{transform:translate(0,0)}35%,65%{transform:translate(0,-15px)}82%{transform:translate(0,-3px)}}
