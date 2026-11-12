@@ -159,7 +159,7 @@ export default function DashboardLayout({ children }) {
         <Background
           className="relative isolate flex min-h-0 w-full flex-1 flex-col [&>canvas]:-z-10 [&>canvas]:opacity-90 [&>canvas]:saturate-125 dark:[&>canvas]:opacity-75"
           style={{ overflow: "visible" }}
-          {...(background === "glyph" ? { fontSize: 12, glowColor: "#7C99D7", shapeColor: "#7C99D7" } : {})}
+          {...(background === "glyph" ? { viewport: true, fontSize: 12, glowColor: "#7C99D7", shapeColor: "#7C99D7" } : {})}
         >
           {background === "cursor" && reducedMotion === false && (
             <PixelTrail

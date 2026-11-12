@@ -156,6 +156,7 @@ type GlyphBackgroundProps = React.ComponentProps<'div'> & {
   shapeColor?: string;
   fontSize?: number;
   interactive?: boolean;
+  viewport?: boolean;
 };
 
 function compile(gl: WebGLRenderingContext, type: number, source: string) {
@@ -293,6 +294,7 @@ function GlyphBackgroundContent({
   shapeColor,
   fontSize = 10,
   interactive = true,
+  viewport = false,
   className,
   children,
   onPointerMove,
@@ -375,12 +377,13 @@ function GlyphBackgroundContent({
     const resize = () => {
       const rect = container.getBoundingClientRect();
       width = rect.width;
-      height = rect.height;
+      height = viewport ? window.innerHeight : rect.height;
       dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
       canvas.width = Math.max(1, Math.round(width * dpr));
       canvas.height = Math.max(1, Math.round(height * dpr));
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
+      if (viewport) canvas.style.left = `${rect.left}px`;
       const { fontSize } = optionsRef.current;
       const font = `${fontSize * dpr}px Menlo, ui-monospace, SFMono-Regular, Consolas, monospace`;
       const measure = document.createElement('canvas').getContext('2d')!;
@@ -455,17 +458,17 @@ function GlyphBackgroundContent({
     resizeRef.current = resize;
     resize();
     draw(timeRef.current);
-    const observer = new ResizeObserver(() => {
-      resize();
-      draw(timeRef.current);
-    });
+    const refreshSize = () => { resize(); draw(timeRef.current); };
+    const observer = new ResizeObserver(refreshSize);
+    if (viewport) window.addEventListener('resize', refreshSize);
     observer.observe(container);
     return () => {
       observer.disconnect();
+      if (viewport) window.removeEventListener('resize', refreshSize);
       drawRef.current = () => {};
       resizeRef.current = () => {};
     };
-  }, []);
+  }, [viewport]);
 
   React.useEffect(() => {
     resizeRef.current();
@@ -487,7 +490,7 @@ function GlyphBackgroundContent({
   }, [playing]);
 
   const point = (event: React.PointerEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
+    const rect = (viewport ? canvasRef.current : event.currentTarget)?.getBoundingClientRect() ?? event.currentTarget.getBoundingClientRect();
     return { x: event.clientX - rect.left, y: event.clientY - rect.top };
   };
 
@@ -531,7 +534,7 @@ function GlyphBackgroundContent({
       <canvas
         ref={canvasRef}
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
+        className={cn("pointer-events-none", viewport ? "fixed top-0" : "absolute inset-0")}
       />
       {children}
     </div>

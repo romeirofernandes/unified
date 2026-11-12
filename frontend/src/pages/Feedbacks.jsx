@@ -87,7 +87,7 @@ function ProjectFeedback({ projectId }) {
       {loading && <LoadingState variant="responses" />}
       {!loading && !error && (
         <>
-          {analysis.summary ? <SummaryCard summary={analysis.summary} current={analysis.current} issues={board.data || []} projectId={projectId} /> : responses.length > 0 && !analysis.error && <SummaryLoading />}
+          {analysis.summary ? <SummaryCard compact summary={analysis.summary} current={analysis.current} issues={board.data || []} projectId={projectId} /> : responses.length > 0 && !analysis.error && <SummaryLoading />}
           <FeedbackList
             responses={responses}
             issues={board.data || []}

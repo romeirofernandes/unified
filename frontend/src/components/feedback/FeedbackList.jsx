@@ -1,3 +1,4 @@
+import "./responses-layout.css";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/motion/select";
 import { useMemo, useState } from "react";
 import { EmptyState } from "@/components/shared/PageState";
@@ -35,8 +36,8 @@ export default function FeedbackList({ responses, fields, issues = [] }) {
       />
     );
   return (
-    <section aria-label="Customer responses" className="min-w-0 space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <section aria-label="Customer responses" className="responses-layout min-w-0 space-y-4">
+      <div className="responses-toolbar flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 flex-1 flex-col gap-2 sm:max-w-md">
           <label htmlFor="response-search" className="sr-only">
             Search responses
@@ -64,9 +65,9 @@ export default function FeedbackList({ responses, fields, issues = [] }) {
         </div>
       </div>
       <div className="grid min-w-0 items-start gap-7 lg:grid-cols-[230px_minmax(0,1fr)] xl:gap-8">
-        <aside className="min-w-0 lg:sticky lg:top-6" aria-label="Filter responses by issue">
+        <aside className="responses-issue-rail min-w-0" aria-label="Filter responses by issue">
           <h2 className="mb-4 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Follow the issue</h2>
-          <div className="space-y-1">
+          <div className="responses-issue-options space-y-1">
             <button type="button" aria-pressed={selected === "all"} onClick={() => setSelectedIssue("all")} className={`flex w-full items-center justify-between gap-3 rounded-md px-3 py-3 text-left text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring ${selected === "all" ? "bg-muted font-medium" : "hover:bg-muted/50"}`}>All responses <span className="text-[11px] tabular-nums text-muted-foreground">{responses.length}</span></button>
             {issueOptions.map(issue => <button type="button" key={issue._id} aria-pressed={selected === String(issue._id)} onClick={() => setSelectedIssue(String(issue._id))} className={`flex w-full items-start gap-3 rounded-md px-3 py-3 text-left text-xs leading-5 outline-none focus-visible:ring-2 focus-visible:ring-ring ${selected === String(issue._id) ? "bg-muted" : "hover:bg-muted/50"}`}>
               <span aria-hidden="true" className="mt-1.5 size-1.5 shrink-0 rounded-full" style={{ background: issueColor(issue._id), opacity: issue.status === "done" ? 0.5 : 1 }} />
