@@ -147,3 +147,16 @@ test("channel-capable Slack delivery posts structured blocks to the selected cha
     return { ok: true, json: async () => ({ ok: true }) };
   });
 });
+test("transient email rejection retries with the same idempotency key", async () => {
+  process.env.RESEND_API_KEY = "test-key";
+  process.env.DIGEST_EMAIL_FROM = "Unified <feedback@example.com>";
+  const keys = [];
+  try {
+    await deliverDigest({ project, channel: "email", summary, count: 1, recipient: "owner@example.com", batchId: "retry-batch" }, async (_url, options) => {
+      keys.push(options.headers["Idempotency-Key"]);
+      return { ok: keys.length > 1, status: 429 };
+    });
+    assert.equal(keys.length, 2);
+    assert.equal(keys[0], keys[1]);
+  } finally { delete process.env.RESEND_API_KEY; delete process.env.DIGEST_EMAIL_FROM; }
+});

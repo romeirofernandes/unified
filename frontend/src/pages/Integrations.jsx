@@ -88,7 +88,7 @@ function Channel({ channel, project, settings, uid, onSaved }) {
   async function test() {
     setPending(true); setError(""); setMessage("");
     try {
-      const data = await apiRequest(`/integrations/${project._id}/${channel}/test`, { uid, method: "POST" });
+      const data = await apiRequest(`/integrations/${project._id}/${channel}/test`, { uid, method: "POST", signal: AbortSignal.timeout(60000) });
       setMessage(data.message);
     } catch (error) { setError(error.message); }
     finally { setPending(false); }
