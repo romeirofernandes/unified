@@ -17,6 +17,8 @@ function ProjectFeedback({ projectId }) {
   const { user } = useAuth();
   const project = useApiResource(`/projects/${projectId}`, user.uid);
   const feedback = useApiResource(`/feedback/project/${projectId}`, user.uid);
+  const board = useApiResource(`/workbench/${projectId}`, user.uid);
+  const refreshBoard = board.refresh;
   const responses = feedback.data || [];
   const [resetting, setResetting] = useState(false);
   const [resetPending, setResetPending] = useState(false);
@@ -27,14 +29,14 @@ function ProjectFeedback({ projectId }) {
   const refreshResponses = feedback.refresh;
   const refreshProject = project.refresh;
   useEffect(() => {
-    if (analysis.summary?.schemaVersion === 2) { refreshResponses(); forgetResourcePrefix(`/workbench/${projectId}`, user.uid); }
-  }, [analysis.summary?.timestamp, analysis.summary?.schemaVersion, refreshResponses, projectId, user.uid]);
+    if (analysis.summary?.schemaVersion === 2) { refreshResponses(); refreshBoard(); forgetResourcePrefix(`/workbench/${projectId}`, user.uid); }
+  }, [analysis.summary?.timestamp, analysis.summary?.schemaVersion, refreshResponses, refreshBoard, projectId, user.uid]);
   useEffect(() => {
-    const refresh = () => { if (document.visibilityState === "visible") { refreshProject(); refreshResponses(); } };
+    const refresh = () => { if (document.visibilityState === "visible") { refreshProject(); refreshResponses(); refreshBoard(); } };
     const timer = window.setInterval(refresh, 30000);
     window.addEventListener("focus", refresh);
     return () => { clearInterval(timer); window.removeEventListener("focus", refresh); };
-  }, [refreshResponses, refreshProject]);
+  }, [refreshResponses, refreshProject, refreshBoard]);
   const error = project.error || feedback.error;
   const loading = project.loading || feedback.loading;
   async function reset() {
@@ -85,7 +87,7 @@ function ProjectFeedback({ projectId }) {
       {loading && <LoadingState variant="responses" />}
       {!loading && !error && (
         <>
-          {analysis.summary ? <SummaryCard summary={analysis.summary} current={analysis.current} /> : responses.length > 0 && !analysis.error && <SummaryLoading />}
+          {analysis.summary ? <SummaryCard summary={analysis.summary} current={analysis.current} issues={board.data || []} projectId={projectId} /> : responses.length > 0 && !analysis.error && <SummaryLoading />}
           <FeedbackList
             responses={responses}
             fields={project.data?.fields || []}
