@@ -82,6 +82,7 @@ export default function Footer() {
           </div>
         </div>
       </Background>
+      <HeroChecker className="h-4 w-full dark:hidden" />
     </footer>
   );
 }
