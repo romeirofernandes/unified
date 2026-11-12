@@ -62,7 +62,7 @@ function ProjectFeedback({ projectId }) {
           description={
             loading
               ? "Loading your customer conversations…"
-              : `${responses.length} ${responses.length === 1 ? "response" : "responses"}. Select a response to read all answers.`
+              : `${responses.length} ${responses.length === 1 ? "response" : "responses"}. Read the original feedback or follow a linked issue.`
           }
           action={<Button variant="destructive" disabled={loading || !!error || resetPending || (!responses.length && !analysis.summary)} onClick={() => { setResetError(""); setResetting(true); }}>Reset responses</Button>}
         />
@@ -90,6 +90,7 @@ function ProjectFeedback({ projectId }) {
           {analysis.summary ? <SummaryCard summary={analysis.summary} current={analysis.current} issues={board.data || []} projectId={projectId} /> : responses.length > 0 && !analysis.error && <SummaryLoading />}
           <FeedbackList
             responses={responses}
+            issues={board.data || []}
             fields={project.data?.fields || []}
           />
         </>
