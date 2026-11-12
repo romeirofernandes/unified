@@ -3,8 +3,8 @@ import { useInView, useReducedMotion } from "motion/react";
 import IsometricFigure from "./isometric/IsometricFigure";
 import "./feedback-loop.css";
 
-function DottedArrow({ className }) {
-  return <svg className={`feedback-dotted-arrow ${className}`} viewBox="0 0 144 64" fill="none" aria-hidden="true"><path d="M5 32 C43 8 92 56 135 32" stroke="currentColor" strokeWidth="0.5" strokeDasharray="0.5 4" strokeLinecap="round" /><path d="m126 28 9 4-5 8" stroke="currentColor" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+function CurvedArrow({ className }) {
+  return <svg className={`feedback-curved-arrow ${className}`} viewBox="0 0 144 64" fill="none" aria-hidden="true"><path d="M8 54 A90.51 90.51 0 0 1 136 54" stroke="currentColor" strokeWidth="1.1" strokeDasharray="5 5" strokeLinecap="round" /><path d="m126 52 10 2-2-10" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
 const steps = [
   { id:"browser", number:"01", title:"Listen inside your product", text:"Customers leave a note where the problem happens. Their original words stay attached to the issue." },
@@ -28,10 +28,10 @@ export default function FeedbackLoop() {
             {step.id === "devices" && <span className="feedback-figure-label">Draft pull request <span aria-hidden="true">↗</span></span>}
           </button>
           <div className="feedback-cycle-copy"><p className="landing-eyebrow">{step.number}</p><h3>{step.title}</h3><p>{step.text}</p></div>
-          {step.id !== "mail" && <DottedArrow className="feedback-mobile-arrow" />}
+          {step.id !== "mail" && <CurvedArrow className="feedback-mobile-arrow" />}
         </article>)}
         <span className="feedback-cycle-center" aria-hidden="true">Listen.<br />Build. Repeat.</span>
-        {["top","right","bottom","left"].map(position => <DottedArrow key={position} className={`feedback-cycle-arrow arrow-${position}`} />)}
+        {["top","right","bottom","left"].map(position => <CurvedArrow key={position} className={`feedback-cycle-arrow arrow-${position}`} />)}
       </div>
     </div>
   </section>;

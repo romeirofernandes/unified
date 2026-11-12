@@ -21,14 +21,19 @@ try{
  for(const width of [1440,1024,768,390]){await page.setViewportSize({width,height:1000});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'response overflow '+width)}await page.screenshot({path:dir+'/responses-mobile.png',fullPage:true});
  await page.setViewportSize({width:1440,height:1000});await page.goto('http://prototype.test/');await page.locator('#capabilities').scrollIntoViewIfNeeded();await expect(page.locator('.feedback-cycle-step')).toHaveCount(4);await expect(page.getByText('Fewer duplicate cards. More useful context.')).toHaveCount(0);
  const button=page.getByRole('button',{name:'Play animation: Give the issue a place'});await button.hover();await expect(button.locator('.isometric-figure')).toHaveAttribute('data-playing','true');const first=await button.locator('.iso-moving-card').evaluate(el=>getComputedStyle(el).transform);await page.waitForTimeout(700);const second=await button.locator('.iso-moving-card').evaluate(el=>getComputedStyle(el).transform);assert.notEqual(first,second,'Kanban card actually moves on hover');await page.locator('#feedback-loop-title').hover();await expect(button.locator('.isometric-figure')).not.toHaveAttribute('data-playing');
+ const devices=page.getByRole('button',{name:'Play animation: Prepare a fix for review'});await devices.hover();await expect(devices.locator('.iso-writing')).toHaveCount(11);const phone=devices.locator('.iso-writing').nth(7);const phoneBefore=await phone.evaluate(el=>getComputedStyle(el).strokeDashoffset);await page.waitForTimeout(700);assert.notEqual(await phone.evaluate(el=>getComputedStyle(el).strokeDashoffset),phoneBefore,'phone lines animate with the laptop on step three');
+ await expect(page.locator('.feedback-cycle-arrow path').first()).toHaveAttribute('stroke-dasharray','5 5');
  await page.screenshot({path:dir+'/loop-desktop.png',fullPage:true});
  for(const width of [1024,768,390]){await page.setViewportSize({width,height:1000});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'loop overflow '+width)}await page.screenshot({path:dir+'/loop-mobile.png',fullPage:true});
  await page.setViewportSize({width:1440,height:1000});
  await page.goto('http://prototype.test/');await page.locator('#digest-section').scrollIntoViewIfNeeded();
+ const backgrounds=await page.evaluate(()=>[getComputedStyle(document.querySelector('.dispatch-digest')).backgroundColor,getComputedStyle(document.querySelector('[aria-labelledby="landing-cta-title"]')).backgroundColor]);assert.notEqual(backgrounds[0],backgrounds[1],'light CTA has a distinct surface from the digest');
+ await expect(page.locator('.dispatch-route')).toHaveAttribute('stroke-dasharray','5 5');
  await expect(page.locator('.dispatch-drawing')).toHaveAttribute('data-playing','true');
  await expect(page.locator('.dispatch-destinations')).toContainText('Your inbox');await expect(page.locator('.dispatch-destinations')).toContainText('Your channel');
  await expect(page.getByText('Hover, focus or tap a drawing to play.')).toHaveCount(0);await expect(page.locator('.proto-picker')).toHaveCount(0);
- await page.getByRole('button',{name:'Pause digest animation'}).click();await expect(page.locator('.dispatch-drawing')).toHaveAttribute('data-playing','false');
+ await expect(page.locator('.dispatch-motion-toggle')).toHaveCount(0);await expect(page.locator('.dispatch-destination-badge')).toHaveCount(2);
+ await page.locator('.dispatch-drawing').evaluate(svg=>svg.pauseAnimations());
  for(const width of [1440,1024,768,390]){
   await page.setViewportSize({width,height:1000});
   await expect(page.locator('.dispatch-drawing')).toHaveAttribute('viewBox',width<=700?'0 0 360 600':'0 0 640 470');
@@ -49,8 +54,8 @@ try{
   }
   await page.locator('#digest-section').scrollIntoViewIfNeeded();await page.screenshot({path:dir+'/dispatch-'+width+'.png',fullPage:true});
  }
- await page.setViewportSize({width:1440,height:1000});await page.getByRole('button',{name:'Play digest animation'}).click();await expect(page.locator('.dispatch-drawing')).toHaveAttribute('data-playing','true');
+ await page.setViewportSize({width:1440,height:1000});await page.locator('#digest-section').scrollIntoViewIfNeeded();await page.locator('.dispatch-drawing').evaluate(svg=>svg.unpauseAnimations());await expect(page.locator('.dispatch-drawing')).toHaveAttribute('data-playing','true');
  await page.emulateMedia({reducedMotion:'reduce'});await expect(page.locator('.dispatch-drawing')).toHaveAttribute('data-playing','false');await expect(page.getByRole('button',{name:'Pause digest animation'})).toHaveCount(0);
  await page.emulateMedia({reducedMotion:'no-preference'});await page.getByRole('button',{name:'Switch to dark theme'}).click();await page.waitForTimeout(1200);await page.screenshot({path:dir+'/dispatch-dark.png',fullPage:true});
- assert.deepEqual(errors,[]);console.log('Evidence response links, hover motion, exact SVG-path travel, phone ordering, pause/reduced motion and responsive checks passed. Screenshots: '+dir);
+ assert.deepEqual(errors,[]);console.log('Evidence response links, hover motion, exact SVG-path travel, phone line motion and ordering, reduced motion and responsive checks passed. Screenshots: '+dir);
 }finally{await browser.close()}

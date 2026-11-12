@@ -49,11 +49,11 @@ the PR illustration comes from the SVG supplied by the project owner, recoloured
 
 Dispatch is now part of the landing page at `/`. all remaining prototype routes, pickers and unused variants have been removed.
 
-the kanban artwork, envelope, dotted connector and travelling message share one SVG viewport. the message references the connector path directly. the phone layout uses a vertical board-to-envelope path rather than shrinking the desktop composition. pause is available as a small accessible icon, and reduced motion shows a still frame.
+the kanban artwork, envelope, dashed connector and travelling message share one SVG viewport. the message references the connector path directly. the phone layout uses a vertical board-to-envelope path rather than shrinking the desktop composition. the animation stops outside the viewport, and reduced motion shows a still frame. no pause control is displayed.
 
-helper captions and the email/Slack selector have been removed. the right side shows Gmail with “Your inbox” and Slack with “Your channel”. the loop's circular arrow icons are replaced by dotted SVG arrows, including downward arrows between the vertical phone stages.
+helper captions and the email/Slack selector have been removed. the right side shows Gmail with “Your inbox” and Slack with “Your channel” as two badges joined by an ampersand. the loop's circular arrow icons are replaced by curved dashed SVG arrows, including downward dashed arrows between the vertical phone stages.
 
-all isometric artwork uses 0.5 stroke weight. warm ivory outlines separate the blue faces from the darker section background, while the light theme keeps a muted slate outline on pale surfaces.
+all isometric artwork uses 0.5 stroke weight. cool silver-blue outlines separate the blue faces from the darker section background, while the light theme keeps a muted slate outline on pale surfaces.
 
 Emil Kowalski's prototype skill remains installed in `.agents/skills/prototype`. asset sources are recorded beside the isometric files.
 
@@ -64,6 +64,8 @@ Emil Kowalski's prototype skill remains installed in `.agents/skills/prototype`.
 - packed SDK consumer: passes with visible radio paint, keyboard selection, theme switching and Shadow DOM isolation.
 - PR workspace browser fixture: passes, including failed-node modal retry and responsive layouts.
 - live Groq checks on synthetic data: strict patch generation applies correctly, and rephrased feedback reuses an existing issue ID while excluding unrelated praise.
-- selected UI: evidence filtering and links, hover motion, Dispatch pause/reduced motion, vertical phone order and responsive layouts are checked in a browser. message positions are sampled along the shared SVG path at 1440, 1024, 768 and 390px, with less than 0.5 SVG-unit deviation. light and dark screenshots are reviewed locally.
+- selected UI: evidence filtering and links, laptop and phone line motion, Dispatch reduced motion, vertical phone order and responsive layouts are checked in a browser. message positions are sampled along the shared SVG path at 1440, 1024, 768 and 390px, with less than 0.5 SVG-unit deviation. light and dark screenshots are reviewed locally.
 
 no deployment, npm publication, real repository PR or live email delivery was performed. the live Groq checks used only small synthetic inputs, so they verify the configured request contract rather than every real-world issue.
+
+final landing polish: the four loop connectors use matching circular arcs with visible dash segments in both themes. the light CTA returns to the warm page surface so it is distinct from the pale blue digest section.
