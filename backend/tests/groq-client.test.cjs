@@ -65,3 +65,26 @@ test('a provider JSON validation error retries once with a trace and never expos
     if (keys === undefined) delete process.env.GROQ_API_KEYS; else process.env.GROQ_API_KEYS = keys;
   }
 });
+test('truncated or schema-invalid successful responses recover within a bounded output budget', async () => {
+  const { groqJson } = require('../services/groq-client');
+  const original = global.fetch;
+  const key = process.env.GROQ_API_KEY, keys = process.env.GROQ_API_KEYS;
+  process.env.GROQ_API_KEY = 'fixture'; delete process.env.GROQ_API_KEYS;
+  const schema = require('../services/pr-ai-schemas').review;
+  try {
+    for (const first of [{finish_reason:'length',message:{content:'{"approved":'}}, {finish_reason:'stop',message:{content:'{"approved":"yes","reason":"wrong type"}'}}]) {
+      const bodies = [];
+      global.fetch = async (_url, options) => {
+        bodies.push(JSON.parse(options.body));
+        return new Response(JSON.stringify({ choices: [bodies.length === 1 ? first : {finish_reason:'stop',message:{content:'{"approved":true,"reason":"Scoped fix"}'}}] }));
+      };
+      assert.equal((await groqJson({messages:[],schema,maxTokens:2000})).approved,true);
+      assert.equal(bodies.length,2);assert.equal(bodies[1].max_completion_tokens,4000);
+      assert.match(bodies[1].messages.at(-1).content,/matching the required schema/);
+    }
+  } finally {
+    global.fetch = original;
+    if (key === undefined) delete process.env.GROQ_API_KEY; else process.env.GROQ_API_KEY = key;
+    if (keys === undefined) delete process.env.GROQ_API_KEYS; else process.env.GROQ_API_KEYS = keys;
+  }
+});

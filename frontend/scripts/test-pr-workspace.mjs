@@ -150,6 +150,12 @@ try {
   await expect(page.getByRole("button", {name:'Step details',exact:true})).toHaveCount(0);
   await expect(page.getByRole("dialog")).toContainText('Build failed: missing export.');
   await page.getByRole("button", { name: "Close", exact: true }).click();
+  await page.evaluate(() => { const fixture=window.prFixture; fixture.run.status='failed'; fixture.run.active=false; fixture.run.failedStage='patch'; delete fixture.run.branch; delete fixture.run.prUrl; window.dispatchEvent(new Event('fixture')); });
+  await page.locator('.react-flow__node[data-id="patch"]').click();
+  await expect(page.getByRole('dialog').getByRole('button', {name:'Retry this run'})).toBeVisible();
+  await page.getByRole('dialog').getByRole('button', {name:'Retry this run'}).click();
+  assert.equal(await page.evaluate(() => window.prFixture.calls.filter(call => call.route.endsWith('/retry')).length), 1);
+  await page.getByRole('button', {name:'Close',exact:true}).click();
   await page.evaluate(() => window.prFixture.update("merged"));
   await page.getByRole("button", { name: "Mark shipped", exact: true }).click();
   await expect(page.getByRole("dialog", { name: "Has this fix reached users?" })).toBeVisible();

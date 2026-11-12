@@ -63,31 +63,43 @@ async function groqRequest(path, { headers = {}, body, signal }) {
   }
 }
 
+function matchesSchema(value, schema) {
+  const type = value === null ? "null" : Array.isArray(value) ? "array" : typeof value;
+  if (!(Array.isArray(schema.type) ? schema.type : [schema.type]).includes(type)) return false;
+  if (schema.enum && !schema.enum.includes(value)) return false;
+  if (type === "array") return value.every(item => matchesSchema(item, schema.items));
+  if (type === "object") return (schema.required || []).every(key => Object.hasOwn(value, key))
+    && Object.entries(value).every(([key, item]) => schema.properties?.[key] ? matchesSchema(item, schema.properties[key]) : schema.additionalProperties !== false);
+  return true;
+}
 async function groqJson({ messages, maxTokens = 4096, signal, schema, onRetry, model = process.env.GROQ_MODEL || "qwen/qwen3.8-27b" }) {
-  let result;
+  if (!Number.isInteger(maxTokens) || maxTokens < 1 || maxTokens > 8192 || Buffer.byteLength(JSON.stringify(messages), "utf8") > 64000) {
+    throw Object.assign(new Error("This AI request exceeds the supported context or output budget. Narrow the request."), { status: 422 });
+  }
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      result = await groqRequest("chat/completions", {
+      const result = await groqRequest("chat/completions", {
         signal,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model,
           ...(schema ? { temperature: 0, ...(model === "qwen/qwen3.8-27b" ? { reasoning_effort: "none" } : {}) } : {}),
-          max_completion_tokens: maxTokens,
+          max_completion_tokens: Math.min(8192, maxTokens * (attempt + 1)),
           response_format: schema ? { type: "json_schema", json_schema: { name: "response", strict: true, schema } } : { type: "json_object" },
-          messages,
+          messages: attempt ? [...messages, { role: "user", content: "The previous response was incomplete or failed JSON validation. Return a concise JSON object matching the required schema exactly. Include every required field, no markdown or extra fields. Use short exact replacements for code edits." }] : messages,
         }),
       });
-      break;
+      const choice = result.choices?.[0];
+      if (choice?.finish_reason === "length") throw Object.assign(new Error("The AI response exceeded its output budget. Narrow the issue and retry."), { status: 502, code: "output_limit" });
+      let value;
+      try { value = JSON.parse(choice?.message?.content); }
+      catch { throw Object.assign(new Error("The AI response was invalid. Please try again."), { code: "json_validate_failed" }); }
+      if (schema && !matchesSchema(value, schema)) throw Object.assign(new Error("The AI response was invalid. Please try again."), { code: "json_validate_failed" });
+      return value;
     } catch (error) {
-      if (!schema || attempt || error.code !== "json_validate_failed") throw error;
-      await onRetry?.("Groq returned malformed structured output. Retrying this AI request once.");
+      if (attempt || !["json_validate_failed", "output_limit"].includes(error.code)) throw error;
+      await onRetry?.("AI output was incomplete or malformed. Retrying once with correction instructions and a larger output budget.");
     }
-  }
-  try {
-    return JSON.parse(result.choices?.[0]?.message?.content);
-  } catch {
-    throw new Error("The AI response was invalid. Please try again.");
   }
 }
 module.exports = { groqJson, groqRequest };
