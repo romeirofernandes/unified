@@ -1,3 +1,4 @@
+import SettingsLayout from "./loading/SettingsLoading";
 import PullRequestLayout from "./loading/PullRequestsLoading";
 import WorkbenchLayout from "./loading/WorkbenchLoading";
 import IntegrationLayout from "./loading/IntegrationsLoading";
@@ -15,7 +16,7 @@ const routePages = {
   workbench: ["Workbench", "Turn feedback into action. Track your project’s issues through to completion."],
   run: ["Fix pipeline", "Review the progress of this fix."],
   "pull-requests": ["Pull requests", "Turn a small feedback issue into a draft you can review."],
-  settings: ["Settings", "Manage your account and workspace preferences."],
+  settings: ["Settings", "Manage your account and make the workspace feel like yours."],
   docs: ["Documentation", "Set up the SDK"],
 };
 function ContentLayout({ variant }) {
@@ -23,6 +24,7 @@ function ContentLayout({ variant }) {
   if (variant === "integrations") return <IntegrationLayout />;
   if (variant === "workbench") return <WorkbenchLayout />;
   if (variant === "pull-requests" || variant === "run") return <PullRequestLayout detail={variant === "run"} />;
+  if (variant === "settings") return <SettingsLayout />;
   return <ProjectLayout />;
 }
 export function LoadingState({ variant = "projects" }) {
@@ -30,7 +32,7 @@ export function LoadingState({ variant = "projects" }) {
   const fullPage = variant === "route" || variant === "auth";
   const page = fullPage ? (pathname.startsWith("/project/") ? "responses" : pathname === "/dashboard" ? "projects" : pathname.split("/")[2]) : variant;
   const metadata = routePages[page];
-  if (!metadata || !["projects", "responses", "integrations", "workbench", "pull-requests", "run"].includes(page)) return <p role="status" className="text-sm text-muted-foreground">Loading page…</p>;
+  if (!metadata || !["projects", "responses", "integrations", "workbench", "pull-requests", "run", "settings"].includes(page)) return <p role="status" className="text-sm text-muted-foreground">Loading page…</p>;
   const [title, description] = metadata;
   return <Skeleton loading id={`workspace-${page}`} label={`Loading ${title}`}><div className={`min-w-0 ${fullPage ? "space-y-7" : ""}`}>
     {fullPage && <PageHeader title={title} description={description} action={page === "projects" ? <button className="h-10 rounded-md px-4">Create project</button> : undefined} />}
