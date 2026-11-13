@@ -127,6 +127,7 @@ for (const [name, url, expected] of [
     const markup = render(name, url);
     assert.ok(markup.includes(expected), `Expected ${expected} in ${name}`);
     assert.doesNotMatch(markup, /undefined responses/);
+    assert.doesNotMatch(markup, /aria-busy="true"/, "Loaded pages must not retain loading skeletons");
     if (name === "Workbench") {
       assert.equal((markup.match(/data-stage=/g) || []).length, 3);
       assert.doesNotMatch(markup, /Summary issues appear|Add issue to|<select/);
