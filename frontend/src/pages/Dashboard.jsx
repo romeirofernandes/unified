@@ -103,7 +103,7 @@ export default function Dashboard() {
         </div>
       )}
       {loading ? (
-        <LoadingState />
+        <LoadingState variant="projects" />
       ) : (
         !error &&
         (projects.length ? (
