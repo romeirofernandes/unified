@@ -63,7 +63,7 @@ function RunDetail({ runId, projectId, uid, refreshList }) {
     } catch (error) { setError(error.message); }
     finally { guard.current = false; setPending(false); }
   }
-  if (loading) return <LoadingState />;
+  if (loading) return <LoadingState variant="run" />;
   if (loadError) return <div className="space-y-3"><ErrorMessage>{loadError}</ErrorMessage><Button variant="secondary" onClick={reload}>Retry</Button></div>;
   const stages = pipelineStates(run);
   const current = stages.find(stage => stage.state === "failed") || stages.find(stage => stage.state === "active") || stages[0];
@@ -110,7 +110,7 @@ function ProjectPullRequests({ project, uid, params, setParams }) {
     } catch (error) { setSubmitError(error.message); }
     finally { guard.current = false; setPending(false); }
   }
-  if (loading) return <LoadingState />;
+  if (loading) return <LoadingState variant="pull-requests" />;
   if (error) return <div className="space-y-3"><ErrorMessage>{error}</ErrorMessage><Button variant="secondary" onClick={reload}>Retry</Button></div>;
   return <>
     <RepositoryConnection key={`${project._id}-${data.connection?.connectedAt || "new"}-${params.get("github") || ""}`} projectId={project._id} uid={uid} data={data} busy={busy} reload={reload} result={params.get("github")} />
@@ -135,5 +135,5 @@ export default function PullRequests() {
   const [params, setParams] = useSearchParams();
   const projects = data || [];
   const project = projects.find(item => item._id === params.get("project")) || projects[0];
-  return <><PageHeader title="Pull requests" description="Turn a small feedback issue into a draft you can review." action={project && <ProjectPicker projects={projects} value={project._id} triggerClassName="bg-card hover:bg-card" onChange={value => setParams({ project: value })} />} />{loading ? <LoadingState /> : error ? <div className="space-y-3"><ErrorMessage>{error}</ErrorMessage><Button onClick={reload}>Retry</Button></div> : !project ? <EmptyState title="Create a project first" description="Connect a repository once your project has feedback to work on." /> : <ProjectPullRequests key={project._id} project={project} uid={user?.uid} params={params} setParams={setParams} />}</>;
+  return <><PageHeader title="Pull requests" description="Turn a small feedback issue into a draft you can review." action={project && <ProjectPicker projects={projects} value={project._id} triggerClassName="bg-card hover:bg-card" onChange={value => setParams({ project: value })} />} />{loading ? <LoadingState variant="pull-requests" /> : error ? <div className="space-y-3"><ErrorMessage>{error}</ErrorMessage><Button onClick={reload}>Retry</Button></div> : !project ? <EmptyState title="Create a project first" description="Connect a repository once your project has feedback to work on." /> : <ProjectPullRequests key={project._id} project={project} uid={user?.uid} params={params} setParams={setParams} />}</>;
 }
