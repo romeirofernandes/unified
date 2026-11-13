@@ -32,13 +32,13 @@ createRoot(document.getElementById('root')).render(<ThemeProvider attribute="cla
 <p className="tabular-nums mt-3">Tabular numbers: 0123456789 111 888</p>
 <p lang="en" style={{hyphens:'auto',width:95}}>Internationalization representation extraordinary</p>
 {kind==='component'&&<ProjectFormPreview name="Your feedback form" fields={[{id:'name',type:'text',label:'Your name'}]} appearance={{font:'Inter'}} disabled/>}
-{glyphs&&['Geist Variable','Inter Variable','Geist Serif'].map(font=><section key={font} style={{fontFamily:font}}>{[400,500,550,600,700].map(weight=><div key={weight} style={{fontWeight:weight,fontSize:17,lineHeight:1.6}}><span>{font} {weight}: </span>{Array.from({length:352},(_,i)=>String.fromCodePoint(i+32)).join('')} ‐‑–—‘’“”…</div>)}</section>)}
+{glyphs&&['Geist Variable','Inter Variable','Geist Serif'].map(font=><section key={font} style={{fontFamily:font}}>{[400,500,550,600,700].map(weight=><div key={weight} style={{fontWeight:weight,fontSize:17,lineHeight:1.6}}><span>{font} {weight}: </span>{Array.from({length:352},(_,i)=>i+32).filter(c=>c<127||c>=160).map(c=>String.fromCodePoint(c)).join('')} ‐‑–—‘’“”…</div>)}</section>)}
 </main></BrowserRouter></FluidRoot></ThemeProvider>);`;
 const bundle = await build({stdin:{contents:source,resolveDir:root+'/frontend',loader:'jsx'},bundle:true,nodePaths:[root+'/frontend/node_modules'],write:false,jsx:'automatic',platform:'browser',format:'iife',loader:{'.css':'empty'},alias:{'@':root+'/frontend/src'},define:{'process.env.NODE_ENV':'"production"','import.meta.env':'{}'}});
 const browser = await chromium.launch({headless:true});
 const results = [];
 try {
- for (const routeName of ['/', '/docs', '/login', '/signup', '/font-check/code', '/font-check/accents', '/font-check/component', '/font-check/cjk', '/font-check/glyphs']) {
+ for (const routeName of ['/', '/docs', '/login', '/signup', '/font-check/code', '/font-check/accents', '/font-check/component', '/font-check/cjk', '/font-check/glyphs'].filter(r=>!process.argv[4]||r.includes(process.argv[4]))) {
   for (const width of [1440,390]) {
    const context = await browser.newContext({viewport:{width,height:1000},deviceScaleFactor:1,colorScheme:'light',reducedMotion:'reduce'});
    const page = await context.newPage();
@@ -73,7 +73,9 @@ try {
    await page.addStyleTag({content:'*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important}'});
    const name=(routeName==='/'?'landing':routeName.replaceAll('/','_').slice(1))+'-'+width;
    await page.screenshot({path:output+'/'+name+'.png',fullPage:true,animations:'disabled'});
-   const data=await page.evaluate(()=>({title:document.title,text:document.body.innerText,preloads:[...document.querySelectorAll('link[rel="preload"][as="font"]')].map(el=>el.getAttribute('href')),fonts:[...document.fonts].filter(f=>f.status==='loaded').map(f=>({family:f.family,weight:f.weight,range:f.unicodeRange})),sizes:[...document.querySelectorAll('h1,h2,h3,p,button')].map(e=>({text:e.textContent,width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height}))}));
+   const data=await page.evaluate(()=>({title:document.title,text:document.body.innerText,preloads:[...document.querySelectorAll('link[rel="preload"][as="font"]')].map(el=>el.getAttribute('href')),fonts:[...document.fonts].filter(f=>f.status==='loaded').map(f=>({family:f.family,weight:f.weight,range:f.unicodeRange})),glyphMetrics:[...document.querySelectorAll('main>section>div')].map(e=>{const w=document.createTreeWalker(e,NodeFilter.SHOW_TEXT);const result=[];while(w.nextNode()){const t=w.currentNode;for(let i=0;i<t.length;i++){const r=new Range();r.setStart(t,i);r.setEnd(t,i+1);const b=r.getBoundingClientRect();result.push([t.textContent.charCodeAt(i),b.x,b.y,b.width])}}return result}),sizes:[...document.querySelectorAll('h1,h2,h3,p,button')].map(e=>({text:e.textContent,width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height}))}));
+   let platformFonts=[];
+   if(routeName.endsWith('/cjk')){const client=await context.newCDPSession(page);await client.send('DOM.enable');await client.send('CSS.enable');const doc=await client.send('DOM.getDocument');const node=await client.send('DOM.querySelector',{nodeId:doc.root.nodeId,selector:'h1'});platformFonts=(await client.send('CSS.getPlatformFontsForNode',{nodeId:node.nodeId})).fonts;await client.detach();assert.ok(platformFonts.some(f=>!f.isCustomFont),'CJK uses system fonts');}
    const fonts=[];
    for(const url of [...new Set(requests)]) {
     const u=new URL(url), local=path.join(dist,decodeURIComponent(u.pathname));
@@ -82,7 +84,9 @@ try {
     else {const cache=path.join(externalDir,Buffer.from(url).toString('base64url'));bytes=Buffer.from(JSON.parse(readFileSync(cache)).body,'base64').length;}
     fonts.push({url:u.host==='font-check.test'?u.pathname:url,bytes});
    }
-   results.push({name,route:routeName,width,bytes:fonts.reduce((n,f)=>n+f.bytes,0),requests:fonts,...data});
+   assert.equal(requests.length,new Set(requests).size,'No duplicate font downloads');
+   if(preload){const extended=fonts.filter(f=>f.url.endsWith('-extended.woff2'));if(!routeName.endsWith('/accents')&&!routeName.endsWith('/glyphs'))assert.equal(extended.length,0,'Core-only page '+name);if(routeName.endsWith('/accents'))assert.ok(extended.some(f=>f.url.endsWith('geist-extended.woff2')),'Accent loads extended font');}
+   results.push({platformFonts,name,route:routeName,width,bytes:fonts.reduce((n,f)=>n+f.bytes,0),requests:fonts,...data});
    await context.close();
   }
  }
