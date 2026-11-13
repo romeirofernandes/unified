@@ -125,7 +125,7 @@ function ProjectBoard({ project, uid, renderHeader }) {
     void mutate("PUT", issue, body, issues.map(item => item._id === issue._id ? { ...item, ...body } : item));
   }
   function create(status = "todo") { setError(""); setEditing({ status }); }
-  if (loading) return <>{renderHeader()}<LoadingState /></>;
+  if (loading) return <>{renderHeader()}<LoadingState variant="workbench" /></>;
   if (loadError) return <>{renderHeader()}<div className="space-y-3"><ErrorMessage>{loadError}</ErrorMessage><Button onClick={reload}>Try again</Button></div></>;
   return <>
     {renderHeader(<Button disabled={pending} onClick={() => create()}><HugeiconsIcon icon={Add01Icon} size={16} aria-hidden="true" />New issue</Button>)}
@@ -149,7 +149,7 @@ export default function Workbench() {
     <ProjectPicker className="min-w-0 flex-1" projects={projects} value={project._id} triggerClassName="bg-card hover:bg-card" onChange={(value) => setParams({ project: value }, { replace: true })} />
     {action}
   </div>} />;
-  if (loading) return <>{renderHeader()}<LoadingState /></>;
+  if (loading) return <>{renderHeader()}<LoadingState variant="workbench" /></>;
   if (error) return <>{renderHeader()}<div className="space-y-3"><ErrorMessage>{error}</ErrorMessage><Button onClick={reload}>Try again</Button></div></>;
   if (!project) return <>{renderHeader()}<EmptyState title="Create a project first" description="Your project’s feedback issues will appear here once a summary is generated." /></>;
   return <ProjectBoard key={project._id} project={project} uid={user?.uid} renderHeader={renderHeader} />;
