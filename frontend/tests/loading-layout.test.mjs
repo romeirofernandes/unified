@@ -53,3 +53,9 @@ test("skeleton visibility has no timer", async () => {
   const source = await readFile("src/components/shared/LoadingLayouts.jsx", "utf8");
   assert.doesNotMatch(source, /setTimeout|setInterval|useEffect|useState/);
 });
+
+test("Projects actions use bounded icon boxes instead of overflowing text", () => {
+  const markup = mod.exports.render("/dashboard", "projects");
+  assert.equal((markup.match(/skullet-bar=/g) || []).length, 6);
+  assert.doesNotMatch(markup, />Edit<|>Delete</);
+});
