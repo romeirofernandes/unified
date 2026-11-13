@@ -1,19 +1,10 @@
 @import "tailwindcss";
 @source "../../shared";
-@import "@fontsource-variable/inter/opsz.css";
-@import "@fontsource-variable/geist";
+@import "./fonts.css";
 @import "tw-animate-css";
 @import "./styles/control-variants.css";
 
 @custom-variant dark (&:is(.dark *));
-
-@font-face {
-  font-family: "Geist Serif";
-  src: url("/fonts/GeistSerif-Regular.woff2") format("woff2");
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-}
 
 :root {
   --fluid-accent: #7C99D7;

@@ -1,0 +1,137 @@
+[
+  {
+    "file": "frontend/public/fonts/geist-core.woff2",
+    "bytes": 25404,
+    "sha256": "2375360d1df8230e0900bea6d4b4146b19d1de4c02f5dc0fca7fa0689c539db8",
+    "glyphs": 248,
+    "characters": 204,
+    "axes": {
+      "wght": [
+        100.0,
+        400.0,
+        900.0
+      ]
+    },
+    "features": [
+      "ccmp",
+      "kern",
+      "liga",
+      "locl",
+      "tnum"
+    ],
+    "hint_tables": [],
+    "hinted_glyphs": 0,
+    "version": "Version 1.800"
+  },
+  {
+    "file": "frontend/public/fonts/geist-extended.woff2",
+    "bytes": 11892,
+    "sha256": "a5b6096fe84f9c833c7bc01cbb4eb71ba8398f6a8692a6b90801749a1a74bebc",
+    "glyphs": 180,
+    "characters": 114,
+    "axes": {
+      "wght": [
+        100.0,
+        400.0,
+        900.0
+      ]
+    },
+    "features": [
+      "kern",
+      "locl"
+    ],
+    "hint_tables": [],
+    "hinted_glyphs": 0,
+    "version": "Version 1.800"
+  },
+  {
+    "file": "frontend/public/fonts/inter-core.woff2",
+    "bytes": 56536,
+    "sha256": "5764e7478bd779fe35e8ac319ff38b3b59a183549c113faf824e002fce272974",
+    "glyphs": 327,
+    "characters": 204,
+    "axes": {
+      "opsz": [
+        14.0,
+        14.0,
+        32.0
+      ],
+      "wght": [
+        100.0,
+        400.0,
+        900.0
+      ]
+    },
+    "features": [
+      "calt",
+      "kern",
+      "locl",
+      "tnum"
+    ],
+    "hint_tables": [],
+    "hinted_glyphs": 0,
+    "version": "Version 4.001;git-66647c0bb"
+  },
+  {
+    "file": "frontend/public/fonts/inter-extended.woff2",
+    "bytes": 23832,
+    "sha256": "3498a791810c98087b2e3c3983504f7741e3a4578237aa98e4c3c4b5b9ab7076",
+    "glyphs": 193,
+    "characters": 124,
+    "axes": {
+      "opsz": [
+        14.0,
+        14.0,
+        32.0
+      ],
+      "wght": [
+        100.0,
+        400.0,
+        900.0
+      ]
+    },
+    "features": [
+      "kern",
+      "locl"
+    ],
+    "hint_tables": [],
+    "hinted_glyphs": 0,
+    "version": "Version 4.001;git-66647c0bb"
+  },
+  {
+    "file": "frontend/public/fonts/serif-core.woff2",
+    "bytes": 21772,
+    "sha256": "e545e6fe184c42dbed404064078c89c2608610632968641f2c352a5d69d52469",
+    "glyphs": 337,
+    "characters": 303,
+    "axes": {},
+    "features": [
+      "kern",
+      "locl",
+      "tnum"
+    ],
+    "hint_tables": [
+      "fpgm",
+      "prep",
+      "cvt "
+    ],
+    "hinted_glyphs": 259,
+    "version": "Version 1.001"
+  },
+  {
+    "file": "frontend/public/fonts/serif-extended.woff2",
+    "bytes": 2612,
+    "sha256": "70dbc6c3a45f71fe79a742047d78dce11d8cf3aabe72c3dfe7e8a0b5079f5d3c",
+    "glyphs": 2,
+    "characters": 1,
+    "axes": {},
+    "features": [],
+    "hint_tables": [
+      "fpgm",
+      "prep",
+      "cvt "
+    ],
+    "hinted_glyphs": 1,
+    "version": "Version 1.001"
+  }
+]
