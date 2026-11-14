@@ -24,7 +24,7 @@ export default function Footer() {
 
   return (
     <footer className="relative isolate w-full overflow-hidden bg-[#f4f3ee] text-[#24231f] transition-colors duration-700 dark:bg-[#141413] dark:text-[#f4f3ee] motion-reduce:transition-none">
-      <div className="relative px-5 pb-10 pt-16 text-primary sm:px-8 sm:pb-12 sm:pt-20 lg:px-12">
+      <div className="relative flex min-h-[50vw] items-end px-5 pb-10 pt-16 text-primary dark:min-h-0 sm:px-8 sm:pb-12 sm:pt-20 lg:px-12">
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
           {resolvedTheme === "dark" ? <>
             <Ascii piece={footerReef} options={{ fps: 10 }} className="absolute inset-0 h-full w-full object-cover" />
