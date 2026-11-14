@@ -22,20 +22,16 @@ const rulerMarks = Array.from({ length: 17 }, (_, index) => index);
 
 export default function Footer() {
   const { resolvedTheme } = useTheme();
-  const Background = "div";
-  const reef = resolvedTheme === "dark" ? footerReef : { ...footerReef, meta: { ...footerReef.meta, ground: "#f4f3ee" } };
 
   return (
     <footer className="relative isolate w-full overflow-hidden bg-[#f4f3ee] text-[#24231f] transition-colors duration-700 dark:bg-[#141413] dark:text-[#f4f3ee] motion-reduce:transition-none">
       <HeroChecker className="h-4 w-full dark:hidden" />
-      <Background className="relative px-5 pb-10 pt-16 text-primary sm:px-8 sm:pb-12 sm:pt-20 lg:px-12">
-        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-40 dark:opacity-100" aria-hidden="true">
-          <Ascii
-            piece={reef}
-            options={{ fps: 10 }}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-[#f4f3ee]/75 dark:bg-[#141413]/70" />
+      <div className="relative px-5 pb-10 pt-16 text-primary sm:px-8 sm:pb-12 sm:pt-20 lg:px-12">
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+          {resolvedTheme === "dark" ? <>
+            <Ascii piece={footerReef} options={{ fps: 10 }} className="absolute inset-0 h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-[#141413]/70" />
+          </> : <img src="/images/footer-reef-light.png" alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover opacity-60" />}
         </div>
         <div className="relative z-10 mx-auto w-full max-w-[1200px] text-[#24231f] dark:text-[#f4f3ee]">
           <div className="grid gap-8 pb-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:gap-7 sm:pb-3">
@@ -81,7 +77,7 @@ export default function Footer() {
             <p className="m-0 text-[16px] sm:text-[18px]">crafted by <a className="inline-block font-medium text-[#24231f] underline decoration-wavy decoration-[#5575b4] dark:text-[#f4f3ee] dark:decoration-[#a8b9dd] underline-offset-[5px] transition-colors hover:text-[#405783] dark:hover:text-[#a8b9dd]" href="https://romeiro.dev">romeiro&apos;s</a> agents</p>
           </div>
         </div>
-      </Background>
+      </div>
       <HeroChecker className="h-4 w-full dark:hidden" />
     </footer>
   );
