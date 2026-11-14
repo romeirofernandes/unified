@@ -15,7 +15,7 @@ export function ErrorMessage({ children }) {
 
 export function EmptyState({ title, description, action, onAction }) {
   return (
-    <div className="rounded-xl border border-dashed border-border px-5 py-14 text-center">
+    <div className="rounded-xl border border-dashed border-border bg-card px-5 py-14 text-center">
       <h2 className={typeClass("title")}>{title}</h2>
       <p
         className={`${typeClass("body")} mx-auto mt-2 max-w-md text-muted-foreground`}

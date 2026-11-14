@@ -64,7 +64,7 @@ export default function FeedbackList({ responses, fields, issues = [] }) {
           </Select>
         </div>
       </div>
-      <div className="grid min-w-0 items-start gap-7 lg:grid-cols-[230px_minmax(0,1fr)] xl:gap-8">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] items-start gap-7 lg:grid-cols-[230px_minmax(0,1fr)] xl:gap-8">
         <aside className="responses-issue-rail min-w-0" aria-label="Filter responses by issue">
           <h2 className="mb-4 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Follow the issue</h2>
           <div className="responses-issue-options space-y-1">

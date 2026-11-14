@@ -9,7 +9,7 @@
 :root {
   --fluid-accent: #7C99D7;
   --focus-ring: var(--fluid-accent);
-  --font-geist-serif-regular: "Geist Serif";
+  --font-geist-serif-regular: "Inter Variable";
   --chart-1: #5575b4;
   --chart-2: #72866b;
   --chart-3: #aa7849;
@@ -50,14 +50,14 @@
 h1,
 h2,
 h3 {
-  font-family: var(--font-geist-serif-regular), "Times New Roman", serif;
+  font-family: "Inter Variable", sans-serif;
   font-variation-settings: normal !important;
-  font-weight: 400 !important;
+  font-weight: 500;
   font-synthesis-weight: none;
 }
 
 body {
-  font-family: "Geist Variable", "Inter Variable", sans-serif;
+  font-family: "Inter Variable", sans-serif;
   font-optical-sizing: auto;
   min-height: 100vh;
 }
@@ -68,7 +68,7 @@ button {
 
 @theme inline {
   --font-heading: var(--font-sans);
-  --font-sans: 'Geist Variable', 'Inter Variable', sans-serif;
+  --font-sans: 'Inter Variable', sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -648,4 +648,10 @@ html:not(.dark)::view-transition-new(root) {
 
 @keyframes theme-reveal-fade {
   from { opacity: 0; }
+}
+
+.font-serif { font-family: "Inter Variable", sans-serif; }
+
+@media (max-width: 767px) {
+  [data-slot="sidebar"] { display: none !important; width: 0 !important; transition: none !important; }
 }

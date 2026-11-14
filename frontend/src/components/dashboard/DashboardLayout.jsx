@@ -124,7 +124,7 @@ export default function DashboardLayout({ children }) {
       >
         Skip to content
       </a>
-      <Sidebar>
+      <Sidebar className="max-md:hidden!">
         <SidebarHeader className="px-4 py-6">
           <Brand />
         </SidebarHeader>
@@ -178,7 +178,7 @@ export default function DashboardLayout({ children }) {
             />
           )}
           <SidebarInsetTopbar className="sticky top-0 z-20 h-16 border-b border-border bg-background/95 px-5 backdrop-blur-xl sm:px-8">
-            <div className="flex w-full items-center gap-2 px-0">
+            <div className="flex min-w-0 flex-1 items-center gap-2 px-0">
               <nav aria-label="Breadcrumb" className="min-w-0">
                 <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
                   <li>

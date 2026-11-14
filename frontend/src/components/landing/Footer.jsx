@@ -1,6 +1,5 @@
 import HeroChecker from "./HeroChecker";
 import { useTheme } from "next-themes";
-import { GlyphBackground } from "@/components/animate-ui/backgrounds/glyph";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowUpRight01Icon, UnionCircleIcon } from "@hugeicons/core-free-icons";
 import { Ascii } from "ascii.rest/react";
@@ -23,19 +22,20 @@ const rulerMarks = Array.from({ length: 17 }, (_, index) => index);
 
 export default function Footer() {
   const { resolvedTheme } = useTheme();
-  const Background = resolvedTheme === "dark" ? "div" : GlyphBackground;
+  const Background = "div";
+  const reef = resolvedTheme === "dark" ? footerReef : { ...footerReef, meta: { ...footerReef.meta, ground: "#f4f3ee" } };
 
   return (
     <footer className="relative isolate w-full overflow-hidden bg-[#f4f3ee] text-[#24231f] transition-colors duration-700 dark:bg-[#141413] dark:text-[#f4f3ee] motion-reduce:transition-none">
       <HeroChecker className="h-4 w-full dark:hidden" />
       <Background className="relative px-5 pb-10 pt-16 text-primary sm:px-8 sm:pb-12 sm:pt-20 lg:px-12">
-        <div className="pointer-events-none absolute inset-0 z-0 hidden overflow-hidden dark:block" aria-hidden="true">
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-40 dark:opacity-100" aria-hidden="true">
           <Ascii
-            piece={footerReef}
+            piece={reef}
             options={{ fps: 10 }}
             className="absolute inset-0 h-full w-full object-cover"
           />
-          <div className="absolute inset-0 bg-[#f4f3ee]/60 dark:bg-[#141413]/70" />
+          <div className="absolute inset-0 bg-[#f4f3ee]/75 dark:bg-[#141413]/70" />
         </div>
         <div className="relative z-10 mx-auto w-full max-w-[1200px] text-[#24231f] dark:text-[#f4f3ee]">
           <div className="grid gap-8 pb-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:gap-7 sm:pb-3">

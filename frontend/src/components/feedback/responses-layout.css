@@ -14,3 +14,6 @@
   .responses-issue-rail>p {margin-top:8px;padding-inline:0;}
 }
 @media(max-width:639px){.responses-layout{--responses-toolbar-height:108px}.responses-toolbar{padding-block:10px;gap:8px}}
+
+.responses-issue-rail {background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.responses-issue-options>button {position:relative;font-size:14px;line-height:1.5;}

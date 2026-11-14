@@ -11,13 +11,13 @@ export default function SummaryCard({ summary, copyAction, issues = [], projectI
   return (
     <section aria-labelledby="feedback-summary-title" className="overflow-hidden rounded-md border border-border bg-card">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-5 py-4 sm:px-6">
-        <div className="space-y-1">
+        <div className="min-w-0 space-y-1">
           <div className="flex flex-wrap items-center gap-3">
             <h2 id="feedback-summary-title" className="text-base font-medium">Feedback summary</h2>
           </div>
           <p className="text-xs leading-5 text-muted-foreground">This summary updates automatically when new responses arrive.</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">{compact && summary.features.length > 0 && <Button variant="ghost" size="compact" aria-expanded={expanded} aria-controls={issuesId} onClick={() => setExpanded(!expanded)}>{expanded ? "Hide issues" : `Show ${summary.features.length} ${summary.features.length === 1 ? "issue" : "issues"}`}</Button>}{copyAction || <CopyButton value={feedbackPrompt(summary)} label="prompt" showLabel />}</div>
+        <div className="flex min-w-0 flex-wrap items-center gap-2">{compact && summary.features.length > 0 && <Button variant="ghost" size="compact" aria-expanded={expanded} aria-controls={issuesId} onClick={() => setExpanded(!expanded)}>{expanded ? "Hide issues" : `Show ${summary.features.length} ${summary.features.length === 1 ? "issue" : "issues"}`}</Button>}{copyAction || <CopyButton value={feedbackPrompt(summary)} label="prompt" showLabel />}</div>
       </div>
       <div className={`grid gap-6 p-5 sm:p-6 ${!compact || expanded ? "xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] xl:gap-10" : ""}`}>
         <div className="space-y-3">
