@@ -1,3 +1,4 @@
+const { createHash } = require("node:crypto");
 let nextKey = 0;
 
 async function groqRequest(path, { headers = {}, body, signal }) {
@@ -28,6 +29,18 @@ async function groqRequest(path, { headers = {}, body, signal }) {
       },
       body,
     });
+    if (!response.ok) {
+      const details = await response.clone().json().catch(() => null);
+      const keyFingerprint = createHash("sha256").update(keys[(start + attempt) % keys.length]).digest("hex").slice(0, 12);
+      console.warn("Groq request failed", {
+        keyFingerprint, status: response.status,
+        code: /^[a-zA-Z0-9_-]{1,80}$/.test(details?.error?.code || "") ? details.error.code : null,
+        retryAfter: response.headers.get("retry-after"),
+        remainingRequests: response.headers.get("x-ratelimit-remaining-requests"),
+        remainingTokens: response.headers.get("x-ratelimit-remaining-tokens"),
+        requestId: response.headers.get("x-request-id"),
+      });
+    }
     if (
       [401, 429, 500, 502, 503, 504].includes(response.status) &&
       attempt + 1 < keys.length
