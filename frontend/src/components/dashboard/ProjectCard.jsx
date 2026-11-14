@@ -52,7 +52,7 @@ export default function ProjectCard({ project, onEdit, onDelete, onPreview }) {
         </p>
       )}
       <div className="relative z-10 mt-auto flex items-center justify-between gap-3 pt-3">
-        <Button variant="ghost" size="compact" className="h-8 px-2 text-xs" onClick={() => onPreview(project)}>Preview</Button>
+        <Button variant="ghost" size="compact" className="h-8 border-dashed border-border px-2 text-xs" onClick={() => onPreview(project)}>Preview</Button>
         <span className="rounded-full border border-[#30456d]/40 bg-[#5575b4] px-2.5 py-1 text-xs font-medium tabular-nums text-white">
           {count} {count === 1 ? "response" : "responses"}
         </span>
