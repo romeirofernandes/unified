@@ -1,4 +1,3 @@
-import HeroChecker from "./HeroChecker";
 import { useTheme } from "next-themes";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowUpRight01Icon, UnionCircleIcon } from "@hugeicons/core-free-icons";
@@ -25,13 +24,12 @@ export default function Footer() {
 
   return (
     <footer className="relative isolate w-full overflow-hidden bg-[#f4f3ee] text-[#24231f] transition-colors duration-700 dark:bg-[#141413] dark:text-[#f4f3ee] motion-reduce:transition-none">
-      <HeroChecker className="h-4 w-full dark:hidden" />
       <div className="relative px-5 pb-10 pt-16 text-primary sm:px-8 sm:pb-12 sm:pt-20 lg:px-12">
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
           {resolvedTheme === "dark" ? <>
             <Ascii piece={footerReef} options={{ fps: 10 }} className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 bg-[#141413]/70" />
-          </> : <img src="/images/footer-reef-light.png" alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover opacity-60" />}
+          </> : <img src="/images/footer-reef-light.png" alt="" loading="lazy" className="absolute inset-0 h-full w-full object-contain object-bottom opacity-60" />}
         </div>
         <div className="relative z-10 mx-auto w-full max-w-[1200px] text-[#24231f] dark:text-[#f4f3ee]">
           <div className="grid gap-8 pb-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:gap-7 sm:pb-3">
@@ -78,7 +76,6 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      <HeroChecker className="h-4 w-full dark:hidden" />
     </footer>
   );
 }
