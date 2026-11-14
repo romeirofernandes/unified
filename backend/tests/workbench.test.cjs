@@ -123,3 +123,22 @@ test("loading unresolved feedback restores only imported cards whose last status
   assert.equal(cards[0].status, "in_progress");
   assert.equal((await (await request(`${id}/load-unresolved`, "POST", {})).json()).length, 1);
 });
+
+test("column deletion requires confirmation, respects ownership and preserves last status", async () => {
+  const project = await Project.create({ userId, name: "Columns", fields: [{ type: "text", label: "Feedback" }], workbenchIssues: [
+    { title: "First", status: "todo" }, { title: "Second", status: "todo" },
+    { title: "Working", status: "in_progress" }, { title: "Finished", status: "done" },
+  ] });
+  const path = `${project._id}/columns/todo`;
+  assert.equal((await request(path, "DELETE", {})).status, 400);
+  assert.equal((await request(`${project._id}/columns/nope`, "DELETE", { confirm: true })).status, 400);
+  assert.equal((await request(path, "DELETE", { confirm: true }, { "x-test-user": String(new mongoose.Types.ObjectId()) })).status, 404);
+  const result = await request(path, "DELETE", { confirm: true });
+  assert.equal(result.status, 200);
+  assert.deepEqual((await result.json()).map(issue => issue.title), ["Working", "Finished"]);
+  const saved = await Project.findById(project._id).select("+workbenchIssues");
+  assert.ok(saved.workbenchIssues.filter(issue => issue.status === "todo").every(issue => issue.deleted));
+  assert.equal((await request(`${project._id}/columns/done`, "DELETE", { confirm: true })).status, 200);
+  const final = await Project.findById(project._id).select("+workbenchIssues");
+  assert.equal(final.workbenchIssues.find(issue => issue.title === "Finished").status, "done");
+});

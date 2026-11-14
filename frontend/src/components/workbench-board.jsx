@@ -38,14 +38,14 @@ function DraggableCard({ issue, pending, onEdit, onDelete, onMove, canOpen, redu
     <CardView issue={issue} pending={pending} onEdit={() => { if (canOpen()) onEdit(issue); }} onDelete={() => onDelete(issue)} onMove={(status) => onMove(issue, status)} handle={{ ...attributes, ...listeners, "aria-label": `Open ${issue.title}` }} />
   </Motion.div>;
 }
-function Stage({ column, children, count }) {
+function Stage({ column, children, count, pending, onDelete }) {
   const { setNodeRef } = useDroppable({ id: column.id });
   return <section ref={setNodeRef} data-stage={column.id} aria-label={column.label} className="flex h-full min-h-0 w-[82vw] shrink-0 flex-col rounded-xl border border-border bg-card sm:w-80 lg:w-auto lg:min-w-0 lg:flex-1">
-    <header className="flex shrink-0 items-center gap-2 p-4"><span aria-hidden="true" className={`size-2 rounded-full ${column.color}`} /><h2 className="text-sm font-medium">{column.label}</h2><span className="text-xs tabular-nums text-muted-foreground">{count}</span></header>
+    <header className="flex shrink-0 items-center gap-2 p-4"><span aria-hidden="true" className={`size-2 rounded-full ${column.color}`} /><h2 className="text-sm font-medium">{column.label}</h2><span className="text-xs tabular-nums text-muted-foreground">{count}</span><Button className="ms-auto" variant="ghost" size="icon-compact" disabled={pending || !count} aria-label={`Delete all tickets in ${column.label}`} title="Delete all tickets" onClick={onDelete}><HugeiconsIcon icon={Delete01Icon} size={15} aria-hidden="true" /></Button></header>
     <Motion.div layoutScroll className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-3 pb-3">{children}</Motion.div>
   </section>;
 }
-export default function WorkbenchBoard({ issues, pending, onEdit, onDelete, onMove }) {
+export default function WorkbenchBoard({ issues, pending, onEdit, onDelete, onDeleteColumn, onMove }) {
   const [activeId, setActiveId] = useState(null);
   const [placement, setPlacement] = useState(null);
   const target = useRef(null);
@@ -86,7 +86,7 @@ export default function WorkbenchBoard({ issues, pending, onEdit, onDelete, onMo
         if (slotIndex < 0) slotIndex = cards.length;
         const nodes = cards.map(issue => <DraggableCard key={issue._id} issue={issue} pending={pending} onEdit={onEdit} onDelete={onDelete} onMove={onMove} canOpen={() => Date.now() - endedAt.current > 250} reduced={reduced} />);
         if (slot) nodes.splice(slotIndex, 0, <Motion.div key="insertion-slot" layout="position" aria-hidden="true" transition={{ layout: reduced ? { duration: 0 } : { type: "spring", duration: 0.3, bounce: 0 } }} className="rounded-lg border border-dashed border-border bg-muted"><div className="invisible"><CardView issue={active} overlay /></div></Motion.div>);
-        return <Stage key={column.id} column={column} count={all.length}>{nodes}{!nodes.length && <p className="rounded-lg border border-dashed border-border p-8 text-center text-xs text-muted-foreground">No issues yet</p>}</Stage>;
+        return <Stage key={column.id} column={column} count={all.length} pending={pending} onDelete={() => onDeleteColumn(column)}>{nodes}{!nodes.length && <p className="rounded-lg border border-dashed border-border p-8 text-center text-xs text-muted-foreground">No issues yet</p>}</Stage>;
       })}
     </div>
     {typeof document !== "undefined" && createPortal(<DragOverlay dropAnimation={null} zIndex={80} className="pointer-events-none">{active && <Motion.div initial={{ rotate: 0, boxShadow: "0 2px 4px rgb(0 0 0 / 0.04)" }} animate={{ rotate: reduced ? 0 : -4, boxShadow: "0 0 0 1px rgb(37 117 255 / 0.24), 0 0 0 4px rgb(37 117 255 / 0.16), 0 6px 16px rgb(0 0 0 / 0.12)" }} transition={{ duration: reduced ? 0 : 0.2, ease: [0.215, 0.61, 0.355, 1] }} className="rounded-lg"><CardView issue={active} overlay /></Motion.div>}</DragOverlay>, document.body)}

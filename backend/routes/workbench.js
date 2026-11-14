@@ -94,6 +94,16 @@ router.put("/:projectId/:issueId", async (req, res) => {
     res.json(visible(project));
   } catch { res.status(500).json({ message: "Couldn’t update the issue. Please try again." }); }
 });
+router.delete("/:projectId/columns/:status", async (req, res) => {
+  if (!statuses.includes(req.params.status) || req.body?.confirm !== true) return res.status(400).json({ message: "Confirm deletion for a valid column." });
+  try {
+    const project = await Project.findOneAndUpdate(owner(req), {
+      $set: { "workbenchIssues.$[issue].deleted": true },
+    }, { arrayFilters: [{ "issue.status": req.params.status, "issue.deleted": false }], new: true }).select("+workbenchIssues");
+    if (!project) return res.status(404).json({ message: "Project not found." });
+    res.json(visible(project));
+  } catch { res.status(500).json({ message: "Couldn’t delete the column’s tickets. Please try again." }); }
+});
 router.delete("/:projectId/:issueId", async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.issueId)) return res.status(400).json({ message: "Invalid issue." });
   try {

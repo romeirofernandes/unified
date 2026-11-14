@@ -95,6 +95,7 @@ function ProjectBoard({ project, uid, renderHeader }) {
   const { data, loading, error: loadError, reload, setData } = useApiResource(path, uid);
   const [editing, setEditing] = useState(null);
   const [deleting, setDeleting] = useState(null);
+  const [deletingColumn, setDeletingColumn] = useState(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [announcement, setAnnouncement] = useState("");
@@ -115,7 +116,7 @@ function ProjectBoard({ project, uid, renderHeader }) {
     if (optimistic) setData(optimistic);
     try {
       const updated = await apiRequest(`${path}${issue?._id ? `/${issue._id}` : ""}`, { uid, method, body });
-      setData(updated); setEditing(null); setDeleting(null);
+      setData(updated); setEditing(null); setDeleting(null); setDeletingColumn(null);
       setAnnouncement(method === "DELETE" ? "Issue deleted." : method === "POST" ? "Issue created." : "Issue updated.");
     } catch (error) { if (optimistic) setData(previous); setError(error.message); }
     finally { running.current = false; setPending(false); }
@@ -132,7 +133,8 @@ function ProjectBoard({ project, uid, renderHeader }) {
     <div className="flex min-h-0 flex-1 flex-col gap-5">
     <p role="status" className="sr-only">{announcement}</p>
     {!editing && !deleting && <ErrorMessage>{error}</ErrorMessage>}
-    <WorkbenchBoard issues={issues} pending={pending} onEdit={(issue) => { setError(""); setEditing(issue); }} onDelete={(issue) => { setError(""); setDeleting(issue); }} onMove={move} />
+    <WorkbenchBoard issues={issues} pending={pending} onEdit={(issue) => { setError(""); setEditing(issue); }} onDelete={(issue) => { setError(""); setDeleting(issue); }} onDeleteColumn={(column) => { setError(""); setDeletingColumn(column); }} onMove={move} />
+    <ConfirmDialog open={!!deletingColumn} onClose={() => setDeletingColumn(null)} title={`Delete all tickets in ${deletingColumn?.label || "this column"}?`} description="All tickets currently in this column will be removed. Feedback issues are only resolved when their last status is Done." confirmLabel="Delete tickets" pending={pending} error={error} onConfirm={() => mutate("DELETE", { _id: `columns/${deletingColumn.id}` }, { confirm: true })} />
     {editing && <IssueEditor issue={editing} projectId={project._id} uid={uid} pending={pending} error={error} onClose={() => setEditing(null)} onSave={(body) => mutate(editing._id ? "PUT" : "POST", editing, body)} />}
     <ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)} title="Delete issue?" description="This issue will be removed from your board. Use Load unresolved to restore it if its last status was not Done." pending={pending} error={error} onConfirm={() => mutate("DELETE", deleting)} />
     </div>
