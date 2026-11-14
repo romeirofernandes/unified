@@ -4,7 +4,7 @@ import { pageMetadata, siteUrl } from '../src/lib/seo.js';
 
 test('pages use the requested title and public canonicals are normalized', () => {
   for (const path of ['/', '/docs', '/login', '/dashboard']) {
-    assert.equal(pageMetadata(path).title, '(unified)');
+    assert.equal(pageMetadata(path).title, 'unified');
   }
   assert.equal(pageMetadata('/docs/').url, `${siteUrl}/docs`);
   assert.match(pageMetadata('/docs').robots, /^index,/);

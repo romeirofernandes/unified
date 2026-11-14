@@ -37,7 +37,7 @@ for (const path of ['/', '/docs', '/login', '/signup']) {
   await writeFile(`${directory}/index.html`, html);
 }
 await writeFile('dist/docs.md', documentationMarkdown);
-await writeFile('dist/llms.txt', `# (unified)
+await writeFile('dist/llms.txt', `# unified
 
 > A feedback platform for React apps: collect responses, summarize requests, organize workbench issues, attempt focused fixes through draft GitHub PRs, and notify reporters after shipping.
 
