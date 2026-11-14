@@ -24,12 +24,12 @@ export default function Footer() {
 
   return (
     <footer className="relative isolate w-full overflow-hidden bg-[#f4f3ee] text-[#24231f] transition-colors duration-700 dark:bg-[#141413] dark:text-[#f4f3ee] motion-reduce:transition-none">
-      <div className="relative flex min-h-[50vw] items-end px-5 pb-10 pt-16 text-primary dark:min-h-0 sm:px-8 sm:pb-12 sm:pt-20 lg:px-12">
+      <div className="relative flex min-h-[50vw] items-start px-5 pb-10 pt-16 text-primary dark:min-h-0 sm:px-8 sm:pb-12 sm:pt-20 lg:px-12">
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
           {resolvedTheme === "dark" ? <>
             <Ascii piece={footerReef} options={{ fps: 10 }} className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 bg-[#141413]/70" />
-          </> : <img src="/images/footer-reef-light.png" alt="" loading="lazy" className="absolute bottom-0 left-0 h-auto w-full opacity-60" />}
+          </> : <img src="/images/footer-reef-light.png" alt="" loading="lazy" className="absolute top-0 left-0 h-auto w-full opacity-60" />}
         </div>
         <div className="relative z-10 mx-auto w-full max-w-[1200px] text-[#24231f] dark:text-[#f4f3ee]">
           <div className="grid gap-8 pb-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:gap-7 sm:pb-3">
