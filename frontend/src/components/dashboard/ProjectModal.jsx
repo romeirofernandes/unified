@@ -129,7 +129,7 @@ export default function ProjectModal({
     >
       <DialogContent
         ref={modalRef}
-        className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-md border border-border bg-background p-0 text-foreground sm:max-w-[1060px]"
+        className="flex h-[min(900px,calc(100dvh-2rem))] max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-md border border-border bg-background p-0 text-foreground sm:max-w-[1060px]"
         size="xl"
         showCloseButton={!pending}
       >

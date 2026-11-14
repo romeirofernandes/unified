@@ -14,7 +14,12 @@ export default function AppearanceSettings() {
   return (
     <div className="flex flex-1 flex-col gap-8">
     <fieldset className="flex min-w-0 flex-1 flex-col gap-3">
-      <legend className="mb-3 text-sm font-medium">Workspace theme</legend>
+      <legend className="mb-3 text-sm font-medium">
+        <span className="inline-flex flex-wrap items-center gap-2">
+          Workspace theme
+          <kbd title="Toggle light and dark theme when not typing" className="rounded border border-border bg-background px-1.5 py-0.5 font-mono text-xs text-muted-foreground">D</kbd>
+        </span>
+      </legend>
       <div className="grid flex-1 gap-3 sm:grid-cols-3">
         {options.map(({ value, label }) => (
           <label key={value} className="group relative flex min-w-0 cursor-pointer">
@@ -26,7 +31,7 @@ export default function AppearanceSettings() {
               checked={theme === value}
               onChange={() => setTheme(value)}
             />
-            <span className="flex w-full flex-col overflow-hidden rounded-lg border border-border p-2 transition-colors peer-checked:border-fluid-accent peer-checked:ring-1 peer-checked:ring-fluid-accent peer-focus-visible:ring-2 peer-focus-visible:ring-ring">
+            <span className="flex w-full flex-col overflow-hidden rounded-lg border border-border p-2 transition-colors hover:border-fluid-accent hover:ring-1 hover:ring-fluid-accent peer-checked:border-fluid-accent peer-checked:ring-1 peer-checked:ring-fluid-accent peer-focus-visible:ring-2 peer-focus-visible:ring-ring">
               <span
                 aria-hidden="true"
                 className={`flex min-h-20 flex-1 overflow-hidden rounded border border-black/10 ${value === "light" ? "bg-[#f4f3ee]" : value === "dark" ? "bg-[#141414]" : "bg-linear-to-r from-[#f4f3ee] from-50% to-[#141414] to-50%"}`}
@@ -52,16 +57,15 @@ export default function AppearanceSettings() {
           </label>
         ))}
       </div>
-      <p className="text-xs leading-5 text-muted-foreground">
-        System follows your device’s appearance. Press{" "}
-        <kbd className="rounded border border-border bg-background px-1.5 py-0.5 font-mono">
-          D
-        </kbd>{" "}
-        to switch between light and dark when you’re not typing.
-      </p>
+
     </fieldset>
-    <fieldset className="flex min-w-0 flex-1 flex-col gap-3" aria-describedby="workspace-background-help">
-      <legend className="mb-3 text-sm font-medium">Workspace background</legend>
+    <fieldset className="flex min-w-0 flex-1 flex-col gap-3">
+      <legend className="mb-3 text-sm font-medium">
+        <span className="inline-flex flex-wrap items-center gap-2">
+          Workspace background
+          <kbd title="Cycle backgrounds when not typing" className="rounded border border-border bg-background px-1.5 py-0.5 font-mono text-xs text-muted-foreground">B</kbd>
+        </span>
+      </legend>
       <div className="grid flex-1 gap-3 sm:grid-cols-3">
         {backgroundOptions.map(({ value, label, description }) => (
           <label key={value} className="relative flex min-w-0 cursor-pointer">
@@ -73,7 +77,7 @@ export default function AppearanceSettings() {
               checked={background === value}
               onChange={() => setBackground(value)}
             />
-            <span className="flex w-full flex-col rounded-lg border border-border p-2 transition-colors peer-checked:border-fluid-accent peer-checked:ring-1 peer-checked:ring-fluid-accent peer-focus-visible:ring-2 peer-focus-visible:ring-ring">
+            <span className="flex w-full flex-col rounded-lg border border-border p-2 transition-colors hover:border-fluid-accent hover:ring-1 hover:ring-fluid-accent peer-checked:border-fluid-accent peer-checked:ring-1 peer-checked:ring-fluid-accent peer-focus-visible:ring-2 peer-focus-visible:ring-ring">
               <span aria-hidden="true" className="relative flex min-h-24 flex-1 items-center justify-center overflow-hidden rounded border border-border bg-background">
                 {value === "cursor" && (
                   <span className="flex -rotate-12 items-center gap-1 text-fluid-accent">
@@ -97,9 +101,7 @@ export default function AppearanceSettings() {
           </label>
         ))}
       </div>
-      <p id="workspace-background-help" className="text-xs leading-5 text-muted-foreground">
-        Applies immediately and saves on this device. Background animation follows your reduced-motion preference.
-      </p>
+
     </fieldset>
     </div>
   );

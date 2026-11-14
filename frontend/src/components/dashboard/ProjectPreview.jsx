@@ -116,7 +116,7 @@ export function ProjectPreviewContent({ project, onEdit, isOpen = true }) {
 
 export default function ProjectPreview({ isOpen, onClose, project }) {
   return <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-    <DialogContent className="flex h-[min(760px,calc(100dvh-2rem))] max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-md border border-border bg-background p-0 text-foreground sm:max-w-[1060px]" size="xl">
+    <DialogContent className="flex h-[min(900px,calc(100dvh-2rem))] max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-md border border-border bg-background p-0 text-foreground sm:max-w-[1060px]" size="xl">
       <ProjectPreviewContent project={project} isOpen={isOpen} />
     </DialogContent>
   </Dialog>;

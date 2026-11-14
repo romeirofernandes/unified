@@ -1,10 +1,11 @@
+import { cycleWorkspaceBackground } from "@/lib/workspace-background";
 import { changeTheme } from "@/lib/theme-transition";
 import { useEffect, type ReactNode } from "react";
 import { ThemeProvider, useTheme } from "next-themes";
 import { FluidRoot } from "@/components/fluid-root";
 import { AuthProvider } from "@/context/AuthContext";
 
-function ThemeShortcut() {
+function AppearanceShortcut() {
   const { resolvedTheme, setTheme } = useTheme();
 
   useEffect(() => {
@@ -16,7 +17,9 @@ function ThemeShortcut() {
           ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
 
       if (
-        event.key.toLowerCase() !== "d" ||
+        !["d", "b"].includes(event.key.toLowerCase()) ||
+        event.defaultPrevented ||
+        event.isComposing ||
         event.repeat ||
         event.altKey ||
         event.ctrlKey ||
@@ -28,7 +31,11 @@ function ThemeShortcut() {
       }
 
       event.preventDefault();
-      changeTheme(setTheme, resolvedTheme === "dark" ? "light" : "dark");
+      if (event.key.toLowerCase() === "b") {
+        cycleWorkspaceBackground();
+      } else {
+        changeTheme(setTheme, resolvedTheme === "dark" ? "light" : "dark");
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown);
@@ -42,7 +49,7 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <FluidRoot>
-        <ThemeShortcut />
+        <AppearanceShortcut />
         <AuthProvider>{children}</AuthProvider>
       </FluidRoot>
     </ThemeProvider>

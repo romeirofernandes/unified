@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  cycleWorkspaceBackground,
   getWorkspaceBackground,
   setWorkspaceBackground,
   subscribeWorkspaceBackground,
@@ -44,6 +45,26 @@ test("background selection persists, rejects invalid values, and synchronizes su
     unsubscribe();
     setWorkspaceBackground("cursor");
     assert.equal(updates, 6);
+  } finally {
+    delete globalThis.window;
+  }
+});
+
+test("cycling backgrounds follows the option order, wraps, and persists", () => {
+  const storage = new Map();
+  globalThis.window = Object.assign(new EventTarget(), {
+    localStorage: {
+      getItem: (key) => storage.get(key) ?? null,
+      setItem: (key, value) => storage.set(key, value),
+    },
+  });
+  try {
+    setWorkspaceBackground("cursor");
+    for (const expected of ["glyph", "plain", "cursor", "glyph"]) {
+      cycleWorkspaceBackground();
+      assert.equal(getWorkspaceBackground(), expected);
+      assert.equal(storage.get("unified:workspace-background"), expected);
+    }
   } finally {
     delete globalThis.window;
   }

@@ -33,6 +33,13 @@ export function setWorkspaceBackground(value) {
   window.dispatchEvent(new Event(changeEvent));
 }
 
+export function cycleWorkspaceBackground() {
+  const index = backgroundOptions.findIndex(
+    (option) => option.value === getWorkspaceBackground(),
+  );
+  setWorkspaceBackground(backgroundOptions[(index + 1) % backgroundOptions.length].value);
+}
+
 export function subscribeWorkspaceBackground(listener) {
   const onStorage = (event) => {
     if (event.key === storageKey || event.key === null) {
