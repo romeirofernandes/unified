@@ -1,192 +1,157 @@
-# Unified SDK
+# (unified)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/Node.js-18.x-green.svg)](https://nodejs.org/)
-[![React](https://img.shields.io/badge/React-18.x-blue.svg)](https://reactjs.org/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-6.x-green.svg)](https://mongodb.com/)
-[![Express.js](https://img.shields.io/badge/Express.js-4.x-lightgrey.svg)](https://expressjs.com/)
-[![Firebase](https://img.shields.io/badge/Firebase-9.x-orange.svg)](https://firebase.google.com/)
+customer feedback, from the first response to the fix you ship.
 
-A complete feedback management system for React applications. Collect user feedback with a single component and powerful dashboard.
+(unified) gives you a React feedback widget and a workspace to read responses, find common requests, turn them into issues, and attempt small fixes through draft GitHub PRs. you can use your own form too - the SDK is optional.
 
----
+## what you can do
 
-## What is Unified?
+- build project forms by hand or generate questions from text and voice
+- style the widget with saved themes, colors, launcher options, and light or dark mode
+- collect responses with the React SDK or a server-side custom form integration
+- review AI summaries and organize related feedback in the workbench
+- receive hourly or daily digests through Slack and email
+- connect a GitHub repository, assess a focused issue, and review a generated draft PR
+- notify opted-in reporters after you explicitly mark the work shipped
 
-Unified is a full-stack feedback collection platform that combines:
+PR generation has limits. it targets small React UI and documentation changes, observes repository checks, and still needs human review. it does not run customer code on the API server or merge PRs for you.
 
-- **React SDK** for seamless frontend integration
-- **Express.js backend** with MongoDB for data management
-- **Admin dashboard** with AI-powered analytics
-- **Firebase authentication** for secure user management
+## add it to your app
 
----
+create a project in the [workspace](https://unified-chi.vercel.app/dashboard), configure its questions and appearance, then copy the project ID from Preview.
 
-## Project Structure
+from your Vite or Next.js app:
 
+```sh
+npx unified-sdk@2.3.0 init --project YOUR_PROJECT_ID --api-url https://YOUR_BACKEND_HOST
 ```
 
-unified/
-├── frontend/       # React dashboard app
-├── backend/        # Express.js API server
-└── unified-sdk/    # NPM package for integration
-    
-````
+add `--dry-run` to inspect the changes first. setup installs the SDK, imports its stylesheet, and mounts the widget. it supports Node.js 20.19+ and React 18 or 19.
 
----
+or install it yourself:
 
-## Features
-
-- **One-line Integration**: Add feedback forms to any React app
-- **Custom Forms**: Text, email, multiple choice, slider, textarea fields
-- **Real-time Dashboard**: Monitor feedback with AI summaries
-- **Theme Support**: Light/dark modes
-- **Mobile Responsive**: Works on all devices
-- **Firebase Auth**: Secure user management
-
----
-
-## Installation
-
-```bash
+```sh
 npm install unified-sdk
-````
+```
 
-### Example Usage
-
-```javascript
+```jsx
 import { UnifiedFeedback } from "unified-sdk";
+import "unified-sdk/dist/unified-sdk.css";
 
-function App() {
+export default function App() {
   return (
-    <div>
-      <h1>My Application</h1>
-      <UnifiedFeedback
-        projectId="your-project-id"
-        theme="light"
-      />
-    </div>
+    <UnifiedFeedback
+      projectId="YOUR_PROJECT_ID"
+      apiUrl="https://YOUR_BACKEND_HOST"
+      theme="auto"
+    />
   );
 }
 ```
 
----
+for Next.js, put the widget in a client component. import the stylesheet once.
 
-## Environment Variables
+| prop | values | default |
+| --- | --- | --- |
+| `projectId` | public project ID from Preview | required |
+| `apiUrl` | backend origin | `http://localhost:8000` |
+| `theme` | `auto`, `project`, `light`, `dark` | `auto` |
+| `triggerStyle` | `pill`, `rounded`, `icon`, `text`, `tab` | saved project setting |
+| `position` | `bottom-left`, `bottom-right` | saved project setting |
 
-### Frontend (.env)
+`auto` follows the host app and system theme. `project` uses the saved project mode. explicit launcher and position props override project settings. dragging the launcher onto its delete target hides it across refreshes, clearing site storage restores it.
 
+## bring your own form
+
+create matching questions, then open **Preview → Custom form** to generate a submission key and copy the question IDs. send requests from your server:
+
+```js
+const response = await fetch(`${process.env.UNIFIED_API_URL}/api/submissions/${process.env.UNIFIED_PROJECT_ID}`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${process.env.UNIFIED_SUBMISSION_KEY}`,
+  },
+  body: JSON.stringify({ formAnswers: { QUESTION_ID: "your answer" } }),
+});
+if (!response.ok) throw new Error("could not send feedback");
 ```
-VITE_FIREBASE_API_KEY=your-api-key
-VITE_FIREBASE_AUTH_DOMAIN=your-auth-domain
+
+map answers to question IDs, not labels. submission keys stay on your server and grant write-only access to one project's responses. the public project ID is safe to embed in the widget, owner credentials are not.
+
+## run the repository
+
+this is three npm packages, with shared form code outside them:
+
+```text
+frontend/       React 19 dashboard, public site, documentation and SEO output
+backend/        Express 5 API, MongoDB models, integrations and background workers
+unified-sdk/    React widget, types, stylesheet, setup CLI and consumer checks
+shared/         form fields, themes, fonts, controls and launcher configuration
+docs/           feedback and draft PR workflow notes
+```
+
+use Node.js 20.19+ and a MongoDB replica set, including MongoDB Atlas. feedback deletion and workflow locks use transactions.
+
+```sh
+git clone https://github.com/romeirofernandes/unified.git
+cd unified
+npm run install:all
+cp backend/.env.example backend/.env
+```
+
+set these in `backend/.env` alongside the optional integration settings from the example:
+
+```dotenv
+PORT=8000
+MONGO_URI=mongodb://localhost:27017/unified?replicaSet=rs0
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_API_KEY=your-firebase-web-api-key
+FRONTEND_URL=http://localhost:5173
+```
+
+create `frontend/.env` using your Firebase web app configuration:
+
+```dotenv
+VITE_BACKEND_URL=http://localhost:8000
+VITE_FIREBASE_API_KEY=your-firebase-web-api-key
+VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your-project-id
-VITE_FIREBASE_STORAGE_BUCKET=your-bucket.appspot.com
+VITE_FIREBASE_STORAGE_BUCKET=your-storage-bucket
 VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
 VITE_FIREBASE_APP_ID=your-app-id
 VITE_FIREBASE_MEASUREMENT_ID=your-measurement-id
-VITE_BACKEND_URL=http://localhost:8000
-VITE_GEMINI_API_KEY=your-key-here
 ```
 
-### Backend (.env)
+configure Firebase authentication for your app and its allowed domains. keep Groq keys, email credentials, GitHub credentials, Slack secrets, payment secrets, and the integration encryption key in the backend environment. nothing prefixed `VITE_` is secret.
 
+run these in separate terminals:
+
+```sh
+npm run dev:backend
+npm run dev:frontend
 ```
-PORT=8000
-MONGODB_URI=mongodb://localhost:27017/unified
-```
 
----
+the defaults are API port 8000 and Vite port 5173. configure `GROQ_API_KEYS` for AI features. optional Slack, email, GitHub and payment features need their own credentials, the full app isn't a zero-configuration local demo.
 
-## Dashboard Setup
+## checks
 
-1. Visit [unified-chi.vercel.app/dashboard](https://unified-chi.vercel.app/dashboard)
-2. Sign in with Google
-3. Create a new project
-4. Configure form fields and theme
-5. Copy your project ID
-
----
-
-## API Props
-
-| Prop          | Type              | Required | Default | Description               |
-| ------------- | ----------------- | -------- | ------- | ------------------------- |
-| `projectId`   | string            | Yes      | -       | Project ID from dashboard |
-| `apiUrl` | string | No | `http://localhost:8000` | Your deployed Unified API origin |
-| `theme`       | "light" \| "dark" | No       | "light" | Visual theme              |
-
----
-
-## Supported Field Types
-
-* **Text**: Single-line input with validation
-* **Email**: Email validation with RFC compliance
-* **Multiple Choice**: Single selection questions
-* **Slider**: Numeric range selector
-* **Textarea**: Multi-line text input
-
----
-
-## Development Setup
-
-```bash
-# Clone repository
-git clone https://github.com/romeirofernandes/unified.git
-cd unified
-
-# Install dependencies
-npm install
-
-# Setup environment files
-cp frontend/.env.example frontend/.env
-cp backend/.env.example backend/.env
-
-# Run development servers
-npm run dev:frontend  # Port 5173
-npm run dev:backend   # Port 8000
-
-# Build SDK
-cd unified-sdk
-npm install
+```sh
+npm test
+npm run lint
 npm run build
-npm publish
+npm run test:consumer
 ```
 
----
+`build` produces the dashboard and SDK. the frontend build also generates `/docs.md`, `/llms.txt`, static page metadata, robots.txt and the sitemap from source documentation.
 
-## API Endpoints
+## read more
 
-* `POST /api/projects` — Create project
-* `GET  /api/projects/:id` — Get project config
-* `POST /api/feedback` — Submit feedback
-* `GET  /api/feedback/:id` — Get project feedback
+- [documentation](https://unified-chi.vercel.app/docs) and [machine-readable guide](https://unified-chi.vercel.app/llms.txt)
+- [SDK setup and behavior](unified-sdk/README.md)
+- [widget prop types](unified-sdk/types/index.d.ts)
+- [integration configuration](backend/INTEGRATIONS.md)
+- [feedback workflow](docs/feedback-workflow-checkpoints.md)
+- [draft PR setup, scope and recovery](docs/pull-request-workflow.md)
 
----
-
-## Tech Stack
-
-* **Frontend**: React, Vite, Tailwind CSS, Framer Motion
-* **Backend**: Express.js, MongoDB, Firebase Admin
-* **Deployment**: Vercel (frontend), Railway (backend)
-
----
-
-## Browser Support
-
-* Chrome 88+
-* Firefox 85+
-* Safari 14+
-* Edge 88+
-
----
-
-## Support
-
-* **Issues**: [GitHub Issues](https://github.com/romeirofernandes/unified/issues)
-* **Documentation**: [unified-chi.vercel.app/docs](https://unified-chi.vercel.app/docs)
-
----
-
-## License
-
-MIT License - see [LICENSE](LICENSE) file for details.
+if something breaks, [open an issue](https://github.com/romeirofernandes/unified/issues) with the SDK version and what you expected to happen.

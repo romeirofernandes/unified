@@ -2,8 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { pageMetadata, siteUrl } from '../src/lib/seo.js';
 
-test('public pages have distinct metadata and normalized canonicals', () => {
-  assert.notEqual(pageMetadata('/').title, pageMetadata('/docs').title);
+test('pages use the requested title and public canonicals are normalized', () => {
+  for (const path of ['/', '/docs', '/login', '/dashboard']) {
+    assert.equal(pageMetadata(path).title, '(unified)');
+  }
   assert.equal(pageMetadata('/docs/').url, `${siteUrl}/docs`);
   assert.match(pageMetadata('/docs').robots, /^index,/);
 });

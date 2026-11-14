@@ -4,3 +4,4 @@ backend/.data/
 node_modules/
 .env
 *.private-key.pem
+.agents/

@@ -4,7 +4,7 @@ export function pageMetadata(pathname) {
   const docs = path === "/docs";
   const publicPage = path === "/" || docs;
   return {
-    title: docs ? "React feedback SDK documentation | Unified" : publicPage ? "Unified | Customer feedback for React apps" : "Workspace | Unified",
+    title: "(unified)",
     description: docs ? "Set up the Unified React feedback SDK, configure your widget, connect custom forms, and send feedback digests to Slack or email." : "Collect customer feedback inside your React app, find common requests with AI summaries, and turn feedback into work with Unified.",
     url: siteUrl + (publicPage ? path === "/" ? "/" : path : "/"),
     robots: publicPage ? "index, follow, max-image-preview:large" : "noindex, follow",
