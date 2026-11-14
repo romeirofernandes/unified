@@ -106,3 +106,20 @@ test("evidence retains original responses, deduplicates users, and enforces isol
   await request(`${project._id}/${issue._id}`, "DELETE");
   assert.equal((await request(path)).status, 404);
 });
+
+test("loading unresolved feedback restores only imported cards whose last status is not done", async () => {
+  const project = await Project.create({ userId, name: "Restore", fields: [{ type: "text", label: "Feedback" }], workbenchIssues: [
+    { title: "Open", sourceKey: "open", status: "in_progress", deleted: true },
+    { title: "Resolved", sourceKey: "resolved", status: "done", deleted: true },
+    { title: "Manual", status: "todo", deleted: true },
+  ] });
+  const id = String(project._id);
+  const stranger = { "x-test-user": String(new mongoose.Types.ObjectId()) };
+  assert.equal((await request(`${id}/load-unresolved`, "POST", {}, stranger)).status, 404);
+  const res = await request(`${id}/load-unresolved`, "POST", {});
+  assert.equal(res.status, 200);
+  const cards = await res.json();
+  assert.deepEqual(cards.map(card => card.title), ["Open"]);
+  assert.equal(cards[0].status, "in_progress");
+  assert.equal((await (await request(`${id}/load-unresolved`, "POST", {})).json()).length, 1);
+});
