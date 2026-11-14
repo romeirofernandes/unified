@@ -1,4 +1,5 @@
 import "./responses-layout.css";
+import { SharedLayoutBg } from "@/components/ui/shared-layout-bg";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/motion/select";
 import { useMemo, useState } from "react";
 import { EmptyState } from "@/components/shared/PageState";
@@ -67,16 +68,14 @@ export default function FeedbackList({ responses, fields, issues = [] }) {
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] items-start gap-7 lg:grid-cols-[230px_minmax(0,1fr)] xl:gap-8">
         <aside className="responses-issue-rail min-w-0" aria-label="Filter responses by issue">
           <h2 className="mb-4 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Follow the issue</h2>
-          <div className="responses-issue-options space-y-1">
-            <button type="button" aria-pressed={selected === "all"} onClick={() => setSelectedIssue("all")} className={`flex w-full items-center justify-between gap-3 rounded-md px-3 py-3 text-left text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring ${selected === "all" ? "bg-muted font-medium" : "hover:bg-muted/50"}`}>All responses <span className="text-[11px] tabular-nums text-muted-foreground">{responses.length}</span></button>
-            {issueOptions.map(issue => <button type="button" key={issue._id} aria-pressed={selected === String(issue._id)} onClick={() => setSelectedIssue(String(issue._id))} className={`flex w-full items-start gap-3 rounded-md px-3 py-3 text-left text-xs leading-5 outline-none focus-visible:ring-2 focus-visible:ring-ring ${selected === String(issue._id) ? "bg-muted" : "hover:bg-muted/50"}`}>
-              <span aria-hidden="true" className="mt-1.5 size-1.5 shrink-0 rounded-full" style={{ background: issueColor(issue._id), opacity: issue.status === "done" ? 0.5 : 1 }} />
+          <SharedLayoutBg inset={0} pillClassName="rounded-md bg-muted" className="responses-issue-options gap-1">
+            {issueOptions.map(issue => <button type="button" key={issue._id} aria-pressed={selected === String(issue._id)} onClick={() => setSelectedIssue(selected === String(issue._id) ? "all" : String(issue._id))} className={`w-full rounded-md px-3 py-3 text-left text-xs leading-5 outline-none focus-visible:ring-2 focus-visible:ring-ring ${selected === String(issue._id) ? "bg-muted" : ""}`}>
+              <span className="flex items-start gap-3"><span aria-hidden="true" className="mt-1.5 size-1.5 shrink-0 rounded-full" style={{ background: issueColor(issue._id), opacity: issue.status === "done" ? 0.5 : 1 }} />
               <span className={`min-w-0 flex-1 break-words ${issue.status === "done" ? "text-muted-foreground line-through" : ""}`}>{issue.title}</span>
               <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">{issue.count}</span>
-              {issue.status === "done" && <span className="sr-only">Completed</span>}
+              {issue.status === "done" && <span className="sr-only">Completed</span>}</span>
             </button>)}
-          </div>
-          <p className="mt-5 px-3 text-xs leading-6 text-muted-foreground">{issueOptions.length ? "One response can support more than one issue." : "Issue filters appear after feedback has been analysed."}</p>
+          </SharedLayoutBg>
         </aside>
         <div className="min-w-0 space-y-4">
           {visible.map(response => <EvidenceResponse key={response.feedback._id} response={response} />)}

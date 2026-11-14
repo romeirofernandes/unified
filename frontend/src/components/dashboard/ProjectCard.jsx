@@ -14,7 +14,7 @@ export default function ProjectCard({ project, onEdit, onDelete, onPreview }) {
   const count = project.feedbackCount ?? 0;
   return (
     <Card
-      className={`${raisedCardSurface} relative flex h-full min-h-36 min-w-0 flex-col p-4 transition-colors hover:border-fluid-accent/50 focus-within:ring-2 focus-within:ring-ring`}
+      className={`${raisedCardSurface} relative flex h-full min-h-36 min-w-0 flex-col p-4 transition-colors hover:border-fluid-accent/50`}
     >
       <div className="absolute end-3 top-3 z-10 flex gap-2">
         <Button
@@ -41,7 +41,7 @@ export default function ProjectCard({ project, onEdit, onDelete, onPreview }) {
           to={`/project/${project._id}/feedbacks`}
           onMouseEnter={prepare}
           onFocus={prepare}
-          className="break-words outline-none after:absolute after:inset-0 after:rounded-md"
+          className="break-words outline-none focus-visible:underline after:absolute after:inset-0 after:rounded-md"
         >
           {project.name}
         </Link>
@@ -52,7 +52,7 @@ export default function ProjectCard({ project, onEdit, onDelete, onPreview }) {
         </p>
       )}
       <div className="relative z-10 mt-auto flex items-center justify-between gap-3 pt-3">
-        <Button variant="secondary" size="compact" onClick={() => onPreview(project)}>Preview & setup</Button>
+        <Button variant="ghost" size="compact" className="h-8 px-2 text-xs" onClick={() => onPreview(project)}>Preview</Button>
         <span className="rounded-full border border-[#30456d]/40 bg-[#5575b4] px-2.5 py-1 text-xs font-medium tabular-nums text-white">
           {count} {count === 1 ? "response" : "responses"}
         </span>

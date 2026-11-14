@@ -7,7 +7,7 @@
   .responses-issue-rail>h2,.responses-issue-rail>p {flex-shrink:0;}
 }
 @media(max-width:1023px){
-  .responses-issue-options {display:flex;gap:8px;overflow-x:auto;padding:3px 2px 8px;scrollbar-width:thin;}
+  .responses-issue-options {display:flex;flex-direction:row;gap:8px;overflow-x:auto;padding:3px 2px 8px;scrollbar-width:thin;}
   .responses-issue-options>button {width:auto;flex:0 0 auto;max-width:260px;border:1px solid var(--border);}
   .responses-issue-options>button+button {margin-top:0;}
   .responses-issue-rail>h2 {margin-bottom:10px;}
