@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import WorkspaceLayout from "./components/dashboard/WorkspaceLayout";
 import RouteLoading from "./components/shared/RouteLoading";
+import PageMetadata from "./components/shared/PageMetadata";
 import Landing from "./pages/Landing";
 
 
@@ -19,6 +20,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 export default function App() {
   return (
     <BrowserRouter>
+      <PageMetadata />
       <Suspense fallback={<RouteLoading />}>
         <Routes>
           <Route path="/" element={<Landing />} />

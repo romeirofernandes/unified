@@ -7,91 +7,9 @@ import { BounceSidebar } from "@/components/motion/bounce-sidebar";
 import { Link } from "react-router-dom";
 import CodeBlock from "@/components/shared/CodeBlock";
 import { Button } from "@/components/ui/button";
-import { integrationCode, setupCommand, sdkVersion } from "@/lib/integration-code";
-
-const customFormCode = `const response = await fetch("YOUR_BACKEND_URL/api/submissions/YOUR_PROJECT_ID", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: "Bearer YOUR_SUBMISSION_KEY",
-  },
-  body: JSON.stringify({
-    formAnswers: {
-      "QUESTION_ID": "Your answer",
-    },
-  }),
-});
-if (!response.ok) throw new Error("Could not send feedback");`;
-
-const steps = [
-  {
-    id: "create-project",
-    title: "Create a project",
-    description:
-      "Open your workspace and create a project for the app you want to hear from.",
-    items: [
-      "Add a project name and description.",
-      "Add questions by hand, or describe them with voice or text. Email is included by default.",
-      "Choose a theme preset, its default mode, and any custom colors.",
-    ],
-    action: true,
-  },
-  {
-    id: "install",
-    title: "Set up the SDK",
-    description: `Run this in your Vite or Next.js app. The CLI checks your React entry, installs SDK ${sdkVersion}, adds its stylesheet, and mounts the widget. Add --dry-run to inspect the changes first.`,
-    label: "Terminal",
-  },
-  {
-    id: "integrate",
-    title: "Or set it up manually",
-    description:
-      "If you used the CLI, skip this step. Otherwise, install the SDK with your package manager below. Select Preview in the project editor, then add the snippet and stylesheet once.",
-    code: integrationCode(),
-    label: "App.jsx",
-  },
-  {
-    id: "custom-form",
-    title: "Connect your own form",
-    description: "Already have a feedback form? Keep your UI and send its answers to Unified from your server. You do not need to install the SDK.",
-    items: [
-      "Create matching questions in your project, then open Preview → Custom form.",
-      "Create a submission key. You can return to copy it anytime, replace it, or revoke it. Replacing or revoking it disables the previous key.",
-      "Copy the project endpoint and question IDs from the generated example. Map your input values to those IDs, not question labels.",
-      "Keep the key on your server. It grants submission access only, and does not grant access to read responses or edit projects.",
-      "Send formAnswers as an object. Text, email, date and choice answers are strings; sliders are numbers. Dates use YYYY-MM-DD, and choices use the configured option value.",
-      "Include every required answer and at least one nonempty answer. A successful request returns HTTP 201 with the response id. Invalid answers return 400; invalid or revoked keys return 401.",
-      "Responses appear in the same dashboard and summaries as SDK responses. When a question is recreated, update your integration to use its new ID.",
-    ],
-    code: customFormCode,
-    label: "Server · JavaScript",
-  },
-  {
-    id: "notifications",
-    title: "Get feedback digests",
-    description: "Open Integrations in your workspace and choose a project. Use Install in workspace to choose your Slack workspace and channel, enable email to your account address, or use both.",
-    items: [
-      "Choose hourly or daily delivery for each channel. The first digest covers feedback received after you enable it. Empty periods and unchanged summaries are skipped.",
-      "A fresh summary is generated from new feedback before delivery, even when nobody opens the responses page. Each digest includes the new response count, an AI overview, actionable requests and a link to the project. Email answers are excluded from the summary.",
-      "Send a test after saving to check delivery. Tests use sample content and do not consume pending feedback. Pause a channel anytime to stop scheduled delivery.",
-    ],
-  },
-  {
-    id: "listen",
-    title: "Read the conversation",
-    description:
-      "Select your project’s name in the dashboard to read responses.",
-    items: [
-      "Try the widget in your app and send a response.",
-      "Review answers on the project’s feedback page.",
-      "Read the automatic summary to identify common requests.",
-    ],
-  },
-];
-
-const managers = ["npm", "pnpm", "yarn", "bun"];
-const automaticMarkdown = managers.map((manager) => `### ${manager}\n\n\`\`\`sh\n${setupCommand({ manager })}\n\`\`\``).join("\n\n");
-export const documentationMarkdown = "# Unified documentation\n\n" + steps.map((step) => `## ${step.title}\n\n${step.description}\n\n${step.id === "install" ? automaticMarkdown + "\n\n" : ""}${(step.items || []).map((item) => `- ${item}`).join("\n")}${step.code ? `\n\n\`\`\`${step.label === "Terminal" ? "sh" : "jsx"}\n${step.code}\n\`\`\`` : ""}`).join("\n\n") + "\n\n## SDK installation\n\n```sh\n# npm\nnpm install unified-sdk\n# pnpm\npnpm add unified-sdk\n# Yarn\nyarn add unified-sdk\n# Bun\nbun add unified-sdk\n```\n\nYarn automatic setup requires Yarn 2 or newer. This backend requires SDK 2.2.0 or newer. Replace project placeholders with values from Preview. Keep project submission keys server-side.\n";
+import { sdkVersion } from "@/lib/integration-code";
+import { steps, documentationMarkdown } from "@/lib/documentation";
+export { documentationMarkdown } from "@/lib/documentation";
 
 export default function Quickstart() {
   const contentRef = useRef(null);
