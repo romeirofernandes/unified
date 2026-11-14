@@ -45,6 +45,15 @@ router.get("/:projectId", async (req, res) => {
     res.json(visible(updated));
   } catch { res.status(500).json({ message: "Couldn’t load the workbench. Please try again." }); }
 });
+router.post("/:projectId/load-unresolved", async (req, res) => {
+  try {
+    const project = await Project.findOneAndUpdate(owner(req), {
+      $set: { "workbenchIssues.$[issue].deleted": false },
+    }, { arrayFilters: [{ "issue.sourceKey": { $type: "string", $ne: "" }, "issue.status": { $ne: "done" } }], new: true }).select("+workbenchIssues");
+    if (!project) return res.status(404).json({ message: "Project not found." });
+    res.json(visible(project));
+  } catch { res.status(500).json({ message: "Couldn’t load unresolved issues. Please try again." }); }
+});
 router.get("/:projectId/:issueId/evidence", async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.issueId)) return res.status(400).json({ message: "Invalid issue." });
   try {

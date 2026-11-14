@@ -128,13 +128,13 @@ function ProjectBoard({ project, uid, renderHeader }) {
   if (loading) return <>{renderHeader()}<LoadingState variant="workbench" /></>;
   if (loadError) return <>{renderHeader()}<div className="space-y-3"><ErrorMessage>{loadError}</ErrorMessage><Button onClick={reload}>Try again</Button></div></>;
   return <>
-    {renderHeader(<Button disabled={pending} onClick={() => create()}><HugeiconsIcon icon={Add01Icon} size={16} aria-hidden="true" />New issue</Button>)}
+    {renderHeader(<><Button variant="secondary" disabled={pending} onClick={() => mutate("POST", { _id: "load-unresolved" })}>Load unresolved</Button><Button className="gap-2" disabled={pending} onClick={() => create()}><HugeiconsIcon icon={Add01Icon} size={16} aria-hidden="true" />New issue</Button></>)}
     <div className="flex min-h-0 flex-1 flex-col gap-5">
     <p role="status" className="sr-only">{announcement}</p>
     {!editing && !deleting && <ErrorMessage>{error}</ErrorMessage>}
     <WorkbenchBoard issues={issues} pending={pending} onEdit={(issue) => { setError(""); setEditing(issue); }} onDelete={(issue) => { setError(""); setDeleting(issue); }} onMove={move} />
     {editing && <IssueEditor issue={editing} projectId={project._id} uid={uid} pending={pending} error={error} onClose={() => setEditing(null)} onSave={(body) => mutate(editing._id ? "PUT" : "POST", editing, body)} />}
-    <ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)} title="Delete issue?" description="This issue will be removed from your board. Summary imports won’t bring it back." pending={pending} error={error} onConfirm={() => mutate("DELETE", deleting)} />
+    <ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)} title="Delete issue?" description="This issue will be removed from your board. Use Load unresolved to restore it if its last status was not Done." pending={pending} error={error} onConfirm={() => mutate("DELETE", deleting)} />
     </div>
   </>;
 }

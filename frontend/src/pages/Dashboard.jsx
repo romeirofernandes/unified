@@ -1,5 +1,6 @@
 import { forgetResource } from "@/lib/resource-cache";
 import { useState } from "react";
+import ProjectPreview from "@/components/dashboard/ProjectPreview";
 import ProjectModal from "@/components/dashboard/ProjectModal";
 import ProjectCard from "@/components/dashboard/ProjectCard";
 import PageHeader from "@/components/shared/PageHeader";
@@ -20,6 +21,7 @@ export default function Dashboard() {
     "/projects",
     user?.uid,
   );
+  const [previewing, setPreviewing] = useState(null);
   const [editing, setEditing] = useState(null);
   const [creating, setCreating] = useState(false);
   const [creationKey, setCreationKey] = useState(0);
@@ -112,6 +114,7 @@ export default function Dashboard() {
               <ProjectCard
                 key={project._id}
                 project={project}
+                onPreview={setPreviewing}
                 onEdit={(project) => {
                   setEditing(project);
                   setCreationKey((previous) => previous + 1);
@@ -133,6 +136,7 @@ export default function Dashboard() {
           />
         ))
       )}
+      {previewing && <ProjectPreview isOpen project={previewing} onClose={() => setPreviewing(null)} />}
       <ProjectModal
         key={creationKey}
         isOpen={creating}
@@ -144,7 +148,7 @@ export default function Dashboard() {
         open={!!deleting}
         onClose={() => setDeleting(null)}
         title="Delete project?"
-        description={`“${deleting?.name || ""}” and its feedback will be permanently deleted.`}
+        description={`“${deleting?.name || ""}” and all its responses, tickets, and PR runs will be permanently deleted.`}
         onConfirm={deleteProject}
         pending={pending}
         error={deleteError}

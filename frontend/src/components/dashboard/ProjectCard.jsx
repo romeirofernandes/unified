@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { raisedCardSurface } from "@/components/ui/cardStyles";
 
-export default function ProjectCard({ project, onEdit, onDelete }) {
+export default function ProjectCard({ project, onEdit, onDelete, onPreview }) {
   const { user } = useAuth();
   const prepare = () => { preloadPage(`/project/${project._id}/feedbacks`); void prefetchResource(`/feedback/project/${project._id}`, user?.uid).catch(() => {}); };
   const count = project.feedbackCount ?? 0;
@@ -51,7 +51,8 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
           {project.description}
         </p>
       )}
-      <div className="mt-auto flex justify-end pt-3">
+      <div className="relative z-10 mt-auto flex items-center justify-between gap-3 pt-3">
+        <Button variant="secondary" size="compact" onClick={() => onPreview(project)}>Preview & setup</Button>
         <span className="rounded-full border border-[#30456d]/40 bg-[#5575b4] px-2.5 py-1 text-xs font-medium tabular-nums text-white">
           {count} {count === 1 ? "response" : "responses"}
         </span>

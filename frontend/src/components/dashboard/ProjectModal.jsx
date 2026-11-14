@@ -1,5 +1,4 @@
 import { Checkbox } from "@/components/motion/checkbox";
-import { ProjectPreviewContent } from "./ProjectPreview";
 import { projectDraftKey } from "@/lib/project-draft";
 import { useTheme } from "next-themes";
 import { usePreviewTheme } from "@/hooks/use-preview-theme";
@@ -49,9 +48,6 @@ export default function ProjectModal({
   const formId = useId();
   const headerRef = useRef(null);
   const modalRef = useRef(null);
-  const previewTrigger = useRef(null);
-  const [previewing, setPreviewing] = useState(false);
-  const [handoffHeight, setHandoffHeight] = useState(null);
   const [step, setStep] = useState(1);
   const [name, setName] = useState(project?.name || "");
   const [shippingUpdatesEnabled, setShippingUpdatesEnabled] = useState(project?.shippingUpdatesEnabled === true);
@@ -133,13 +129,11 @@ export default function ProjectModal({
     >
       <DialogContent
         ref={modalRef}
-        style={handoffHeight ? { height: handoffHeight } : undefined}
         className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-md border border-border bg-background p-0 text-foreground sm:max-w-[1060px]"
         size="xl"
         showCloseButton={!pending}
       >
-        {previewing && <ProjectPreviewContent project={project} onEdit={() => { setPreviewing(false); requestAnimationFrame(() => previewTrigger.current?.focus({ preventScroll: true })); }} />}
-        <div className={previewing ? "hidden" : "flex min-h-0 flex-1 flex-col"}>
+        <div className="flex min-h-0 flex-1 flex-col">
         <Tabs
           value={String(step)}
           onValueChange={(value) => {
@@ -163,16 +157,6 @@ export default function ProjectModal({
                   </DialogDescription>
                 </div>
                 <div className="flex shrink-0 flex-wrap items-center gap-2">
-                  {project && (
-                    <Button
-                      variant="secondary"
-                      ref={previewTrigger}
-                      onClick={() => { setHandoffHeight(modalRef.current?.offsetHeight || null); setPreviewing(true); }}
-                      disabled={pending}
-                    >
-                      Preview
-                    </Button>
-                  )}
                   <Button
                     type="submit"
                     form={formId}
