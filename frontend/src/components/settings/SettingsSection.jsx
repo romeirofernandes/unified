@@ -7,11 +7,12 @@ export default function SettingsSection({
   description,
   children,
   destructive = false,
+  className = "",
 }) {
   return (
     <section
       aria-labelledby={`${id}-title`}
-      className="grid items-start gap-3 lg:grid-cols-[minmax(180px,0.6fr)_minmax(0,1.4fr)] lg:gap-8"
+      className={`grid items-start gap-3 lg:grid-cols-[minmax(180px,0.6fr)_minmax(0,1.4fr)] lg:gap-8 ${className}`}
     >
       <div className="space-y-2">
         <h2 id={`${id}-title`} className="text-xl tracking-tight">

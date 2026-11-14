@@ -12,12 +12,12 @@ export default function AppearanceSettings() {
   const { theme, setTheme } = useTheme();
   const [background, setBackground] = useWorkspaceBackground();
   return (
-    <div className="space-y-6">
-    <fieldset className="space-y-3">
-      <legend className="text-sm font-medium">Workspace theme</legend>
-      <div className="grid gap-3 sm:grid-cols-3">
+    <div className="flex flex-1 flex-col gap-8">
+    <fieldset className="flex min-w-0 flex-1 flex-col gap-3">
+      <legend className="mb-3 text-sm font-medium">Workspace theme</legend>
+      <div className="grid flex-1 gap-3 sm:grid-cols-3">
         {options.map(({ value, label }) => (
-          <label key={value} className="group relative cursor-pointer">
+          <label key={value} className="group relative flex min-w-0 cursor-pointer">
             <input
               className="peer sr-only"
               type="radio"
@@ -26,10 +26,10 @@ export default function AppearanceSettings() {
               checked={theme === value}
               onChange={() => setTheme(value)}
             />
-            <span className="block overflow-hidden rounded-lg border border-border p-2 transition-colors peer-checked:border-fluid-accent peer-checked:ring-1 peer-checked:ring-fluid-accent peer-focus-visible:ring-2 peer-focus-visible:ring-ring">
+            <span className="flex w-full flex-col overflow-hidden rounded-lg border border-border p-2 transition-colors peer-checked:border-fluid-accent peer-checked:ring-1 peer-checked:ring-fluid-accent peer-focus-visible:ring-2 peer-focus-visible:ring-ring">
               <span
                 aria-hidden="true"
-                className={`flex h-12 overflow-hidden rounded border border-black/10 ${value === "light" ? "bg-[#f4f3ee]" : value === "dark" ? "bg-[#141414]" : "bg-linear-to-r from-[#f4f3ee] from-50% to-[#141414] to-50%"}`}
+                className={`flex min-h-20 flex-1 overflow-hidden rounded border border-black/10 ${value === "light" ? "bg-[#f4f3ee]" : value === "dark" ? "bg-[#141414]" : "bg-linear-to-r from-[#f4f3ee] from-50% to-[#141414] to-50%"}`}
               >
                 <span
                   className={`w-1/4 border-e border-black/10 ${value === "dark" ? "bg-white/5" : "bg-black/5"}`}
@@ -60,11 +60,11 @@ export default function AppearanceSettings() {
         to switch between light and dark when you’re not typing.
       </p>
     </fieldset>
-    <fieldset className="space-y-3" aria-describedby="workspace-background-help">
-      <legend className="text-sm font-medium">Workspace background</legend>
-      <div className="grid gap-3 sm:grid-cols-3">
+    <fieldset className="flex min-w-0 flex-1 flex-col gap-3" aria-describedby="workspace-background-help">
+      <legend className="mb-3 text-sm font-medium">Workspace background</legend>
+      <div className="grid flex-1 gap-3 sm:grid-cols-3">
         {backgroundOptions.map(({ value, label, description }) => (
-          <label key={value} className="relative cursor-pointer">
+          <label key={value} className="relative flex min-w-0 cursor-pointer">
             <input
               className="peer sr-only"
               type="radio"
@@ -73,8 +73,8 @@ export default function AppearanceSettings() {
               checked={background === value}
               onChange={() => setBackground(value)}
             />
-            <span className="block h-full rounded-lg border border-border p-2 transition-colors peer-checked:border-fluid-accent peer-checked:ring-1 peer-checked:ring-fluid-accent peer-focus-visible:ring-2 peer-focus-visible:ring-ring">
-              <span aria-hidden="true" className="relative flex h-16 items-center justify-center overflow-hidden rounded border border-border bg-background">
+            <span className="flex w-full flex-col rounded-lg border border-border p-2 transition-colors peer-checked:border-fluid-accent peer-checked:ring-1 peer-checked:ring-fluid-accent peer-focus-visible:ring-2 peer-focus-visible:ring-ring">
+              <span aria-hidden="true" className="relative flex min-h-24 flex-1 items-center justify-center overflow-hidden rounded border border-border bg-background">
                 {value === "cursor" && (
                   <span className="flex -rotate-12 items-center gap-1 text-fluid-accent">
                     <span className="size-2 bg-current opacity-20" />

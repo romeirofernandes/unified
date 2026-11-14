@@ -1,4 +1,5 @@
 import { useState } from "react";
+import FallbackAvatar from "@/components/fallback-avatar";
 import { useNavigate } from "react-router-dom";
 import {
   reauthenticateWithCredential,
@@ -62,26 +63,22 @@ export default function Settings() {
   }
 
   return (
-    <>
+    <div className="flex min-h-[calc(100dvh-7.5rem)] flex-col gap-7 sm:min-h-[calc(100dvh-8rem)] lg:min-h-[calc(100dvh-9rem)] lg:gap-8">
       <PageHeader
         title="Settings"
         description="Manage your account and make the workspace feel like yours."
       />
-      <div className="space-y-5">
+      <div className="grid flex-1 grid-rows-[auto_1fr_auto] gap-6 lg:gap-8">
         <SettingsSection
           id="account"
           title="Account"
           description="Your sign-in details and account information."
         >
-          <div className="mb-3 flex items-center gap-3">
-            <span
-              aria-hidden="true"
-              className="grid size-10 shrink-0 place-items-center rounded-full border border-border bg-fluid-accent/15 text-lg text-foreground"
-            >
-              {(user?.displayName || user?.email || "U")
-                .slice(0, 1)
-                .toUpperCase()}
-            </span>
+          <div className="mb-5 flex items-center gap-3">
+            <FallbackAvatar
+              name={(user?.displayName || user?.email || user?.uid || "Your account").trim().toLowerCase()}
+              size={40}
+            />
             <div className="min-w-0 space-y-1">
               <p className="break-words text-sm font-medium">
                 {user?.displayName || "Your account"}
@@ -91,7 +88,7 @@ export default function Settings() {
               </p>
             </div>
           </div>
-          <dl className="space-y-2">
+          <dl className="space-y-3">
             {[
               ["Email address", user?.email || "Unavailable"],
               [
@@ -119,6 +116,7 @@ export default function Settings() {
           </dl>
         </SettingsSection>
         <SettingsSection
+          className="lg:items-stretch"
           id="appearance"
           title="Appearance"
           description="Choose how the workspace looks on this device."
@@ -163,6 +161,6 @@ export default function Settings() {
         pending={pending}
         error={error}
       />
-    </>
+    </div>
   );
 }
