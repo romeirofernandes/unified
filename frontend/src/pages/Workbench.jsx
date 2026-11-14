@@ -24,7 +24,7 @@ function ResponseCard({ response, number }) {
   }, null);
   const others = response.answers.filter((item) => item !== primary);
   const answerText = (answer) => typeof answer === "string" ? answer : JSON.stringify(answer);
-  return <article className="rounded-lg border border-border bg-background p-5">
+  return <article className="response-card rounded-lg border border-border bg-background p-5">
     <header className="mb-4 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
       <span className="font-medium text-foreground">Response {number}</span>
       {response.timestamp && <time dateTime={response.timestamp}>{new Date(response.timestamp).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</time>}
